@@ -187,9 +187,10 @@
       "cairn://p/rs/199 (the Ranged module)",
       "cairn://p/rs/257 (the quest module)",
       "cairn://p/rs/20",
-      "data/attempts-timeline.json, rehearsal 24 Oct 04:38Z and 06:28Z; attempt 5, 26 Oct 03:40Z"
+      "data/attempts-timeline.json, rehearsal 24 Oct 04:38Z and 06:28Z; attempt 5, 26 Oct 03:40Z",
+      "the run host’s screen recording of attempt 5, 26 Oct 10:28:39-10:28:53Z, cropped to the game canvas (the clip)"
     ],
-    "clip": null
+    "clip": "finish-cannon"
   },
   {
     "id": "level-up-dismissal",
