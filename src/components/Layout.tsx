@@ -6,9 +6,10 @@ const LIVE = [
   { to: '/', label: 'Story' },
   { to: '/attempts', label: 'Attempts' },
   { to: '/tricks', label: 'Tricks' },
+  { to: '/cost', label: 'Cost' },
 ] as const;
 
-const SOON = ['Swarm', 'Cost', 'Routes', 'Replays'] as const;
+const SOON = ['Swarm', 'Routes', 'Replays'] as const;
 
 export function Layout() {
   return (

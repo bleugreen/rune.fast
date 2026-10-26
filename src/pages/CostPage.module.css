@@ -1,0 +1,204 @@
+.page {
+  max-width: calc(46rem + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: var(--space-7) var(--gutter) var(--space-9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.title {
+  font-size: var(--text-title);
+  line-height: var(--leading-tight);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+  font-variant-numeric: lining-nums;
+}
+
+.number {
+  color: var(--accent);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.dek {
+  margin-top: var(--space-3);
+  font-size: var(--text-dek);
+  line-height: 1.4;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.sectionTitle {
+  padding-top: var(--space-3);
+  border-top: var(--stroke-rule) solid var(--ink);
+  font-size: var(--text-section);
+  line-height: var(--leading-tight);
+  font-weight: 600;
+  letter-spacing: -0.006em;
+}
+
+.prose {
+  hanging-punctuation: first;
+  text-wrap: pretty;
+}
+
+.figure {
+  margin: var(--space-3) 0;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.chartTitle {
+  font-family: var(--font-sans);
+  font-size: var(--label-lg);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.chartSub {
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  color: var(--ink-muted);
+  margin-bottom: var(--space-1);
+}
+
+/* Where the money went: one proportional bar, labels on the same columns */
+.statusBar,
+.statusLabels {
+  display: grid;
+  column-gap: 2px;
+}
+.statusBar {
+  height: 1.375rem;
+}
+.merged {
+  background: var(--ink);
+}
+.closed {
+  background: var(--ink-faint);
+}
+.standing {
+  background: var(--accent);
+}
+.threads {
+  background: var(--ink-muted);
+}
+.statusLabels {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+}
+.statusLabels li {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--space-2) 0 0.375rem;
+  border-left: var(--stroke-thin) solid var(--rule);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  line-height: var(--leading-snug);
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+.statusValue {
+  font-size: var(--label-lg);
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.unit {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: var(--stroke-hair) solid var(--hairline);
+}
+.unitValue {
+  font-size: var(--text-section);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.unitLabel {
+  font-family: var(--font-sans);
+  font-size: var(--label-lg);
+  color: var(--ink-muted);
+}
+
+.note {
+  margin-top: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  color: var(--ink-muted);
+}
+
+/* Cost by model */
+.table {
+  border-collapse: collapse;
+  min-width: min(100%, 18rem);
+  font-family: var(--font-sans);
+  font-size: var(--label-lg);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.table th {
+  padding: 0 0 var(--space-1);
+  border-bottom: var(--stroke-thin) solid var(--rule);
+  font-size: var(--label);
+  font-weight: 500;
+  color: var(--ink-muted);
+  text-align: left;
+}
+.table td {
+  padding: 0.3rem 0;
+  border-bottom: var(--stroke-hair) solid var(--hairline);
+}
+.table th:last-child,
+.table td:last-child {
+  padding-left: var(--space-7);
+  text-align: right;
+}
+
+/* The swarm's counts */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-4) var(--space-5);
+  margin: 0;
+  padding: var(--space-3) 0;
+  border-top: var(--stroke-thin) solid var(--rule);
+  border-bottom: var(--stroke-hair) solid var(--hairline);
+}
+.facts div {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+.facts dd {
+  margin: 0;
+  font-size: var(--text-section);
+  font-weight: 600;
+  line-height: 1.05;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.facts dt {
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  line-height: var(--leading-snug);
+  color: var(--ink-muted);
+}
