@@ -172,7 +172,6 @@ export function StoryPage() {
                       model={model}
                       anchors={anchors}
                       record={record}
-                      className={s.figure.kind === 'timeline' ? styles.wide : undefined}
                     />
                   )}
                 </Fragment>

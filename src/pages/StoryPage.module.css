@@ -153,8 +153,8 @@
 }
 
 /*
- * Wide screens: the prose stays centred at the measure, pulled quotes take the
- * right margin beside their paragraph, and charts run out into that margin.
+ * Wide screens: the prose stays centred at the measure, and pulled quotes take the
+ * right margin beside their paragraph. Figures keep to the prose column.
  */
 @media (min-width: 80rem) {
   .section {
@@ -173,9 +173,6 @@
     margin: 0.3em 0 var(--space-4);
     padding-top: var(--space-2);
     border-top: var(--stroke-hair) solid var(--hairline);
-  }
-  .section > .wide {
-    grid-column: 2 / 4;
   }
 }
 
