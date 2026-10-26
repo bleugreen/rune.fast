@@ -6,7 +6,7 @@
  *
  *   RUNE_SCORED_ACCOUNT="$(cat <recorder>/follow)" bun scripts/world/publish-clip.ts \
  *     --clip finish --from 2026-10-26T10:27:00Z --to 2026-10-26T11:08:00Z \
- *     --recordings <recorder>/out --cache .world/cache [--upload] [--upload-cache]
+ *     --recordings <recorder>/out --cache .world/cache [--out .world] [--upload] [--upload-cache]
  *
  * The scored account's name comes only from the environment. Nothing this script prints carries
  * a name or a payload: counts, ticks, slots, sizes and times.
@@ -58,7 +58,8 @@ const { values: args } = parseArgs({
     to: { type: 'string' },
     recordings: { type: 'string' },
     cache: { type: 'string', default: '.world/cache' },
-    out: { type: 'string', default: '.world/out' },
+    // .world mirrors the bucket's world/ prefix: cache/ and replays/.
+    out: { type: 'string', default: '.world' },
     upload: { type: 'boolean', default: false },
     'upload-cache': { type: 'boolean', default: false },
   },
