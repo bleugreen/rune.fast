@@ -1,4 +1,5 @@
 import raw from '../../data/tricks.json';
+import { clipById } from '../clips/registry';
 
 export type Kind =
   | 'game-mechanic exploit'
@@ -28,12 +29,6 @@ export interface Saving {
   note: string;
 }
 
-export interface Clip {
-  src: string;
-  poster: string;
-  caption: string;
-}
-
 export interface Trick {
   id: string;
   name: string;
@@ -49,7 +44,8 @@ export interface Trick {
   failed_live: string | null;
   /** Kept in the data and shown only behind each card's sources disclosure. */
   sources: string[];
-  clip: Clip | null;
+  /** The card's clip, by its id in data/clips.json. */
+  clip: string | null;
 }
 
 export const TRICKS = raw as unknown as readonly Trick[];
@@ -125,7 +121,7 @@ export function cardText(t: Trick): string[] {
     ...t.steps_plain,
     t.failed_live,
     ...(s ? [s.label, s.before_label, s.after_label, s.note] : []),
-    t.clip?.caption ?? null,
+    ...(t.clip ? [clipById(t.clip).caption, clipById(t.clip).step] : []),
   ].filter((x): x is string => x !== null);
 }
 

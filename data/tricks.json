@@ -219,11 +219,7 @@
       "rs-sdk film/samples/firemaking-80 (clip.mp4, meta.json, trace.jsonl: level-ups at server ticks 72, 84 and 96, each answered in the same tick as the next light)",
       "data/attempts-timeline.json, attempt 5, 25 Oct 20:35Z"
     ],
-    "clip": {
-      "src": "/clips/levelup-firemaking.mp4",
-      "poster": "/clips/levelup-firemaking.jpg",
-      "caption": "Lab footage, Firemaking 80 to 83. The bot answers each level-up page in the tick it opens and lights the next log in that same tick, so the four-tick rhythm holds."
-    }
+    "clip": "levelup-firemaking"
   },
   {
     "id": "same-page-relog",
