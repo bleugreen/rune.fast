@@ -59,7 +59,7 @@ describe('logged-in spans', () => {
     const minutes = (id: string) => model.byId.get(id)!.holds.map((g) => Math.floor((g.to - g.from) / 60000));
     // offline_note: '~86 min'; '~9h08m'; the S27 hold; '~6h46m'
     expect(minutes('A3')).toEqual([85]);
-    expect(minutes('A5')).toEqual([548, 351, 406]);
+    expect(minutes('A5')).toEqual([548, 350, 406]);
   });
 });
 

@@ -1,0 +1,241 @@
+.root {
+  width: 100%;
+}
+
+.scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline) transparent;
+}
+.scroller:focus-visible {
+  outline: var(--stroke-rule) solid var(--ink);
+  outline-offset: 6px;
+}
+
+.inner {
+  position: relative;
+}
+
+.svg {
+  display: block;
+  font-family: var(--font-sans);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Lines */
+.bar {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+.offline {
+  stroke: var(--ink-muted);
+  stroke-width: 1;
+  stroke-dasharray: 0.5 3;
+  stroke-linecap: round;
+}
+.extent {
+  stroke: var(--ink-faint);
+  stroke-width: 2.5;
+}
+
+/* Event glyphs */
+.stop {
+  stroke: var(--ink);
+  stroke-width: 1.1;
+}
+.stopOut {
+  stroke: var(--ink-muted);
+  stroke-width: 0.9;
+}
+.recovery {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+.death {
+  fill: var(--accent);
+}
+.operator {
+  stroke: var(--ink);
+  stroke-width: 0.9;
+}
+.ruling {
+  stroke: var(--ink-muted);
+  stroke-width: 0.9;
+}
+.dot {
+  fill: var(--ink-muted);
+}
+
+.faint .stop,
+.faint .stopOut,
+.faint .operator,
+.faint .ruling {
+  stroke: var(--ink-faint);
+}
+.faint .recovery {
+  stroke: var(--ink-faint);
+}
+.faint .dot {
+  fill: var(--ink-faint);
+}
+.faint .death {
+  opacity: 0.5;
+}
+
+/* Labels */
+.name {
+  font-size: 11.5px;
+  font-weight: 500;
+  fill: var(--ink);
+}
+.faint .name {
+  font-weight: 400;
+  fill: var(--ink-muted);
+}
+.hold {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12.5px;
+  fill: var(--ink-muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.finish {
+  font-family: var(--font-serif);
+  font-size: 27px;
+  font-weight: 600;
+  fill: var(--accent);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.01em;
+}
+.finishUnit {
+  font-size: 10.5px;
+  fill: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Axis */
+.axis {
+  stroke: var(--rule);
+  stroke-width: var(--stroke-thin);
+}
+.midnight {
+  stroke: var(--hairline);
+  stroke-width: var(--stroke-thin);
+}
+.tickUtc {
+  font-size: 10.5px;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.tickPacific {
+  font-size: 10px;
+  fill: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.day {
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--ink);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+/* Selection */
+.ring,
+.ringHover {
+  fill: none;
+  stroke-width: 0.9;
+}
+.ring {
+  stroke: var(--ink);
+}
+.ringHover {
+  stroke: var(--ink-muted);
+}
+.guide {
+  stroke: var(--ink);
+  stroke-width: var(--stroke-hair);
+  stroke-dasharray: 2 3;
+}
+.leader {
+  stroke: var(--ink);
+  stroke-width: var(--stroke-hair);
+}
+
+/* Pulled quotes */
+.quote {
+  position: absolute;
+  display: block;
+  width: max-content;
+  max-width: 15rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transform: translateY(-100%);
+}
+.quote[data-align='end'] {
+  text-align: right;
+  transform: translate(-100%, -100%);
+}
+.quoteText {
+  display: block;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-indent: -0.4em;
+}
+.quote[data-align='end'] .quoteText {
+  text-indent: 0;
+}
+.quote:hover .quoteText,
+.quote[data-selected] .quoteText {
+  text-decoration: underline;
+  text-decoration-thickness: var(--stroke-hair);
+  text-underline-offset: 0.18em;
+}
+.quoteTime {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  background: var(--paper);
+  border: var(--stroke-thin) solid var(--rule);
+  pointer-events: none;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  color: var(--ink-muted);
+}
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.legendItem svg {
+  display: block;
+}
