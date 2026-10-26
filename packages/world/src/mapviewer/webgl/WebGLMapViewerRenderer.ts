@@ -1566,7 +1566,8 @@ export class WebGLMapViewerRenderer extends MapViewerRenderer<WebGLMapSquare> {
         this.disposed = true;
         ++this.lifetimeGeneration;
         super.cleanUp();
-        this.mapViewer.live?.stop();
+        // The live controller belongs to the viewer (MapViewer.dispose stops it): a canvas that
+        // unmounts and mounts again must find the same world, not an emptied one.
         this.liveRenderer?.delete();
         this.liveRenderer = undefined;
         this.liveRendererController = undefined;

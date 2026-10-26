@@ -54,6 +54,7 @@
 
 .track {
   position: relative;
+  margin-top: var(--space-4);
   height: 2.25rem;
   cursor: pointer;
   touch-action: none;
