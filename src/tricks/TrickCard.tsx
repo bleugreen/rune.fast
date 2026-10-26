@@ -40,10 +40,18 @@ export function TrickCard({ trick: t }: { trick: Trick }) {
         <p className={styles.body}>{[t.what_normally, t.what_instead, t.why_allowed].filter(Boolean).join(' ')}</p>
         {t.steps_plain.length > 0 && <p className={styles.aside}>Used in {listJoin(t.steps_plain)}.</p>}
         {t.failed_live && <p className={styles.aside}>{t.failed_live}</p>}
+      </div>
+      {t.saving && (
+        <div className={styles.chartCell}>
+          <SavingChart saving={t.saving} />
+        </div>
+      )}
+      <div className={styles.clipCell}>
+        <ClipSlot clip={t.clip} />
+      </div>
+      <div className={styles.sourcesCell}>
         <Sources sources={t.sources} />
       </div>
-      {t.saving && <SavingChart saving={t.saving} />}
-      <ClipSlot clip={t.clip} />
     </article>
   );
 }

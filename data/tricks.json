@@ -469,7 +469,7 @@
       "basis": "measured",
       "note": "The first account’s hiscore row, and the skip in the lab."
     },
-    "steps_plain": ["the start of the run"],
+    "steps_plain": ["the run’s first login"],
     "failed_live": null,
     "sources": [
       "rs-sdk docs/speedrun/research/travel-and-overhead.md row 1 (about 540 ticks; the skip at 6 with the stock SDK)",
