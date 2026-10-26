@@ -1,38 +1,27 @@
-export const checkIphone = () => {
-    const u = navigator.userAgent;
-    return !!u.match(/iPhone/i);
-};
-export const checkAndroid = () => {
-    const u = navigator.userAgent;
-    return !!u.match(/Android/i);
-};
-export const checkIpad = () => {
-    const u = navigator.userAgent;
-    return !!u.match(/iPad/i);
-};
-export const checkMobile = () => {
-    const u = navigator.userAgent;
-    return !!u.match(/Android/i) || !!u.match(/iPhone/i);
-};
+const hasDom = typeof window !== "undefined" && typeof document !== "undefined";
+const userAgent = typeof navigator !== "undefined" ? navigator.userAgent : "";
+
+export const checkIphone = () => /iPhone/i.test(userAgent);
+export const checkAndroid = () => /Android/i.test(userAgent);
+export const checkIpad = () => /iPad/i.test(userAgent);
+export const checkMobile = () => /Android/i.test(userAgent) || /iPhone/i.test(userAgent);
 
 export function checkIos() {
     // iPad on iOS 13 detection
-    const isIpad = navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints >= 1;
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) || isIpad;
+    const isIpad =
+        userAgent.includes("Macintosh") && typeof navigator !== "undefined" && navigator.maxTouchPoints >= 1;
+    return /iPad|iPhone|iPod/.test(userAgent) || isIpad;
 }
 
 export const isIos = checkIos();
 export const isMobileDevice = checkMobile() || isIos;
 
 export const isSharedMemorySupported =
-    typeof SharedArrayBuffer !== "undefined" && window.crossOriginIsolated === true;
+    typeof SharedArrayBuffer !== "undefined" && hasDom && window.crossOriginIsolated === true;
 
-export const isWallpaperEngine = !!window.wallpaperRegisterAudioListener;
+export const isTouchDevice =
+    hasDom && !!(navigator.maxTouchPoints || "ontouchstart" in document.documentElement);
 
-export const isTouchDevice = !!(
-    navigator.maxTouchPoints || "ontouchstart" in document.documentElement
-);
+export const isWebGL2Supported = hasDom && !!document.createElement("canvas").getContext("webgl2");
 
-export const isWebGL2Supported = !!document.createElement("canvas").getContext("webgl2");
-
-export const pixelRatio = window.devicePixelRatio || 1;
+export const pixelRatio = hasDom ? window.devicePixelRatio || 1 : 1;

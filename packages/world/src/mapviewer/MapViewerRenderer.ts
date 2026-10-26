@@ -1,6 +1,4 @@
-import { Schema } from "leva/dist/declarations/src/types";
-
-import { Renderer } from "../components/renderer/Renderer";
+import { Renderer } from "../renderer/Renderer";
 import { DEGREES_TO_RADIANS, RS_TO_RADIANS } from "../rs/MathConstants";
 import { SceneBuilder } from "../rs/scene/SceneBuilder";
 import { clamp } from "../util/MathUtil";
@@ -52,10 +50,6 @@ export abstract class MapViewerRenderer<T extends MapSquare = MapSquare> extends
             this.mapViewer.renderDistance,
             this.mapViewer.unloadDistance,
         );
-    }
-
-    getControls(): Schema {
-        return {};
     }
 
     queueLoadMap(mapX: number, mapY: number): void {}
@@ -329,14 +323,6 @@ export abstract class MapViewerRenderer<T extends MapSquare = MapSquare> extends
 
     override onFrameEnd(): void {
         super.onFrameEnd();
-
-        if (window.wallpaperFpsLimit !== undefined) {
-            this.fpsLimit = window.wallpaperFpsLimit;
-        }
-
-        if (this.mapViewer.camera.updated) {
-            this.mapViewer.updateSearchParams();
-        }
 
         this.mapViewer.inputManager.onFrameEnd();
         this.mapViewer.camera.onFrameEnd();

@@ -8,8 +8,6 @@ import { VarManager } from "../../../rs/config/vartype/VarManager";
 import { Scene } from "../../../rs/scene/Scene";
 import { LocEntity } from "../../../rs/scene/entity/LocEntity";
 import { TextureLoader } from "../../../rs/texture/TextureLoader";
-import { NpcSpawn, getMapNpcSpawns } from "../../data/npc/NpcSpawn";
-import { loadMinimapBlob } from "../../worker/MinimapData";
 import { RenderDataLoader, RenderDataResult } from "../../worker/RenderDataLoader";
 import { WorkerState } from "../../worker/RenderDataWorker";
 import { AnimationFrames } from "../AnimationFrames";
@@ -29,6 +27,7 @@ import { LocAnimatedGroup } from "../loc/LocAnimatedGroup";
 import { SceneLocEntity } from "../loc/SceneLocEntity";
 import { getSceneLocs, isLowDetail } from "../loc/SceneLocs";
 import { createNpcDatas } from "../npc/NpcData";
+import { NpcSpawn } from "../npc/NpcSpawn";
 import { NpcSpawnGroup } from "../npc/NpcSpawnGroup";
 import { SdMapData } from "./SdMapData";
 import { SdMapLoaderInput } from "./SdMapLoaderInput";
@@ -552,13 +551,6 @@ export class SdMapDataLoader implements RenderDataLoader<SdMapLoaderInput, SdMap
                     const npcType = npcTypeLoader.load(spawn.id);
                     return (npcType.loginScreenProps & 0x1) > 0;
                 });
-            } else {
-                npcSpawns = getMapNpcSpawns(state.npcSpawns, maxLevel, mapX, mapY);
-                npcSpawns = npcSpawns.filter((spawn) => {
-                    return (
-                        spawn.name === undefined || spawn.name === npcTypeLoader.load(spawn.id).name
-                    );
-                });
             }
         }
         const npcSpawnGroups = createNpcSpawnGroups(
@@ -641,14 +633,6 @@ export class SdMapDataLoader implements RenderDataLoader<SdMapLoaderInput, SdMap
         const vertices = sceneBuf.vertexBuf.byteArray();
         const indices = new Int32Array(sceneBuf.indices);
 
-        const minimapBlob = await loadMinimapBlob(
-            state.mapImageRenderer,
-            scene,
-            0,
-            borderSize,
-            false,
-        );
-
         const loadedTextures = new Map<number, Int32Array>();
         for (const textureId of sceneBuf.usedTextureIds) {
             if (!loadedTextureIds.has(textureId)) {
@@ -706,8 +690,6 @@ export class SdMapDataLoader implements RenderDataLoader<SdMapLoaderInput, SdMap
                 borderSize,
                 tileRenderFlags: scene.tileRenderFlags,
                 collisionDatas: scene.collisionMaps,
-
-                minimapBlob,
 
                 vertices,
                 indices,

@@ -58,6 +58,13 @@ type FarName = {
 
 // Draws names, overhead chat, hitsplats and health bars on a 2D canvas over the GL view,
 // projected with the same camera matrices as the frame that was just rendered.
+// The site's own face; the RuneScape TTFs are game assets and stay out of the site.
+const FONT_PLAIN = "500 12px 'IBM Plex Sans', sans-serif";
+const FONT_BOLD = "600 12px 'IBM Plex Sans', sans-serif";
+
+// For document.fonts.load before the first draw, so labels never measure against a fallback.
+export const OVERLAY_FONTS = [FONT_PLAIN, FONT_BOLD] as const;
+
 export class LiveOverlay {
     readonly canvas: HTMLCanvasElement;
     readonly ctx: CanvasRenderingContext2D;
@@ -217,7 +224,7 @@ export class LiveOverlay {
         // 3. Draw back to front: names, health bars, hitmarks, then chat on top like the client.
         ctx.textAlign = "center";
         ctx.textBaseline = "alphabetic";
-        ctx.font = "16px 'OSRS Small', sans-serif";
+        ctx.font = FONT_PLAIN;
         for (let i = farNames.length - 1; i >= 0; i--) {
             const n = farNames[i];
             if (n.placed) {
@@ -305,7 +312,7 @@ export class LiveOverlay {
             }
             const ctx = this.ctx;
             const previous = ctx.font;
-            ctx.font = font === "bold" ? "16px 'OSRS Bold', sans-serif" : "16px 'OSRS Small', sans-serif";
+            ctx.font = font === "bold" ? FONT_BOLD : FONT_PLAIN;
             width = ctx.measureText(text).width;
             ctx.font = previous;
             this.textWidths.set(key, width);
@@ -316,7 +323,7 @@ export class LiveOverlay {
     private drawChat(e: LiveEntity, x: number, y: number, loopCycle: number): void {
         const ctx = this.ctx;
         const text = e.chatMessage ?? "";
-        ctx.font = "16px 'OSRS Bold', sans-serif";
+        ctx.font = FONT_BOLD;
         let colour = CHAT_COLOURS[0];
         if (e.chatColour < CHAT_COLOURS.length) {
             colour = CHAT_COLOURS[e.chatColour];
@@ -347,7 +354,7 @@ export class LiveOverlay {
     // at y + 4 in black, then one pixel up and left in white.
     private drawHitmarks(controller: LiveController, e: LiveEntity, pos: ScreenPos, loopCycle: number): void {
         const ctx = this.ctx;
-        ctx.font = "16px 'OSRS Small', sans-serif";
+        ctx.font = FONT_PLAIN;
         for (let i = 0; i < 4; i++) {
             if (e.damageCycles[i] <= loopCycle) {
                 continue;

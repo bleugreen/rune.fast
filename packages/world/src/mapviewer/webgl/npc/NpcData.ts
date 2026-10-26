@@ -1,4 +1,4 @@
-import { NpcSpawn } from "../../data/npc/NpcSpawn";
+import { NpcSpawn } from "./NpcSpawn";
 import { AnimationFrames } from "../AnimationFrames";
 import { NpcSpawnGroup } from "./NpcSpawnGroup";
 

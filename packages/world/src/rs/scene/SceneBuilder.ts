@@ -1,4 +1,4 @@
-import { NpcSpawn } from "../../mapviewer/data/npc/NpcSpawn";
+import { NpcSpawn } from "../../mapviewer/webgl/npc/NpcSpawn";
 import { CacheInfo } from "../cache/CacheInfo";
 import { FloorTypeLoader, OverlayFloorTypeLoader } from "../config/floortype/FloorTypeLoader";
 import { ContourGroundInfo, LocModelLoader } from "../config/loctype/LocModelLoader";

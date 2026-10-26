@@ -1,7 +1,5 @@
 import Denque from "denque";
 import { vec2, vec4 } from "gl-matrix";
-import { folder } from "leva";
-import { Schema } from "leva/dist/declarations/src/types";
 import {
     DrawCall,
     Framebuffer,
@@ -16,7 +14,6 @@ import {
     VertexBuffer,
 } from "picogl";
 
-import { OsrsMenuEntry } from "../../components/rs/menu/OsrsMenu";
 import { LiveController } from "../../live/LiveController";
 import { LiveEntity } from "../../live/LiveEntity";
 import { LiveEntityRenderer } from "../../live/LiveEntityRenderer";
@@ -24,9 +21,10 @@ import { LiveOverlay } from "../../live/LiveOverlay";
 import { createTextureArray } from "../../picogl/PicoTexture";
 import { MenuTargetType } from "../../rs/MenuEntry";
 import { Scene } from "../../rs/scene/Scene";
-import { isTouchDevice, isWebGL2Supported, pixelRatio } from "../../util/DeviceUtil";
+import { isTouchDevice, isWebGL2Supported } from "../../util/DeviceUtil";
 import { MapViewer } from "../MapViewer";
 import { MapViewerRenderer } from "../MapViewerRenderer";
+import { OsrsMenuEntry } from "../OsrsMenuEntry";
 import { DrawRange, NULL_DRAW_RANGE } from "./DrawRange";
 import { InteractType } from "./InteractType";
 import { Interactions } from "./Interactions";
@@ -42,27 +40,13 @@ import {
     createNpcProgram,
 } from "./shaders/Shaders";
 
-// Render settings: rendered pixels per CSS pixel ("Native" only differs on hi-dpi screens).
-const RESOLUTION_OPTIONS: Record<string, number> = {
-    ...(pixelRatio !== 1 ? { Native: pixelRatio } : {}),
-    "1x": 1,
-    "0.75x": 0.75,
-    "0.5x": 0.5,
-};
-
 const MAX_TEXTURES = 2048;
 const TEXTURE_SIZE = 128;
 
 const INTERACT_BUFFER_COUNT = 2;
 const INTERACTION_RADIUS = 5;
 
-interface ColorRgb {
-    r: number;
-    g: number;
-    b: number;
-}
-
-enum TextureFilterMode {
+export enum TextureFilterMode {
     DISABLED,
     BILINEAR,
     TRILINEAR,
@@ -86,6 +70,24 @@ function getMaxAnisotropy(mode: TextureFilterMode): number {
             return 1;
     }
 }
+
+// What rs-dash's settings panel exposed, as plain data. Every field defaults to the renderer's
+// own initial value; apply a partial with WebGLMapViewerRenderer.applySettings.
+export type RenderSettings = {
+    maxLevel: number;
+    // 0-255 per channel.
+    skyColor: { r: number; g: number; b: number };
+    fogDepth: number;
+    // 1.0 is the client's darkest setting; each brightness step brightens by 0.1.
+    brightness: number;
+    // Rendered pixels per CSS pixel.
+    resolutionScale: number;
+    // 255 is no banding.
+    colorBanding: number;
+    textureFilterMode: TextureFilterMode;
+    msaa: boolean;
+    fxaa: boolean;
+};
 
 function optimizeAssumingFlatsHaveSameFirstAndLastData(gl: WebGL2RenderingContext) {
     const epv = gl.getExtension("WEBGL_provoking_vertex");
@@ -574,96 +576,25 @@ export class WebGLMapViewerRenderer extends MapViewerRenderer<WebGLMapSquare> {
         });
     }
 
-    getControls(): Schema {
-        return {
-            "Max Level": {
-                value: this.maxLevel,
-                min: 0,
-                max: 3,
-                step: 1,
-                onChange: (v: number) => {
-                    this.setMaxLevel(v);
-                },
-            },
-            Sky: {
-                r: this.skyColor[0] * 255,
-                g: this.skyColor[1] * 255,
-                b: this.skyColor[2] * 255,
-                onChange: (v: ColorRgb) => {
-                    this.setSkyColor(v.r, v.g, v.b);
-                },
-            },
-            "Fog Depth": {
-                value: this.fogDepth,
-                min: 0,
-                max: 256,
-                step: 8,
-                onChange: (v: number) => {
-                    this.fogDepth = v;
-                },
-            },
-            Brightness: {
-                value: Math.round((1.0 - this.brightness) * 10),
-                min: 0,
-                max: 4,
-                step: 1,
-                onChange: (v: number) => {
-                    this.brightness = 1.0 - v * 0.1;
-                },
-            },
-            Resolution: {
-                value: this.resolutionScale,
-                options: RESOLUTION_OPTIONS,
-                onChange: (v: number) => {
-                    this.resolutionScale = v;
-                },
-            },
-            "Color Banding": {
-                value: 50,
-                min: 0,
-                max: 100,
-                step: 1,
-                onChange: (v: number) => {
-                    this.colorBanding = 255 - v * 2;
-                },
-            },
-            "Texture Filtering": {
-                value: this.textureFilterMode,
-                options: {
-                    Disabled: TextureFilterMode.DISABLED,
-                    Bilinear: TextureFilterMode.BILINEAR,
-                    Trilinear: TextureFilterMode.TRILINEAR,
-                    "Anisotropic 2x": TextureFilterMode.ANISOTROPIC_2X,
-                    "Anisotropic 4x": TextureFilterMode.ANISOTROPIC_4X,
-                    "Anisotropic 8x": TextureFilterMode.ANISOTROPIC_8X,
-                    "Anisotropic 16x": TextureFilterMode.ANISOTROPIC_16X,
-                },
-                onChange: (v: TextureFilterMode) => {
-                    if (v === this.textureFilterMode) {
-                        return;
-                    }
-                    this.textureFilterMode = v;
-                    this.updateTextureFiltering();
-                },
-            },
-            "Anti-Aliasing": folder(
-                {
-                    MSAA: {
-                        value: this.msaaEnabled,
-                        onChange: (v: boolean) => {
-                            this.setMsaa(v);
-                        },
-                    },
-                    FXAA: {
-                        value: this.fxaaEnabled,
-                        onChange: (v: boolean) => {
-                            this.setFxaa(v);
-                        },
-                    },
-                },
-                { collapsed: true },
-            ),
-        };
+    applySettings(settings: Partial<RenderSettings>): void {
+        if (settings.maxLevel !== undefined) this.setMaxLevel(settings.maxLevel);
+        if (settings.skyColor) {
+            const { r, g, b } = settings.skyColor;
+            this.setSkyColor(r, g, b);
+        }
+        if (settings.fogDepth !== undefined) this.fogDepth = settings.fogDepth;
+        if (settings.brightness !== undefined) this.brightness = settings.brightness;
+        if (settings.resolutionScale !== undefined) this.resolutionScale = settings.resolutionScale;
+        if (settings.colorBanding !== undefined) this.colorBanding = settings.colorBanding;
+        if (
+            settings.textureFilterMode !== undefined &&
+            settings.textureFilterMode !== this.textureFilterMode
+        ) {
+            this.textureFilterMode = settings.textureFilterMode;
+            this.updateTextureFiltering();
+        }
+        if (settings.msaa !== undefined) this.setMsaa(settings.msaa);
+        if (settings.fxaa !== undefined) this.setFxaa(settings.fxaa);
     }
 
     override async queueLoadMap(mapX: number, mapY: number): Promise<void> {
@@ -672,7 +603,7 @@ export class WebGLMapViewerRenderer extends MapViewerRenderer<WebGLMapSquare> {
         let mapData: SdMapData | undefined;
         try {
             mapData = await this.mapViewer.workerPool.queueLoad<
-                SdMapLoaderInput, SdMapData | undefined, SdMapDataLoader
+                SdMapLoaderInput, SdMapData | undefined
             >(this.dataLoader, {
                 mapX,
                 mapY,
@@ -707,14 +638,6 @@ export class WebGLMapViewerRenderer extends MapViewerRenderer<WebGLMapSquare> {
         time: number,
     ): void {
         const { mapX, mapY } = mapData;
-
-        this.mapViewer.setMapImageUrl(
-            mapX,
-            mapY,
-            URL.createObjectURL(mapData.minimapBlob),
-            true,
-            false,
-        );
 
         const frameCount = this.stats.frameCount;
         this.mapManager.addMap(

@@ -1,4 +1,4 @@
-import { canonicalAccountName } from "../dashboard/telemetry";
+import { canonicalAccountName } from "./accountName";
 import { TypeLoader } from "../rs/config/TypeLoader";
 import { NpcTypeLoader } from "../rs/config/npctype/NpcTypeLoader";
 import { SeqType } from "../rs/config/seqtype/SeqType";
