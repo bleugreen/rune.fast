@@ -1,6 +1,5 @@
 import type { Attempt, EventType, Timeline, TimelineEvent } from '../data/types';
 import { HOUR, parseUtc } from '../lib/time';
-import { fmtInt, parseGrouped } from '../lib/numbers';
 import { PULLED } from './pulled';
 
 /* ------------------------------------------------------------------------- */
@@ -331,35 +330,3 @@ export function headlineFacts(model: ChartModel): HeadlineFacts {
   };
 }
 
-export interface LadderEntry {
-  id: string;
-  name: string;
-  value: number;
-  label: string;
-  estimate: boolean;
-  /** Ticks known to follow the measured value, with what else followed them. */
-  tail?: { ticks: number; label: string };
-}
-
-/** Each scored attempt's final tick count, read from final_ticks as the JSON words it. */
-export function ladderEntry(a: Attempt): LadderEntry | null {
-  const base = { id: a.id, name: a.name };
-  const v = a.final_ticks.value;
-  if (typeof v === 'number') return { ...base, value: v, label: fmtInt(v), estimate: a.final_ticks.uncertain };
-  if (typeof v !== 'string') return null;
-  const range = /^~([\d,]+)-([\d,]+)\b/.exec(v);
-  if (range) return { ...base, value: parseGrouped(range[2]!), label: `~${range[1]}–${range[2]}`, estimate: true };
-  const approx = /^~([\d,]+)\b/.exec(v);
-  if (approx) return { ...base, value: parseGrouped(approx[1]!), label: `~${approx[1]}`, estimate: true };
-  const runPlus = /^([\d,]+) run ticks\b.*\(([\d,]+) ticks\) and one-offs/.exec(v);
-  if (runPlus) {
-    return {
-      ...base,
-      value: parseGrouped(runPlus[1]!),
-      label: runPlus[1]!,
-      estimate: false,
-      tail: { ticks: parseGrouped(runPlus[2]!), label: `+ ${runPlus[2]} + one-offs` },
-    };
-  }
-  return null;
-}

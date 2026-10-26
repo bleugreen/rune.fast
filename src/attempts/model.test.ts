@@ -11,7 +11,6 @@ import {
   findMark,
   headlineFacts,
   isScored,
-  ladderEntry,
   recordFacts,
   stopsInWorld,
 } from './model';
@@ -106,11 +105,6 @@ describe('the record', () => {
   const r = recordFacts(timeline);
   test('the margin is the one the record states, never 130', () => {
     expect(timeline.meta.record.exact_margin.startsWith(`${r.margin} ticks / ${(r.margin * r.tickMs) / 1000} s`)).toBe(true);
-  });
-  test('every scored attempt has a ladder entry', () => {
-    const entries = model.scored.map((am) => ladderEntry(am.attempt));
-    expect(entries.map((e) => e?.label)).toEqual(['~1,127–1,130', '~1,727', '2,290', '14,097', '35,787']);
-    expect(entries[3]?.tail?.ticks).toBe(604);
   });
 });
 

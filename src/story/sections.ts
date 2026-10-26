@@ -23,7 +23,6 @@ export function storySections(record: RecordFacts, facts: HeadlineFacts): StoryS
         `Only logged-in ticks count, at ${record.tickMs} ms each.`,
         `The record was ${fmtInt(record.previous)}.`,
       ],
-      figure: { to: '/attempts#ticks', label: 'Ticks per attempt' },
     },
     {
       // Source: rs-document work/tricks-inventory.md, sections 1, 2, 3 and 5.
