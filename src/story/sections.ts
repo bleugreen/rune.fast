@@ -67,7 +67,7 @@ export function storySections(record: RecordFacts, facts: HeadlineFacts): StoryS
       notes: [
         `Attempt 5 stopped ${countWord(facts.lastStops)} times.`,
         'At Thieving it sat logged out for 9 h 08 min while helpers timed out and the coordinators went quiet.',
-        'The operator: “wall clock is free, ticks are not.”',
+        '“Wall clock is free, ticks are not,” the operator wrote.',
       ],
       figure: { to: '/attempts', label: 'The attempts timeline' },
     },
