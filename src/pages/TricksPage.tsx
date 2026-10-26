@@ -19,11 +19,7 @@ export function TricksPage() {
           {capitalize(countWord(h.used))} techniques made the record, and {countWord(h.halved)} of them cut a cost in half
           or more.
         </h1>
-        <p className={styles.dek}>
-          Each chart sets a cost without the trick against the same cost with it. {capitalize(countWord(h.measured))}{' '}
-          were measured before and after, {countWord(h.unmeasured)} {h.unmeasured === 1 ? 'is' : 'are'} inferred from the
-          run plan, and the rest carry no number.
-        </p>
+        <p className={styles.dek}>Each chart sets a cost without the trick against the same cost with it.</p>
       </header>
 
       {GROUPS.map((g) => (

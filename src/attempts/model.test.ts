@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import raw from '../../data/attempts-timeline.json';
-import type { Timeline } from '../data/types';
+import type { ArchivalTimeline } from '../data/types';
 import { projectTimeline } from '../../scripts/public-timeline';
 import { parseUtc } from '../lib/time';
 import {
@@ -17,7 +17,7 @@ import {
 import { PULLED } from './pulled';
 import { plainFor, plainKey, plainKeys } from '../data/plain';
 
-const archival = raw as unknown as Timeline;
+const archival = raw as unknown as ArchivalTimeline;
 const timeline = projectTimeline(archival);
 const model = buildChartModel(timeline);
 
@@ -30,7 +30,15 @@ describe('public projection', () => {
     ['process tokens', /\bmv[a-z0-9]{6}\b/],
     ['message ids', /msg_id/],
     ['archival paths', /\/Users\//],
+    ['the swarm’s addresses', /cairn:/],
   ])('drops %s', (_, re) => expect(text).not.toMatch(re));
+
+  test('prints each source as who, where and when, in Pacific time', () => {
+    const lines = new Set(timeline.attempts.flatMap((a) => [a.start, a.end, ...a.events].flatMap((x) => x.sources)));
+    expect(lines).toContain('the host thread’s messages, 23 Oct 10:41 PDT');
+    expect(lines).toContain('issue rs/843, comment 54, 26 Oct 04:16 PDT');
+    expect(lines).toContain('issue rs/764, the builder’s messages, 26 Oct 00:00 PDT');
+  });
 
   test('keeps every event', () => {
     expect(timeline.attempts.map((a) => a.events.length)).toEqual(archival.attempts.map((a) => a.events.length));
