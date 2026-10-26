@@ -1,7 +1,5 @@
 import { vec3 } from "gl-matrix";
-import { URLSearchParamsInit } from "react-router-dom";
 
-import { OsrsMenuEntry } from "../components/rs/menu/OsrsMenu";
 import { MenuTargetType } from "../rs/MenuEntry";
 import { CacheSystem } from "../rs/cache/CacheSystem";
 import { CacheLoaderFactory, getCacheLoaderFactory } from "../rs/cache/loader/CacheLoaderFactory";
@@ -11,22 +9,20 @@ import { NpcTypeLoader } from "../rs/config/npctype/NpcTypeLoader";
 import { ObjTypeLoader } from "../rs/config/objtype/ObjTypeLoader";
 import { SeqTypeLoader } from "../rs/config/seqtype/SeqTypeLoader";
 import { VarManager } from "../rs/config/vartype/VarManager";
-import { MapFileIndex, getMapSquareId } from "../rs/map/MapFileIndex";
+import { MapFileIndex } from "../rs/map/MapFileIndex";
 import { SeqFrameLoader } from "../rs/model/seq/SeqFrameLoader";
 import { Pathfinder } from "../rs/pathfinder/Pathfinder";
 import { TextureLoader } from "../rs/texture/TextureLoader";
 import { isTouchDevice } from "../util/DeviceUtil";
-import { LiveController, getDefaultFeedUrl } from "../live/LiveController";
+import { FeedFactory } from "../live/FeedSource";
+import { LiveController } from "../live/LiveController";
 import { LoadedCache } from "./Caches";
-import { Camera, CameraView, ProjectionType } from "./Camera";
+import { Camera, CameraView } from "./Camera";
 import { InputManager } from "./InputManager";
-import { MapManager } from "./MapManager";
 import { MapViewerRenderer } from "./MapViewerRenderer";
-import { NpcSpawn } from "./data/npc/NpcSpawn";
+import { OsrsMenuEntry } from "./OsrsMenuEntry";
 import { WebGLMapViewerRenderer } from "./webgl/WebGLMapViewerRenderer";
 import { RenderDataWorkerPool } from "./worker/RenderDataWorkerPool";
-
-const CACHED_MAP_IMAGE_PREFIX = "/map-images/";
 
 export class MapViewer {
     inputManager: InputManager = new InputManager();
@@ -70,9 +66,6 @@ export class MapViewer {
     tooltips: boolean = !isTouchDevice;
 
     // State
-    needsSearchParamUpdate: boolean = false;
-    lastTimeSearchParamsUpdated: number = 0;
-
     menuOpen: boolean = false;
     menuOpenedFrame: number = 0;
     menuX: number = -1;
@@ -81,89 +74,17 @@ export class MapViewer {
 
     debugText?: string;
 
-    mapImageUrls: Map<number, string> = new Map();
-    minimapImageUrls: Map<number, string> = new Map();
-    loadingMapImageIds: Set<number> = new Set();
-
     cameraSpeed: number = 1;
 
-    // The local dashboard always observes the approved public feed.
-    liveUrl: string | undefined = getDefaultFeedUrl();
+    // Attached by startLive; the viewer draws no entities without it.
     live?: LiveController;
 
     constructor(
         readonly workerPool: RenderDataWorkerPool,
-        public npcSpawns: NpcSpawn[],
-        readonly mapImageCache: Cache,
         cache: LoadedCache,
     ) {
         this.renderer = new WebGLMapViewerRenderer(this);
         this.initCache(cache);
-    }
-
-    getSearchParams(): URLSearchParamsInit {
-        const cx = this.camera.getPosX().toFixed(2).toString();
-        const cy = -this.camera.getPosY().toFixed(2).toString();
-        const cz = this.camera.getPosZ().toFixed(2).toString();
-
-        const yaw = this.camera.yaw & 2047;
-
-        const p = (this.camera.pitch | 0).toString();
-        const y = yaw.toString();
-
-        const params: any = {
-            cx,
-            cy,
-            cz,
-            p,
-            y,
-        };
-
-        if (this.camera.projectionType === ProjectionType.ORTHO) {
-            params["pt"] = "o";
-            params["z"] = this.camera.orthoZoom.toString();
-        }
-
-        params["v"] = 1;
-
-        return params;
-    }
-
-    applySearchParams(searchParams: URLSearchParams) {
-        const cx = searchParams.get("cx");
-        const cy = searchParams.get("cy");
-        const cz = searchParams.get("cz");
-
-        const pitch = searchParams.get("p");
-        const yaw = searchParams.get("y");
-
-        const v = searchParams.get("v");
-
-        if (searchParams.get("pt") === "o") {
-            this.camera.projectionType = ProjectionType.ORTHO;
-        }
-
-        const zoom = searchParams.get("z");
-        if (zoom) {
-            this.camera.orthoZoom = parseInt(zoom);
-        }
-
-        if (cx && cy && cz) {
-            const pos = vec3.fromValues(parseFloat(cx), -parseFloat(cy), parseFloat(cz));
-            this.camera.pos = pos;
-        }
-        if (pitch) {
-            this.camera.pitch = parseInt(pitch);
-            if (!v) {
-                this.camera.pitch = -this.camera.pitch;
-            }
-        }
-        if (yaw) {
-            this.camera.yaw = parseInt(yaw);
-            if (!v) {
-                this.camera.yaw = 2048 - this.camera.yaw;
-            }
-        }
     }
 
     disposed = false;
@@ -172,22 +93,14 @@ export class MapViewer {
         if (this.disposed) return;
         this.disposed = true;
         this.live?.stop();
-        this.clearMapImageUrls();
         void this.workerPool.terminate();
-    }
-
-    init(): void {
-        this.workerPool.loadCachedMapImages().then((mapImageUrls) => {
-            if (!this.disposed) mapImageUrls.forEach((value, key) => this.mapImageUrls.set(key, value));
-        }).catch(() => { /* A disposed worker cannot populate map images. */ });
     }
 
     initCache(cache: LoadedCache): void {
         this.loadedCache = cache;
         this.cacheSystem = CacheSystem.fromFiles(cache.type, cache.files);
         this.loaderFactory = getCacheLoaderFactory(cache.info, this.cacheSystem);
-        this.workerPool.initCache(cache, this.npcSpawns);
-        this.clearMapImageUrls();
+        this.workerPool.initCache(cache);
 
         this.textureLoader = this.loaderFactory.getTextureLoader();
         this.seqTypeLoader = this.loaderFactory.getSeqTypeLoader();
@@ -210,28 +123,27 @@ export class MapViewer {
 
         this.renderer.initCache();
 
-        this.initLive();
-
-        this.updateSearchParams();
+        // Static NPCs must not impersonate observed ones: entities come only from a feed.
+        this.renderer.setLoadNpcs?.(false);
     }
 
-    initLive(): void {
+    // Attaches a live layer reading from `feed`. Needs the player kits and spotanims only the
+    // pre-dat2 (rs-sdk) caches provide.
+    startLive(feed: FeedFactory): LiveController {
         this.live?.stop();
-        this.live = undefined;
-        // The live layer needs player kits/spotanims, only built for pre-dat2 (rs-sdk) caches.
-        if (this.liveUrl && this.loaderFactory?.getIdkTypeLoader) {
-            this.live = new LiveController(
-                this.liveUrl,
-                this.npcTypeLoader,
-                this.seqTypeLoader,
-                this.seqFrameLoader,
-                this.loaderFactory.getSpotAnimTypeLoader?.(),
-                this.loadedCache.info.revision,
-            );
-            this.live.hitmarkSprites = this.loaderFactory.getHitmarkSprites?.() ?? [];
+        if (!this.loaderFactory.getIdkTypeLoader) {
+            throw new Error("The live layer needs an rs-sdk cache");
         }
-        // Static NPCs must not impersonate live observations when the feed is unavailable.
-        this.renderer.setLoadNpcs?.(false);
+        this.live = new LiveController(
+            feed,
+            this.npcTypeLoader,
+            this.seqTypeLoader,
+            this.seqFrameLoader,
+            this.loaderFactory.getSpotAnimTypeLoader?.(),
+            this.loadedCache.info.revision,
+        );
+        this.live.hitmarkSprites = this.loaderFactory.getHitmarkSprites?.() ?? [];
+        return this.live;
     }
 
     /**
@@ -255,11 +167,6 @@ export class MapViewer {
             this.camera.orthoZoom = newView.orthoZoom;
         }
         this.camera.updated = true;
-    }
-
-    updateSearchParams(): void {
-        this.needsSearchParamUpdate = true;
-        this.lastTimeSearchParamsUpdated = performance.now();
     }
 
     closeMenu = () => {
@@ -298,88 +205,5 @@ export class MapViewer {
 
     updateVars(): void {
         this.workerPool.setVars(this.varManager.values);
-    }
-
-    static getCachedMapImageUrl(mapX: number, mapY: number): string {
-        return CACHED_MAP_IMAGE_PREFIX + `${mapX}_${mapY}.png`;
-    }
-
-    async queueLoadMapImage(mapX: number, mapY: number) {
-        const mapManager = this.renderer.mapManager;
-        const mapId = getMapSquareId(mapX, mapY);
-        if (
-            this.loadingMapImageIds.size > this.workerPool.size * 4 ||
-            this.mapImageUrls.has(mapId) ||
-            this.loadingMapImageIds.has(mapId) ||
-            mapManager.invalidMapIds.has(mapId) ||
-            mapManager.loadingMapIds.has(mapId)
-        ) {
-            return;
-        }
-        this.loadingMapImageIds.add(mapId);
-
-        const minimapData = await this.workerPool.queueMapImage(mapX, mapY, 0, true);
-        if (minimapData) {
-            const url = URL.createObjectURL(minimapData.minimapBlob);
-            this.setMapImageUrl(mapX, mapY, url, false);
-        } else {
-            mapManager.invalidMapIds.add(mapId);
-        }
-
-        this.loadingMapImageIds.delete(mapId);
-    }
-
-    getMapImageUrl(mapX: number, mapY: number, minimap: boolean): string | undefined {
-        if (mapX < 0 || mapY < 0 || mapX >= MapManager.MAX_MAP_X || mapY >= MapManager.MAX_MAP_Y) {
-            return undefined;
-        }
-        const urls = minimap ? this.minimapImageUrls : this.mapImageUrls;
-        if (minimap) {
-            this.renderer.mapManager.loadMap(mapX, mapY);
-        } else {
-            this.queueLoadMapImage(mapX, mapY);
-        }
-        const mapId = getMapSquareId(mapX, mapY);
-        return urls.get(mapId);
-    }
-
-    setMapImageUrl(
-        mapX: number,
-        mapY: number,
-        url: string,
-        minimap: boolean,
-        cache: boolean = true,
-    ): void {
-        const mapId = getMapSquareId(mapX, mapY);
-        const urls = minimap ? this.minimapImageUrls : this.mapImageUrls;
-        const old = urls.get(mapId);
-        if (old) {
-            URL.revokeObjectURL(old);
-        }
-        if (cache) {
-            fetch(url).then((resp) => {
-                if (resp.ok) {
-                    const request = new Request(MapViewer.getCachedMapImageUrl(mapX, mapY), {
-                        headers: {
-                            "RS-Cache-Name": this.loadedCache.info.name,
-                        },
-                    });
-                    this.mapImageCache.put(request, resp);
-                }
-            });
-        }
-        urls.set(mapId, url);
-    }
-
-    clearMapImageUrls(): void {
-        for (const url of this.mapImageUrls.values()) {
-            URL.revokeObjectURL(url);
-        }
-        for (const url of this.minimapImageUrls.values()) {
-            URL.revokeObjectURL(url);
-        }
-        this.mapImageUrls.clear();
-        this.minimapImageUrls.clear();
-        this.loadingMapImageIds.clear();
     }
 }

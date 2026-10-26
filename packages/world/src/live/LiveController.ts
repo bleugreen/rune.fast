@@ -6,8 +6,8 @@ import { SpotAnimType } from "../rs/config/spotanimtype/SpotAnimType";
 import { SeqFrameLoader } from "../rs/model/seq/SeqFrameLoader";
 import { IndexedSprite } from "../rs/sprite/IndexedSprite";
 import { LiveEntity, LivePlayer } from "./LiveEntity";
+import { FeedFactory, FeedSource, FeedStatus, WorldStepper } from "./FeedSource";
 import { LiveWorld } from "./LiveWorld";
-import { FeedStatus, WorldFeedClient } from "./WorldFeedClient";
 import { RosterPlayer } from "./protocol";
 
 // Tiles streamed around the camera; the engine caps a subscription at 384 x 384, which a radius
@@ -46,11 +46,13 @@ export type LiveOptions = {
     showCombat: boolean;
 };
 
-// Owns the world feed connection and the simulated entities, and drives "follow" camera mode.
-// Created by MapViewer for the fixed public feed and the loaded cache revision.
+// Owns the world feed and the simulated entities, and drives "follow" camera mode. Created by
+// MapViewer.startLive with a feed source (a socket, or a recorded clip) for the cache revision.
 export class LiveController {
     readonly world: LiveWorld;
-    readonly feed: WorldFeedClient;
+    readonly feed: FeedSource;
+    // Replaced by a replay, which applies recorded frames at their own cycles.
+    stepper: WorldStepper;
 
     status: FeedStatus = "closed";
     error?: string;
@@ -67,7 +69,7 @@ export class LiveController {
     // Player being followed: by slot once visible, by name while flying to them.
     followSlot: number = -1;
     followName?: string;
-    // From ?follow=<name>: start following once the roster says where they are.
+    // Set by setPendingFollow: start following once the roster says where they are.
     pendingFollow?: string;
     // Orbit distance in tiles; 0 until the camera has been aimed at the player.
     private orbitDistance: number = 0;
@@ -88,7 +90,7 @@ export class LiveController {
     hitmarkSprites: IndexedSprite[] = [];
 
     constructor(
-        readonly url: string,
+        feed: FeedFactory,
         npcTypeLoader: NpcTypeLoader,
         seqTypeLoader: SeqTypeLoader,
         seqFrameLoader: SeqFrameLoader,
@@ -101,16 +103,19 @@ export class LiveController {
             seqFrameLoader,
             spotAnimTypeLoader,
         );
-        this.feed = new WorldFeedClient(
-            url,
+        const world = this.world;
+        this.stepper = {
+            step(wallCycles: number): void {
+                for (let i = 0; i < wallCycles; i++) {
+                    world.cycle();
+                }
+            },
+        };
+        this.feed = feed(
             {
-                onEpoch: () => {
-                    this.world.resetSession();
-                    this.unfollow();
-                    this.followSlot = -1;
-                    this.lastRosterJumpTick = -1;
-                    this.listed = undefined;
-                    this.version++;
+                onEpoch: (tickMs) => {
+                    this.world.resetSession(tickMs);
+                    this.rebase({ keepFollow: false });
                 },
                 onHello: (hello) => {
                     this.world.setCadence(hello.tickMs);
@@ -152,6 +157,22 @@ export class LiveController {
         if (!this.disposed) this.feed.reconnect();
     }
 
+    // After the world was replaced wholesale (a new epoch, or a replay seek restoring a
+    // checkpoint): drop per-slot caches. A seek keeps following the same account by name.
+    rebase({ keepFollow }: { keepFollow: boolean }): void {
+        if (!keepFollow) this.unfollow();
+        this.followSlot = -1;
+        this.lastRosterJumpTick = -1;
+        this.listed = undefined;
+        this.version++;
+    }
+
+    // Follow an account by name as soon as a roster arrives that places it.
+    setPendingFollow(name: string): void {
+        this.pendingFollow = name;
+        this.version++;
+    }
+
     // Called once per rendered frame with the 20ms client cycles that elapsed.
     update(
         clientCycles: number,
@@ -166,9 +187,7 @@ export class LiveController {
             this.feed.connect();
         }
 
-        for (let i = 0; i < clientCycles; i++) {
-            this.world.cycle();
-        }
+        this.stepper.step(clientCycles);
 
         if (this.pendingFollow && this.world.rosterTick !== -1) {
             const name = this.pendingFollow;
@@ -384,6 +403,3 @@ function clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max);
 }
 
-export function getDefaultFeedUrl(): string {
-    return "wss://rs-sdk-demo.fly.dev/worldfeed";
-}
