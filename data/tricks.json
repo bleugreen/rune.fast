@@ -6,7 +6,7 @@
     "group": "game",
     "what_normally": "Quests are told in pages of dialogue, and a player reads each page before clicking on, one page a tick.",
     "what_instead": "Where a page offered no choice, the run clicked blind, five times in one tick, the most the server accepts. Across every quest the plan priced that at 878 ticks.",
-    "why_allowed": "The server takes five actions a tick from any player, and the swarm's coordinator ruled the blind clicks fair.",
+    "why_allowed": "The server takes five actions a tick from any player, and the swarm’s coordinator ruled the blind clicks fair.",
     "saving": {
       "label": "Ticks for one 10-page conversation",
       "unit": "ticks",
@@ -18,12 +18,12 @@
       "n": 5,
       "note": "Lab, five runs, each exactly 2 ticks."
     },
-    "steps_plain": ["Doric's Quest", "the Grand Tree quests", "the Dwarf Cannon quest", "Monkey Madness", "the other quests on the route"],
+    "steps_plain": ["Doric’s Quest", "the Grand Tree quests", "the Dwarf Cannon quest", "Monkey Madness", "the other quests on the route"],
     "failed_live": null,
     "sources": [
-      "rs-sdk docs/speedrun/quests/CONVENTIONS.md lines 54-85 (three dialogue columns; Carla's 10 pages in 2 ticks, 5 of 5)",
+      "rs-sdk docs/speedrun/quests/CONVENTIONS.md lines 54-85 (three dialogue columns; Carla’s 10 pages in 2 ticks, 5 of 5)",
       "rs-sdk docs/speedrun/RUN-ORDER.md lines 100-109 (11,689 fixed against 10,811 burst, inferred)",
-      "cairn://p/rs/51 (blind continues, main's ruling)",
+      "cairn://p/rs/51 (blind continues, main’s ruling)",
       "cairn://p/rs/200 (converse burst mode)",
       "cairn://p/rs/287 (demo validation: 16 pages in 8.13 ticks, 0 failed bursts in 24)",
       "cairn://p/rs/507 (the cap measured at five on the demo)"
@@ -100,7 +100,7 @@
     "group": "game",
     "what_normally": "Charge is a Magic spell unlocked by the Mage Arena quest, and a spell normally makes its caster wait before the next cast.",
     "what_instead": "Charge has no wait, so the run kept casting it. Magic went from 80 to 99 in 156 to 163 casts over 32 to 33 ticks.",
-    "why_allowed": "Each cast is a legal click, and the spell's script checks no timer.",
+    "why_allowed": "Each cast is a legal click, and the spell’s script checks no timer.",
     "saving": null,
     "steps_plain": ["the Thieving stun pack"],
     "failed_live": null,
@@ -124,7 +124,7 @@
     "why_allowed": "Switching a prayer is an ordinary click.",
     "saving": null,
     "steps_plain": ["the Grand Tree quests", "the cannon step", "the fights in the other quests"],
-    "failed_live": "In the last attempt the prayer never switched on at the cannon step, and the account's one death came on the next login.",
+    "failed_live": "In the last attempt the prayer never switched on at the cannon step, and the account’s one death came on the next login.",
     "sources": [
       "rs-sdk docs/speedrun/research/helper-fed-and-combat.md section 2 (zero drain, lab)",
       "cairn://posts/373",
@@ -140,7 +140,7 @@
     "group": "game",
     "what_normally": "Most races are timed by a clock on the wall.",
     "what_instead": "This hiscore times an account by the in-game tick of its last level-up, and only logged-in ticks count. The run logged out between steps, so waits of up to nine hours for helpers and fixes cost nothing.",
-    "why_allowed": "It is the hiscore's own rule.",
+    "why_allowed": "It is the hiscore’s own rule.",
     "saving": null,
     "steps_plain": ["every planned logout and hand-off"],
     "failed_live": null,
@@ -158,9 +158,9 @@
     "group": "game",
     "what_normally": "Quests are optional stories, taken in any order.",
     "what_instead": "The route took Mage Arena for the Charge spell and Dwarf Cannon for the cannon, ordered the rest by what they unlock and how far apart they are, and moved Agility from 75 to 99 to the very end.",
-    "why_allowed": "Quest order is the player's choice.",
+    "why_allowed": "Quest order is the player’s choice.",
     "saving": null,
-    "steps_plain": ["Doric's Quest", "the Grand Tree quests", "the Dwarf Cannon quest", "Monkey Madness", "the Agility finish"],
+    "steps_plain": ["Doric’s Quest", "the Grand Tree quests", "the Dwarf Cannon quest", "Monkey Madness", "the Agility finish"],
     "failed_live": null,
     "sources": [
       "rs-sdk docs/speedrun/RUN-ORDER.md lines 18-21",
@@ -176,11 +176,11 @@
     "kind": "economic and swarm",
     "group": "game",
     "what_normally": "The Dwarf Cannon fires at monsters on its own and pays its owner Ranged experience, but the set and its cannonballs fill a pack.",
-    "what_instead": "A helper held the set and the balls, the run's account set the cannon up and picked it up again, and the cannon did the Ranged training.",
+    "what_instead": "A helper held the set and the balls, the run’s account set the cannon up and picked it up again, and the cannon did the Ranged training.",
     "why_allowed": "The cannon is ordinary game content, unlocked by the Dwarf Cannon quest.",
     "saving": null,
     "steps_plain": ["the Dwarf Cannon quest", "the cannon step", "the last cannon session"],
-    "failed_live": "Both of the rehearsal account's deaths, and the last attempt's only death, came at the cannon step.",
+    "failed_live": "Both of the rehearsal account’s deaths, and the last attempt’s only death, came at the cannon step.",
     "sources": [
       "rs-sdk docs/speedrun/RUN-ORDER.md, the cannon step row (104 to 128 ticks, n = 4, lab; no alternative measured)",
       "cairn://p/rs/125 (the cannon helper)",
@@ -230,8 +230,8 @@
     "name": "A relog that can act on the first tick",
     "kind": "client and packet technique",
     "group": "client",
-    "what_normally": "The swarm's bots relogged by reloading the browser tab, and the account stood in the world for about 20 ticks before the bot could act.",
-    "what_instead": "The rebuilt relog logs in again inside the same page, so the bot acts on the first tick, and the game's own logout button leaves the world at once where a dropped connection can leave the player standing for hundreds of ticks.",
+    "what_normally": "The swarm’s bots relogged by reloading the browser tab, and the account stood in the world for about 20 ticks before the bot could act.",
+    "what_instead": "The rebuilt relog logs in again inside the same page, so the bot acts on the first tick, and the game’s own logout button leaves the world at once where a dropped connection can leave the player standing for hundreds of ticks.",
     "why_allowed": "Both are ordinary logins and logouts.",
     "saving": {
       "label": "Tick at which the bot can first act after a relog",
@@ -292,8 +292,8 @@
     "kind": "client and packet technique",
     "group": "client",
     "what_normally": "The standard bot library deposits one item a tick, so 24 kinds of item take 24 ticks.",
-    "what_instead": "The swarm's library sends five bank clicks in each tick and withdraws a whole stack with the fill button.",
-    "why_allowed": "Five actions a tick is the server's own limit.",
+    "what_instead": "The swarm’s library sends five bank clicks in each tick and withdraws a whole stack with the fill button.",
+    "why_allowed": "Five actions a tick is the server’s own limit.",
     "saving": {
       "label": "Ticks to deposit 24 kinds of item",
       "unit": "ticks",
@@ -309,7 +309,7 @@
     "sources": [
       "rs-sdk speedrun/README.md lines 181-188 (lab/measure-bank.ts: 24 to 5, 28 to 6, 2 to 1)",
       "cairn://p/rs/40",
-      "rs tenet 4 (quotes 48 for the stock deposit; unresolved against the README's 24)"
+      "rs tenet 4 (quotes 48 for the stock deposit; unresolved against the README’s 24)"
     ],
     "clip": null
   },
@@ -319,7 +319,7 @@
     "kind": "client and packet technique",
     "group": "client",
     "what_normally": "A trade runs through screens of offers, accepts and confirms, and the standard library clicks through them one at a time, then waits two ticks.",
-    "what_instead": "The helper offers everything and accepts in one burst, and the run's account accepts the moment the items arrive.",
+    "what_instead": "The helper offers everything and accepts in one burst, and the run’s account accepts the moment the items arrive.",
     "why_allowed": "Every click is one the trade screen offers.",
     "saving": {
       "label": "Ticks to receive 23 stacks from a helper",
@@ -329,7 +329,7 @@
       "after_label": "One burst",
       "after": 8,
       "basis": "measured",
-      "note": "Lab, timed from the receiving account's first click."
+      "note": "Lab, timed from the receiving account’s first click."
     },
     "steps_plain": ["every helper hand-off"],
     "failed_live": "In the last attempt a hand-off stopped because the account had three free slots and needed four.",
@@ -349,8 +349,8 @@
     "kind": "client and packet technique",
     "group": "client",
     "what_normally": "The standard bot client spent two ticks on every dialogue page, one to see it and one to click.",
-    "what_instead": "The swarm's client publishes the game's state once a tick, so the click goes out in the tick the page appears.",
-    "why_allowed": "The fix is in the bot's own client, and the server sees the same click a tick sooner.",
+    "what_instead": "The swarm’s client publishes the game’s state once a tick, so the click goes out in the tick the page appears.",
+    "why_allowed": "The fix is in the bot’s own client, and the server sees the same click a tick sooner.",
     "saving": {
       "label": "Ticks per dialogue page",
       "unit": "ticks",
@@ -377,7 +377,7 @@
     "group": "client",
     "what_normally": "With a rune axe on a willow, the game rolls for a log every 4 ticks.",
     "what_instead": "One tick after each roll the bot uses a knife on its logs, picks a fletching option, drops a log and clicks the tree again, all in one tick. The next roll comes 3 ticks after the last, and the menu closes before anything is spent.",
-    "why_allowed": "Opening the fletching menu rewrites the player's action timer, and the woodcutting script trusts that timer.",
+    "why_allowed": "Opening the fletching menu rewrites the player’s action timer, and the woodcutting script trusts that timer.",
     "saving": {
       "label": "Ticks per willow log",
       "unit": "ticks",
@@ -392,7 +392,7 @@
     "steps_plain": ["the willow woodcutting band", "the iron mining band"],
     "failed_live": null,
     "sources": [
-      "rs-sdk docs/speedrun/research/tick-manipulation.md lines 39-59 and 160-194 (willow 5.53 to 4.23, 131 gaps; fly fishing 5.56 to 3.80; iron 4.94 to 3.00 at the demo's respawn)",
+      "rs-sdk docs/speedrun/research/tick-manipulation.md lines 39-59 and 160-194 (willow 5.53 to 4.23, 131 gaps; fly fishing 5.56 to 3.80; iron 4.94 to 3.00 at the demo’s respawn)",
       "cairn://p/rs/9 (the knife starter)",
       "cairn://p/rs/5 (the mining rotation)",
       "cairn://p/rs/53 (demo respawn measurements)",
@@ -439,7 +439,7 @@
     "group": "client",
     "what_normally": "A gathering skill keeps its rhythm only while the player clicks the tree or rock again on the right tick, and using an item normally breaks it.",
     "what_instead": "The run sent its extra actions earlier in the same tick as the gathering click, so the click landed last and the rhythm held.",
-    "why_allowed": "The server handles a player's actions in the order they arrive, up to five a tick.",
+    "why_allowed": "The server handles a player’s actions in the order they arrive, up to five a tick.",
     "saving": null,
     "steps_plain": ["the willow woodcutting band", "the iron mining band", "the Thieving stun pack", "the Cooking step", "the final arrow fletching"],
     "failed_live": null,
@@ -456,7 +456,7 @@
     "name": "A fresh account that skips the tutorial",
     "kind": "infrastructure",
     "group": "infrastructure",
-    "what_normally": "The swarm's first account already carried 547 ticks of play, and a new player starts on Tutorial Island.",
+    "what_normally": "The swarm’s first account already carried 547 ticks of play, and a new player starts on Tutorial Island.",
     "what_instead": "The run used a new account, and on this server the tutorial guide offers to skip the island in one conversation, which took 6 ticks.",
     "why_allowed": "The demo server runs without its production setting, and that leaves the skip on.",
     "saving": {
@@ -467,13 +467,13 @@
       "after_label": "Fresh account, tutorial skipped",
       "after": 6,
       "basis": "measured",
-      "note": "The first account's hiscore row, and the skip in the lab."
+      "note": "The first account’s hiscore row, and the skip in the lab."
     },
     "steps_plain": ["the start of the run"],
     "failed_live": null,
     "sources": [
       "rs-sdk docs/speedrun/research/travel-and-overhead.md row 1 (about 540 ticks; the skip at 6 with the stock SDK)",
-      "rs-sdk docs/speedrun/research/free-xp.md lines 35-44 (the guide's skip while map_live is false)",
+      "rs-sdk docs/speedrun/research/free-xp.md lines 35-44 (the guide’s skip while map_live is false)",
       "rs tenet 1",
       "cairn://p/rs/287 and cairn://p/rs/312 (the loopback gateway the skip needs)"
     ],
@@ -485,8 +485,8 @@
     "kind": "infrastructure",
     "group": "infrastructure",
     "what_normally": "The game server sits in a data centre in Virginia, and from Southern California a click takes 80 to 90 ms there and back, so a reaction often misses the tick it was meant for.",
-    "what_instead": "The run's bot ran on a machine in the same data-centre region, about 3 ms away, so a reaction to one tick landed in the next.",
-    "why_allowed": "Anyone can rent a machine near the game's server.",
+    "what_instead": "The run’s bot ran on a machine in the same data-centre region, about 3 ms away, so a reaction to one tick landed in the next.",
+    "why_allowed": "Anyone can rent a machine near the game’s server.",
     "saving": {
       "label": "Next-tick reactions that landed, of 180",
       "unit": "reactions",
@@ -500,7 +500,7 @@
       "note": "Three paired runs."
     },
     "steps_plain": ["the knife bands", "the Thieving stun pack", "the Agility laps", "every helper hand-off"],
-    "failed_live": "In the rehearsal the run host's nine-hour session limit ran out, and the account dropped 13 times.",
+    "failed_live": "In the rehearsal the run host’s nine-hour session limit ran out, and the account dropped 13 times.",
     "sources": [
       "rs-sdk docs/speedrun/research/demo-latency.md summary lines 23-24 (180 of 180 direct against 123 of 180 through the relay, three paired runs) and section 10 lines 1140-1146",
       "cairn://p/rs/83",
@@ -516,10 +516,10 @@
     "kind": "economic and swarm",
     "group": "infrastructure",
     "what_normally": "A player gathers their own supplies: essence, bones, runes and food.",
-    "what_instead": "Dozens of helper accounts gathered and handed them over, stood at altars and carried stock, within the server's limit of 50 sessions per internet address; the swarm kept to 45.",
+    "what_instead": "Dozens of helper accounts gathered and handed them over, stood at altars and carried stock, within the server’s limit of 50 sessions per internet address; the swarm kept to 45.",
     "why_allowed": "Trading between accounts is part of the game.",
     "saving": null,
-    "steps_plain": ["the starting kit", "the ring enchanting", "Doric's Quest", "Runecrafting at the air and body altars", "the cannon step"],
+    "steps_plain": ["the starting kit", "the ring enchanting", "Doric’s Quest", "Runecrafting at the air and body altars", "the cannon step"],
     "failed_live": "Attempt 4 died at the Grand Tree waiting for a helper that never became ready.",
     "sources": [
       "rs tenets 2 and 25",
@@ -599,7 +599,7 @@
     "saving": null,
     "steps_plain": [],
     "failed_live": null,
-    "sources": ["rs-sdk docs/speedrun/research/free-xp.md summary", "the demo's fly.toml line 25 (random events off)"],
+    "sources": ["rs-sdk docs/speedrun/research/free-xp.md summary", "the demo’s fly.toml line 25 (random events off)"],
     "clip": null
   },
   {
@@ -608,7 +608,7 @@
     "kind": "rejected",
     "group": null,
     "what_normally": null,
-    "what_instead": "They stay locked to staff accounts even with the server's debug mode on.",
+    "what_instead": "They stay locked to staff accounts even with the server’s debug mode on.",
     "why_allowed": null,
     "saving": null,
     "steps_plain": [],
@@ -664,7 +664,7 @@
     "kind": "rejected",
     "group": null,
     "what_normally": null,
-    "what_instead": "Allowed by the swarm's rules but not used; the only trace is a single bid for grapes.",
+    "what_instead": "Allowed by the swarm’s rules but not used; the only trace is a single bid for grapes.",
     "why_allowed": null,
     "saving": null,
     "steps_plain": [],
