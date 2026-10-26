@@ -35,9 +35,9 @@ describe('public projection', () => {
 
   test('prints each source as who, where and when, in Pacific time', () => {
     const lines = new Set(timeline.attempts.flatMap((a) => [a.start, a.end, ...a.events].flatMap((x) => x.sources)));
-    expect(lines).toContain('the host thread’s messages, 23 Oct 10:41 PDT');
+    expect(lines).toContain("host's messages, 23 Oct 10:41 PDT");
     expect(lines).toContain('issue rs/843, comment 54, 26 Oct 04:16 PDT');
-    expect(lines).toContain('issue rs/764, the builder’s messages, 26 Oct 00:00 PDT');
+    expect(lines).toContain('the rs project (tenet 39), 25 Oct 21:09 PDT');
   });
 
   test('keeps every event', () => {
