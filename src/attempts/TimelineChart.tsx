@@ -34,19 +34,35 @@ function drawn(m: Mark, quoted: ReadonlyMap<string, number>): boolean {
   return m.kind === 'death' || (m.kind === 'stop' && m.inWorld !== false) || quoted.has(m.key);
 }
 
+/** Pulled-quote ticks closer than this share one numeral label. */
+const QUOTE_LABEL_GAP = 12;
+
 function Glyph({ m, x, y, n }: { m: Mark; x: number; y: number; n?: number }) {
-  if (n !== undefined) {
-    return (
-      <g>
-        <line className={styles.quoteTick} x1={x} x2={x} y1={y - 5} y2={y - 12} />
-        <text className={styles.tickNum} x={x} y={y - 15} textAnchor="middle">
-          {n}
-        </text>
-      </g>
-    );
-  }
+  if (n !== undefined) return <line className={styles.quoteTick} x1={x} x2={x} y1={y - 5} y2={y - 12} />;
   if (m.kind === 'death') return <circle className={styles.death} cx={x} cy={y} r={4.5} />;
   return <line className={styles.stop} x1={x} x2={x} y1={y - 5} y2={y + 5} />;
+}
+
+/** Numerals over the quote ticks, with ticks that nearly coincide labelled together ('3 4 5'). */
+function QuoteNumerals({ marks, x, y }: { marks: Mark[]; x: Scale; y: (m: Mark) => number }) {
+  const groups: { xs: number[]; ns: number[]; y: number }[] = [];
+  marks.forEach((m, i) => {
+    const px = x(m.t);
+    const last = groups.at(-1);
+    if (last && px - last.xs.at(-1)! < QUOTE_LABEL_GAP && last.y === y(m)) {
+      last.xs.push(px);
+      last.ns.push(i + 1);
+    } else groups.push({ xs: [px], ns: [i + 1], y: y(m) });
+  });
+  return (
+    <>
+      {groups.map((g) => (
+        <text key={g.ns[0]} className={styles.tickNum} x={(g.xs[0]! + g.xs.at(-1)!) / 2} y={g.y - 15} textAnchor="middle">
+          {g.ns.join(' ')}
+        </text>
+      ))}
+    </>
+  );
 }
 
 function AttemptLine({ am, x, y, quoted }: { am: AttemptModel; x: Scale; y: number; quoted: ReadonlyMap<string, number> }) {
@@ -257,6 +273,8 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
               ))}
             </g>
           ))}
+
+          <QuoteNumerals marks={quotes} x={x} y={(m) => rowY(rowOf.get(m.key) ?? 0)} />
 
           <text className={styles.finish} x={width - MARGIN.right + 10} y={rowY(lastRow) + 8}>
             {fmtInt(finishTicks)}
