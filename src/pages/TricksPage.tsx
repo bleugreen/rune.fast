@@ -20,8 +20,7 @@ export function TricksPage() {
           or more.
         </h1>
         <p className={styles.dek}>
-          Each chart sets a cost without the trick against the same cost with it. Most are counted in ticks: a tick is the
-          server’s 400 ms heartbeat, and only ticks spent logged in count toward the record. {capitalize(countWord(h.measured))}{' '}
+          Each chart sets a cost without the trick against the same cost with it. {capitalize(countWord(h.measured))}{' '}
           were measured before and after, {countWord(h.unmeasured)} {h.unmeasured === 1 ? 'is' : 'are'} inferred from the
           run plan, and the rest carry no number.
         </p>
