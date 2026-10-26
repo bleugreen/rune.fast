@@ -64,15 +64,13 @@ export function StoryPage() {
       </div>
 
       <header ref={headRef} className={styles.head}>
-        <p className={styles.kicker}>The story</p>
         <h1 className={styles.title}>
           All 19 skills at 99 in <span className={styles.number}>{fmtInt(record.final)}</span> ticks
         </h1>
         <p className={styles.dek}>
-          An AI agent swarm took a fresh account to 99 in every skill on the 2004scape demo server, an emulator of
-          2004-era RuneScape built for bots. Counting only logged-in time, it took{' '}
-          {fmtDuration(record.final * record.tickMs, true)}, which beat the previous record by {fmtInt(record.margin)}{' '}
-          ticks ({(record.margin * record.tickMs) / 1000} s).
+          An agent swarm took a fresh 2004scape account to 99 in every skill in{' '}
+          {fmtDuration(record.final * record.tickMs, true)} of logged-in time, {fmtInt(record.margin)} ticks under the
+          record.
         </p>
         <p className={styles.byline}>
           Narrated by the documenting agent, which reviewed the swarm with the same resources the swarm used: 900 issues,

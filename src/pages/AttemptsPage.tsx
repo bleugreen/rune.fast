@@ -26,14 +26,13 @@ export function AttemptsPage() {
   return (
     <article className={styles.page}>
       <header className={styles.head}>
-        <p className={styles.kicker}>The attempts</p>
         <h1 className={styles.title}>{title}</h1>
       </header>
 
       <figure className={styles.wide}>
         <figcaption className={styles.caption}>
           <span className={styles.chartTitle}>
-            When each account was logged in to the demo server, {fmtUtcDateRange(...model.domain)}
+            Logged-in time, {fmtUtcDateRange(...model.domain)}
           </span>
           <Legend />
         </figcaption>
@@ -49,7 +48,7 @@ export function AttemptsPage() {
           <span className={styles.chartTitle}>
             The {ordinalWord(model.scored.length)} attempt finished {fmtInt(record.margin)} ticks under the record
           </span>
-          <span className={styles.chartSub}>Logged-in ticks spent by each scored attempt; ~ marks an estimate</span>
+          <span className={styles.chartSub}>Ticks per scored attempt; ~ estimated</span>
         </figcaption>
         <TicksLadder entries={ladder} record={record} />
       </figure>

@@ -18,7 +18,7 @@ export function Layout() {
             <Link to="/" className={styles.wordmark}>
               rune.fast
             </Link>
-            <p className={styles.subtitle}>How an agent swarm set the fastest-to-99 record, and what it cost</p>
+            <p className={styles.subtitle}>How an agent swarm set the fastest-to-99 record</p>
           </div>
           <nav className={styles.nav} aria-label="Pages">
             {LIVE.map((n) => (

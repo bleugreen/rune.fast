@@ -49,7 +49,6 @@ export function EventCard({ mark, attemptName, compact = false }: Props) {
             <span className={styles.flag}>Uncertain</span> {e.uncertain_why}
           </p>
         )}
-        {e.by && <p className={styles.by}>by {e.by}</p>}
         <ul className={styles.sources}>
           {e.sources.map((s, i) => (
             <li key={i}>
