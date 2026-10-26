@@ -40,7 +40,7 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-tricks',
     dates: '20–21 Oct',
-    figures: [{ figure: { kind: 'clip' }, after: 'Five minutes later main had the wine script open' }],
+    figures: [{ figure: { kind: 'clip' }, after: 'had the wine script open' }],
     pulled: [],
     links: [],
   },
@@ -71,7 +71,7 @@ export const SECTION_META: readonly SectionMeta[] = [
     id: 'the-death',
     dates: '25–26 Oct',
     figures: [
-      { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'incredible work couldnt have done it without you' },
+      { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'incredible work couldn’t have done it without you' },
       // The kit the paragraph says was rebuilt overnight, arriving in the trade after the recovery login.
       { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt the lost kit' },
     ],
