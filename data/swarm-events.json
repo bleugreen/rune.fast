@@ -1,0 +1,15 @@
+{
+  "source": "The documenting thread's event graph of the rs project, counted per UTC day. Spawns are issues opened by units of the swarm; merges are issues merged; messages are messages sent from one unit to another.",
+  "days": [
+    { "utc_day": "2026-10-20", "spawns": 21, "merges": 2, "messages": 10 },
+    { "utc_day": "2026-10-21", "spawns": 191, "merges": 158, "messages": 2545 },
+    { "utc_day": "2026-10-22", "spawns": 309, "merges": 186, "messages": 8712 },
+    { "utc_day": "2026-10-23", "spawns": 115, "merges": 73, "messages": 5458 },
+    { "utc_day": "2026-10-24", "spawns": 173, "merges": 108, "messages": 4879 },
+    { "utc_day": "2026-10-25", "spawns": 35, "merges": 25, "messages": 2539 },
+    { "utc_day": "2026-10-26", "spawns": 47, "merges": 19, "messages": 2755 }
+  ],
+  "issues": 900,
+  "threads": 6,
+  "backend_swaps": 36
+}

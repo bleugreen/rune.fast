@@ -1,0 +1,24 @@
+{
+  "list_prices": {
+    "source": "The price table in cost-derive.py, stage 2 of the rs cost refresh: the list prices in cairn-analytics pricing.rs, table reviewed 2026-10-20. A model key outside the table prices at zero, as in the derivation of summary.json.",
+    "columns": ["input", "cache_read", "cache_write", "output"],
+    "usd_per_million_tokens": {
+      "opus": [4, 0.4, 5, 20],
+      "fable": [10, 1, 12.5, 50],
+      "haiku": [0.1, 0.01, 0.125, 0.5],
+      "sonnet": [2, 0.2, 2.5, 10],
+      "gpt-6-astra": [10, 1, 12.5, 50],
+      "gpt-6.1-sol": [2, 0.1, 2.5, 10],
+      "gpt-5.6-luna": [0.2, 0.02, 0.25, 1.2],
+      "gpt-5.6-terra": [2, 0.2, 2.5, 12]
+    }
+  },
+  "subscriptions": {
+    "source": "The operator: the plans the swarm ran on, shared with other projects.",
+    "monthly_usd": 1220,
+    "plans": [
+      { "name": "Claude Max", "count": 5 },
+      { "name": "ChatGPT Pro", "count": 1 }
+    ]
+  }
+}
