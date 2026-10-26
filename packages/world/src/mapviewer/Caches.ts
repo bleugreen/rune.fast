@@ -59,19 +59,19 @@ export async function loadCacheFiles(
 ): Promise<LoadedCache> {
     const storePath = cachePath(assetBase) + info.name + "/";
 
-    const xteasPromise = fetchXteas(storePath + "keys.json", signal);
-
     const cacheType = detectCacheType(info);
-    const files = await CacheFiles.fetchFiles(
-        cacheType,
-        storePath,
-        info.name,
-        isSharedMemorySupported,
-        signal,
-        progressListener,
-    );
-
-    const xteas = await xteasPromise;
+    // Together, so an abort or failure in either never leaves the other's rejection unhandled.
+    const [files, xteas] = await Promise.all([
+        CacheFiles.fetchFiles(
+            cacheType,
+            storePath,
+            info.name,
+            isSharedMemorySupported,
+            signal,
+            progressListener,
+        ),
+        fetchXteas(storePath + "keys.json", signal),
+    ]);
 
     return {
         info,

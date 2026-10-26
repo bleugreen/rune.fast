@@ -7,6 +7,7 @@ export default function World() {
   const [viewer, setViewer] = useState<MapViewer>();
   const [progress, setProgress] = useState<DownloadProgress>();
   const [error, setError] = useState<string>();
+  const [status, setStatus] = useState('');
 
   useEffect(() => {
     const abort = new AbortController();
@@ -26,11 +27,26 @@ export default function World() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!viewer) return;
+    const timer = setInterval(() => {
+      const r = viewer.renderer;
+      setStatus(
+        `frames ${r.stats.frameCount} · squares ${r.mapManager.mapSquares.size} loaded, ` +
+          `${r.mapManager.loadingMapIds.size} loading · worker tasks ${viewer.workerPool.pendingTasks}`,
+      );
+    }, 500);
+    return () => clearInterval(timer);
+  }, [viewer]);
+
   return (
-    <div style={{ height: '75vh', background: 'black', position: 'relative' }}>
-      {error && <p role="alert">{error}</p>}
-      {!viewer && !error && <p>Loading cache {progress ? `${progress.current} / ${progress.total}` : ''}</p>}
-      {viewer && <RendererCanvas renderer={viewer.renderer} />}
-    </div>
+    <>
+      <p data-world-status>{status}</p>
+      <div style={{ height: '70vh', background: 'black', position: 'relative' }}>
+        {error && <p role="alert">{error}</p>}
+        {!viewer && !error && <p>Loading cache {progress ? `${progress.current} / ${progress.total}` : ''}</p>}
+        {viewer && <RendererCanvas renderer={viewer.renderer} />}
+      </div>
+    </>
   );
 }
