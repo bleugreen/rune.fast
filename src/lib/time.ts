@@ -20,38 +20,24 @@ export function parseUtc(s: string): number {
   );
 }
 
-/** The clock part of a stored timestamp, at the precision the source recorded. */
-export function storedClock(s: string): string {
-  return s.slice(s.indexOf('T') + 1, -1);
-}
-
 const PACIFIC = 'America/Los_Angeles';
 
 const utcDayShort = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' });
 const utcDayLong = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' });
-const utcDayMonth = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
 const utcDayMonthYear = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' });
 const utcHm = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
-const utcHms = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
 const pacHm = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
-const pacDayHms = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
 const pacZone = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, timeZoneName: 'short' });
 
 export const fmtUtcDayShort = (t: number) => utcDayShort.format(t);
 export const fmtUtcDayLong = (t: number) => utcDayLong.format(t);
-export const fmtUtcDayMonth = (t: number) => utcDayMonth.format(t);
 export const fmtUtcDate = (t: number) => utcDayMonthYear.format(t);
 export const fmtUtcHm = (t: number) => utcHm.format(t);
-export const fmtUtcHms = (t: number) => utcHms.format(t);
 export const fmtPacificHm = (t: number) => pacHm.format(t);
 
 /** Pacific zone abbreviation in force at t (PDT or PST). */
 export function pacificZone(t: number): string {
   return pacZone.formatToParts(t).find((p) => p.type === 'timeZoneName')?.value ?? '';
-}
-
-export function fmtPacific(t: number): string {
-  return `${pacDayHms.format(t).replace(',', '')} ${pacificZone(t)}`;
 }
 
 /** '23–26 October 2026' for a span within one month, else both dates in full. */
