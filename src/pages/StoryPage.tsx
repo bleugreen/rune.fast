@@ -1,23 +1,59 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { timeline } from '../data/timeline';
-import { buildChartModel, headlineFacts, recordFacts } from '../attempts/model';
+import { buildChartModel, chartAnchors, recordFacts } from '../attempts/model';
 import { fmtInt } from '../lib/numbers';
-import { fmtDuration } from '../lib/time';
+import { story } from '../story/story';
 import { storySections } from '../story/sections';
+import { StoryFigure } from '../story/StoryFigure';
 import styles from './StoryPage.module.css';
 
 /** The band near the top of the viewport whose section counts as the one being read. */
 const READING_BAND = '0px 0px -65% 0px';
 
+interface Needle {
+  text: string;
+  wrap: (text: string, key: number) => ReactNode;
+}
+
+/** The text with each occurrence of a needle wrapped; every character of the text is kept, in order. */
+function mark(text: string, needles: readonly Needle[]): ReactNode[] {
+  const out: ReactNode[] = [];
+  let rest = text;
+  for (let k = 0; ; k++) {
+    let best: { at: number; n: Needle } | null = null;
+    for (const n of needles) {
+      const at = rest.indexOf(n.text);
+      if (at >= 0 && (!best || at < best.at)) best = { at, n };
+    }
+    if (!best) {
+      if (rest) out.push(rest);
+      return out;
+    }
+    if (best.at) out.push(rest.slice(0, best.at));
+    out.push(best.n.wrap(best.n.text, k));
+    rest = rest.slice(best.at + best.n.text.length);
+  }
+}
+
 export function StoryPage() {
   const record = recordFacts(timeline);
-  const facts = useMemo(() => headlineFacts(buildChartModel(timeline)), []);
-  const sections = useMemo(() => storySections(record, facts), [record, facts]);
+  const model = useMemo(() => buildChartModel(timeline), []);
+  const anchors = useMemo(() => chartAnchors(model), [model]);
+  const sections = useMemo(() => storySections(story), []);
   const headRef = useRef<HTMLElement>(null);
   const sectionRefs = useRef(new Map<string, HTMLElement>());
   const [active, setActive] = useState<string | null>(null);
   const [headInView, setHeadInView] = useState(true);
+
+  /** The record numbers carry the accent where a heading names them. */
+  const accents: Needle[] = [fmtInt(record.final), `${fmtInt(record.margin)} ticks`].map((text) => ({
+    text,
+    wrap: (t, k) => (
+      <span key={k} className={styles.number}>
+        {t}
+      </span>
+    ),
+  }));
 
   useEffect(() => {
     document.title = 'rune.fast';
@@ -48,15 +84,14 @@ export function StoryPage() {
     return () => io.disconnect();
   }, [sections]);
 
-  const current = sections.findIndex((s) => s.id === active);
-  const pinned = !headInView && current >= 0 ? sections[current] : null;
+  const pinned = headInView ? null : (sections.find((s) => s.id === active) ?? null);
 
   return (
     <article className={styles.page}>
       <div className={styles.pinned} data-visible={pinned ? true : undefined} aria-hidden="true">
         {pinned && (
           <div className={styles.pinnedInner}>
-            <span className={styles.pinnedNum}>{current + 1}</span>
+            <span className={styles.pinnedNum}>{pinned.number}</span>
             <span className={styles.pinnedTitle}>{pinned.title}</span>
             <span className={styles.pinnedDate}>{pinned.dates}</span>
           </div>
@@ -64,46 +99,83 @@ export function StoryPage() {
       </div>
 
       <header ref={headRef} className={styles.head}>
-        <h1 className={styles.title}>
-          All 19 skills at 99 in <span className={styles.number}>{fmtInt(record.final)}</span> ticks
-        </h1>
-        <p className={styles.dek}>
-          An agent swarm took a fresh 2004scape account to 99 in every skill in{' '}
-          {fmtDuration(record.final * record.tickMs, true)} of logged-in time, {fmtInt(record.margin)} ticks under the
-          record.
-        </p>
-        <p className={styles.byline}>
-          Narrated by the documenting agent, which reviewed the swarm with the same resources the swarm used: 900 issues,
-          35,598 messages, 437,012 transcript events, the lab, and the world feed.
-        </p>
+        <h1 className={styles.title}>{story.title}</h1>
+        <p className={styles.byline}>{story.byline}</p>
       </header>
 
-      {sections.map((s, i) => (
-        <section
-          key={s.id}
-          id={s.id}
-          data-section={s.id}
-          ref={(el) => {
-            if (el) sectionRefs.current.set(s.id, el);
-            else sectionRefs.current.delete(s.id);
-          }}
-          className={styles.section}
-        >
-          <header className={styles.sectionHead}>
-            <span className={styles.sectionNum}>{i + 1}</span>
-            <h2 className={styles.sectionTitle}>{s.title}</h2>
-            <time className={styles.sectionDate}>{s.dates}</time>
-          </header>
-          <p className={styles.prose}>{s.notes.join(' ')}</p>
-          <figure className={styles.slot}>
-            {s.figure && (
-              <Link to={s.figure.to} className={styles.slotLink}>
-                {s.figure.label} →
-              </Link>
-            )}
-          </figure>
-        </section>
-      ))}
+      {sections.map((s) => {
+        const links: Needle[] = s.links.map((l) => ({
+          text: l.text,
+          wrap: (t, k) => (
+            <a key={k} href={l.href} target="_blank" rel="noreferrer">
+              {t}
+            </a>
+          ),
+        }));
+        return (
+          <section
+            key={s.id}
+            id={s.id}
+            data-section={s.id}
+            ref={(el) => {
+              if (el) sectionRefs.current.set(s.id, el);
+              else sectionRefs.current.delete(s.id);
+            }}
+            className={styles.section}
+          >
+            <header className={styles.sectionHead}>
+              <span className={styles.sectionNum}>{s.number}</span>
+              <h2 className={styles.sectionTitle}>{mark(s.title, accents)}</h2>
+              <time className={styles.sectionDate}>{s.dates}</time>
+            </header>
+
+            {s.blocks.map((b, j) => {
+              const pulled = s.pulledAt.get(j);
+              return (
+                <Fragment key={j}>
+                  {b.kind === 'p' ? (
+                    <p className={styles.prose}>{mark(b.text, links)}</p>
+                  ) : (
+                    <blockquote className={styles.quotation}>
+                      {b.paragraphs.map((p, k) => (
+                        <p key={k}>{p}</p>
+                      ))}
+                    </blockquote>
+                  )}
+                  {/* The same words are in the paragraph; the margin repeats them for the eye only. */}
+                  {pulled && (
+                    <aside className={styles.margin} aria-hidden="true">
+                      {pulled.map((q) => (
+                        <blockquote key={q} className={styles.pulled}>
+                          {q}
+                        </blockquote>
+                      ))}
+                    </aside>
+                  )}
+                  {j === s.figureIndex && (
+                    <StoryFigure
+                      figure={s.figure}
+                      model={model}
+                      anchors={anchors}
+                      record={record}
+                      className={s.figure.kind === 'timeline' ? styles.wide : undefined}
+                    />
+                  )}
+                </Fragment>
+              );
+            })}
+
+            <details className={styles.sources}>
+              <summary>Sources</summary>
+              <div className={styles.sourceText}>
+                {s.sources.map((line, k) => (
+                  <p key={k}>{line.replaceAll('; ', ';\n')}</p>
+                ))}
+              </div>
+            </details>
+          </section>
+        );
+      })}
     </article>
   );
 }
