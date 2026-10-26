@@ -102,14 +102,9 @@
   stroke: var(--hairline);
   stroke-width: var(--stroke-thin);
 }
-.tickUtc {
+.tick {
   font-size: 10.5px;
   fill: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.tickPacific {
-  font-size: 10px;
-  fill: var(--ink-muted);
   font-variant-numeric: tabular-nums;
 }
 .day {

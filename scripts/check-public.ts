@@ -8,7 +8,8 @@ import { join } from 'node:path';
 const FORBIDDEN: ReadonlyArray<readonly [string, RegExp]> = [
   ['fleet helper or test account', /\bcairn_[a-z][a-z0-9]*/],
   ['lab account', /\bdr\d{4}[a-z]\b/],
-  ['machine hostname', /\bbgsrv|ashburn|\.ts\.net\b|\.local\b/i],
+  // The run host's name, not the town: the story says where it sat (Ashburn, Virginia).
+  ['machine hostname', /\bbgsrv|\brs-ashburn|\.ts\.net\b|\.local\b/i],
   ['game-process token', /\bmv[a-z0-9]{6}\b/],
   ['home directory path', /\/Users\/|\/home\//],
   ['message id field', /msg_id/],

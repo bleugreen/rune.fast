@@ -1,20 +1,38 @@
-import { useMemo, useRef, type KeyboardEvent, type ReactElement } from 'react';
+import { useId, useMemo, useRef, type KeyboardEvent, type ReactElement } from 'react';
 import { scaleUtc } from 'd3-scale';
-import { utcDay, utcHour } from 'd3-time';
 import { useWidth } from '../lib/useWidth';
-import { fmtDuration, fmtPacificHm, fmtUtcDayLong, fmtUtcDayShort, fmtUtcHm, pacificZone } from '../lib/time';
+import {
+  HOUR,
+  fmtDuration,
+  fmtPacificDayLong,
+  fmtPacificDayShort,
+  fmtPacificHm,
+  pacificHour,
+  pacificMidnights,
+  pacificZone,
+} from '../lib/time';
 import { fmtInt } from '../lib/numbers';
 import type { AttemptModel, ChartAnchors, ChartModel, Mark } from './model';
 import styles from './TimelineChart.module.css';
 
 /* Layout constants, in CSS pixels. */
 const MIN_WIDTH = 960;
+/** A cropped chart spans hours, not days, and fits a narrower column. */
+const CROPPED_MIN_WIDTH = 560;
 const MARGIN = { top: 26, right: 100, left: 92 };
 const ROW_PITCH = 38;
 const AXIS_GAP = 30;
-const AXIS_HEIGHT = 58;
+const AXIS_HEIGHT = 46;
 const ONE_OFF_W = 1.5;
-const AXIS_STEP_HOURS = 6;
+
+const axisStepHours = (span: number) => (span > 36 * HOUR ? 6 : span > 12 * HOUR ? 3 : 2);
+
+/** Axis ticks on the Pacific clock: every hour in [d0, d1] whose Pacific hour is a multiple of the step. */
+function pacificTicks(d0: number, d1: number, step: number): number[] {
+  const out: number[] = [];
+  for (let t = Math.ceil(d0 / HOUR) * HOUR; t <= d1; t += HOUR) if (pacificHour(t) % step === 0) out.push(t);
+  return out;
+}
 /** Pulled-quote ticks closer than this share one numeral label. */
 const QUOTE_LABEL_GAP = 12;
 
@@ -52,10 +70,18 @@ function QuoteNumerals({ marks, x, y }: { marks: Mark[]; x: Scale; y: (m: Mark) 
   );
 }
 
-function AttemptLine({ am, x, y, anchors }: { am: AttemptModel; x: Scale; y: number; anchors: ChartAnchors }) {
+interface LineProps {
+  am: AttemptModel;
+  x: Scale;
+  y: number;
+  anchors: ChartAnchors;
+  drawn: (m: Mark) => boolean;
+}
+
+function AttemptLine({ am, x, y, anchors, drawn }: LineProps) {
   const [l0, l1] = am.line;
   const marks = am.marks
-    .filter((m) => anchors.keys.has(m.key))
+    .filter(drawn)
     .sort((a, b) => Number(a.kind === 'death') - Number(b.kind === 'death'));
   return (
     <g className={am.scored ? undefined : styles.faint}>
@@ -88,48 +114,65 @@ function AttemptLine({ am, x, y, anchors }: { am: AttemptModel; x: Scale; y: num
   );
 }
 
-interface Props {
-  model: ChartModel;
-  anchors: ChartAnchors;
-  finishTicks: number;
+/** Scrubbing, where a reading pane shows the selected mark. */
+export interface ChartInteraction {
   /** The mark the reading pane shows: the previewed one while hovering, else the pinned one. */
   shown: Mark | null;
   onPreview: (m: Mark | null) => void;
   onSelect: (m: Mark) => void;
 }
 
-export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, onSelect }: Props) {
+interface Props {
+  model: ChartModel;
+  anchors: ChartAnchors;
+  finishTicks: number;
+  /** Crops the time axis to these instants; rows with nothing inside them are left out. */
+  crop?: readonly [number, number];
+  /**
+   * Without it the chart is a static figure: no pointer or keyboard selection, and
+   * no pulled-quote ticks, whose numerals key to the quote strip.
+   */
+  interaction?: ChartInteraction;
+}
+
+export function TimelineChart({ model, anchors, finishTicks, crop, interaction }: Props) {
   const [measureRef, measured] = useWidth<HTMLDivElement>();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const clipId = `plot${useId().replace(/:/g, '')}`;
+  const shown = interaction?.shown ?? null;
 
-  const width = Math.max(measured, MIN_WIDTH);
+  const [d0, d1] = crop ?? model.domain;
+  const rows = useMemo(
+    () => model.rows.filter((row) => row.some((am) => am.line[0] < d1 && am.line[1] > d0)),
+    [model.rows, d0, d1],
+  );
+  const drawn = (m: Mark) => anchors.keys.has(m.key) && (interaction !== undefined || !anchors.quoteNumber.has(m.key));
+
+  const width = Math.max(measured, crop ? CROPPED_MIN_WIDTH : MIN_WIDTH);
   const rowY = (i: number) => MARGIN.top + i * ROW_PITCH;
-  const axisY = rowY(model.rows.length - 1) + AXIS_GAP;
+  const axisY = rowY(rows.length - 1) + AXIS_GAP;
   const height = axisY + AXIS_HEIGHT;
 
-  const scale = useMemo(
-    () => scaleUtc().domain(model.domain).range([MARGIN.left, width - MARGIN.right]),
-    [model.domain, width],
-  );
+  const scale = useMemo(() => scaleUtc().domain([d0, d1]).range([MARGIN.left, width - MARGIN.right]), [d0, d1, width]);
   const x: Scale = (t) => scale(t);
 
   /** The anchors of each row, in time order: what the pointer and the arrow keys move between. */
   const rowAnchors = useMemo(
-    () => model.rows.map((row) => row.flatMap((am) => am.marks.filter((m) => anchors.keys.has(m.key))).sort((a, b) => a.t - b.t)),
-    [model.rows, anchors],
+    () => rows.map((row) => row.flatMap((am) => am.marks.filter((m) => anchors.keys.has(m.key))).sort((a, b) => a.t - b.t)),
+    [rows, anchors],
   );
   const rowOf = useMemo(() => {
     const m = new Map<string, number>();
-    model.rows.forEach((row, i) => row.forEach((am) => am.marks.forEach((mk) => m.set(mk.key, i))));
+    rows.forEach((row, i) => row.forEach((am) => am.marks.forEach((mk) => m.set(mk.key, i))));
     return m;
-  }, [model.rows]);
+  }, [rows]);
 
-  const ticks = scale.ticks(utcHour.every(AXIS_STEP_HOURS) ?? utcHour).map((d) => +d);
-  const [d0, d1] = model.domain;
-  const midnights = utcDay.range(new Date(d0), new Date(d1), 1).map((d) => +d).filter((t) => t > d0);
+  const ticks = pacificTicks(d0, d1, axisStepHours(d1 - d0));
+  const midnights = pacificMidnights(d0, d1).filter((t) => t > d0 && t < d1);
   const dayBands = [d0, ...midnights].map((from, i, all) => ({ from, to: all[i + 1] ?? d1 }));
-  const lastRow = model.rows.findIndex((r) => r.includes(model.last));
+  const lastRow = rows.findIndex((r) => r.includes(model.last));
+  const showFinish = lastRow >= 0 && model.last.line[1] <= d1;
 
   /** A time cursor: the anchor nearest the pointer in time, whichever row it is on. */
   const locate = (e: { clientX: number }): Mark | null => {
@@ -147,6 +190,7 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!interaction) return;
     const all = anchors.list;
     const cur = shown ?? all[0];
     if (!cur) return;
@@ -177,8 +221,8 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
     }
     e.preventDefault();
     if (next) {
-      onPreview(null);
-      onSelect(next);
+      interaction.onPreview(null);
+      interaction.onSelect(next);
       reveal(next);
     }
   };
@@ -193,57 +237,76 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
       <div
         ref={scrollRef}
         className={styles.scroller}
-        tabIndex={0}
-        role="group"
-        aria-label="Attempts timeline. Arrow keys move between the marked events; the reading pane below shows the selected one."
-        onKeyDown={onKeyDown}
+        {...(interaction && {
+          tabIndex: 0,
+          role: 'group',
+          'aria-label':
+            'Attempts timeline. Arrow keys move between the marked events; the reading pane below shows the selected one.',
+          onKeyDown,
+        })}
       >
         <svg
           ref={svgRef}
           className={styles.svg}
           width={width}
           height={height}
-          onPointerMove={(e) => onPreview(locate(e))}
-          onPointerLeave={() => onPreview(null)}
-          onClick={(e) => {
-            const hit = locate(e);
-            if (hit) onSelect(hit);
-          }}
+          {...(interaction && {
+            onPointerMove: (e: { clientX: number }) => interaction.onPreview(locate(e)),
+            onPointerLeave: () => interaction.onPreview(null),
+            onClick: (e: { clientX: number }) => {
+              const hit = locate(e);
+              if (hit) interaction.onSelect(hit);
+            },
+          })}
           aria-hidden="true"
         >
+          {crop && (
+            <defs>
+              <clipPath id={clipId}>
+                <rect x={MARGIN.left} y={0} width={width - MARGIN.left - MARGIN.right} height={height} />
+              </clipPath>
+            </defs>
+          )}
+
           {midnights.map((t) => (
             <line key={t} className={styles.midnight} x1={x(t)} x2={x(t)} y1={MARGIN.top - 18} y2={axisY} />
           ))}
 
           {/* The whole plot is the pointer target. */}
-          <rect className={styles.band} x={0} y={0} width={width} height={axisY} />
+          {interaction && <rect className={styles.band} x={0} y={0} width={width} height={axisY} />}
 
           {ring && <line className={styles.guide} x1={ring.cx} x2={ring.cx} y1={MARGIN.top - 18} y2={axisY} />}
 
-          {model.rows.map((row, ri) => (
+          {rows.map((row, ri) => (
             <g key={ri}>
               <text className={styles.rowLabel} x={MARGIN.left - 14} y={rowY(ri) + 4} textAnchor="end">
                 {ROW_LABEL[row[0]!.attempt.id] ?? row[0]!.shortName}
               </text>
-              {row.slice(1).map((am) => (
-                <text key={am.attempt.id} className={styles.inlineLabel} x={x(am.end) + 6} y={rowY(ri) + 4}>
-                  {(ROW_LABEL[am.attempt.id] ?? am.shortName).toLowerCase()}
-                </text>
-              ))}
-              {row.map((am) => (
-                <AttemptLine key={am.attempt.id} am={am} x={x} y={rowY(ri)} anchors={anchors} />
-              ))}
+              <g clipPath={crop ? `url(#${clipId})` : undefined}>
+                {row.slice(1).map((am) => (
+                  <text key={am.attempt.id} className={styles.inlineLabel} x={x(am.end) + 6} y={rowY(ri) + 4}>
+                    {(ROW_LABEL[am.attempt.id] ?? am.shortName).toLowerCase()}
+                  </text>
+                ))}
+                {row.map((am) => (
+                  <AttemptLine key={am.attempt.id} am={am} x={x} y={rowY(ri)} anchors={anchors} drawn={drawn} />
+                ))}
+              </g>
             </g>
           ))}
 
-          <QuoteNumerals marks={anchors.quotes} x={x} y={(m) => rowY(rowOf.get(m.key) ?? 0)} />
+          {interaction && <QuoteNumerals marks={anchors.quotes} x={x} y={(m) => rowY(rowOf.get(m.key) ?? 0)} />}
 
-          <text className={styles.finish} x={finishX} y={rowY(lastRow) + 8}>
-            {fmtInt(finishTicks)}
-          </text>
-          <text className={styles.finishUnit} x={finishX + 1} y={rowY(lastRow) + 21}>
-            ticks
-          </text>
+          {showFinish && (
+            <>
+              <text className={styles.finish} x={finishX} y={rowY(lastRow) + 8}>
+                {fmtInt(finishTicks)}
+              </text>
+              <text className={styles.finishUnit} x={finishX + 1} y={rowY(lastRow) + 21}>
+                ticks
+              </text>
+            </>
+          )}
 
           {ring && <circle className={styles.ring} cx={ring.cx} cy={ring.cy} r={7.5} />}
 
@@ -251,24 +314,20 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
           {ticks.map((t, i) => (
             <g key={t}>
               <line className={styles.axis} x1={x(t)} x2={x(t)} y1={axisY} y2={axisY + 4} />
-              <text className={styles.tickUtc} x={x(t)} y={axisY + 16} textAnchor="middle">
-                {fmtUtcHm(t)}
-                {i === 0 && ' UTC'}
-              </text>
-              <text className={styles.tickPacific} x={x(t)} y={axisY + 28} textAnchor="middle">
+              {/* The site's one clock is Pacific; the zone is named once, on the first tick. */}
+              <text className={styles.tick} x={x(t)} y={axisY + 16} textAnchor="middle">
                 {fmtPacificHm(t)}
                 {i === 0 && ` ${pacificZone(t)}`}
               </text>
             </g>
           ))}
           {dayBands.map((b) => (
-            <text key={b.from} className={styles.day} x={(x(b.from) + x(b.to)) / 2} y={axisY + 50} textAnchor="middle">
-              {x(b.to) - x(b.from) > 220 ? fmtUtcDayLong(b.from) : fmtUtcDayShort(b.from)}
+            <text key={b.from} className={styles.day} x={(x(b.from) + x(b.to)) / 2} y={axisY + 38} textAnchor="middle">
+              {x(b.to) - x(b.from) > 220 ? fmtPacificDayLong(b.from) : fmtPacificDayShort(b.from)}
             </text>
           ))}
         </svg>
       </div>
-
     </div>
   );
 }
@@ -290,7 +349,7 @@ export function QuoteStrip({ anchors, shown, onSelect }: { anchors: ChartAnchors
               ))}
             </span>
             <span className={styles.quoteTime}>
-              {fmtUtcDayShort(m.t)}, {fmtUtcHm(m.t)} UTC
+              {fmtPacificDayShort(m.t)}, {fmtPacificHm(m.t)}
             </span>
           </button>
         </li>

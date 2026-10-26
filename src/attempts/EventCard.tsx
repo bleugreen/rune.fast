@@ -1,5 +1,5 @@
 import type { EventType } from '../data/types';
-import { fmtUtcDayShort, fmtUtcHm, parseUtc } from '../lib/time';
+import { fmtPacificDayShort, fmtPacificHm, parseUtc } from '../lib/time';
 import { plainFor } from '../data/plain';
 import type { Mark } from './model';
 import styles from './EventCard.module.css';
@@ -39,7 +39,7 @@ export function EventCard({ mark, attemptName }: { mark: Mark; attemptName: stri
         </span>
         <span>{attemptName}</span>
         <time dateTime={e.utc}>
-          {fmtUtcDayShort(t)}, {fmtUtcHm(t)} UTC
+          {fmtPacificDayShort(t)}, {fmtPacificHm(t)}
         </time>
       </p>
       {said ? <blockquote className={styles.said}>{said}</blockquote> : <p className={styles.title}>{plainLine(mark)}</p>}
@@ -56,7 +56,7 @@ export function EventList({ marks }: { marks: Mark[] }) {
       {marks.map((m) => (
         <li key={m.key}>
           <time className={styles.listTime} dateTime={m.event.utc}>
-            {fmtUtcHm(m.t)}
+            {fmtPacificHm(m.t)}
           </time>
           <span className={m.event.type === 'operator' ? styles.listSaid : undefined}>{plainLine(m)}</span>
         </li>

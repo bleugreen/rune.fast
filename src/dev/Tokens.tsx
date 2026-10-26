@@ -33,7 +33,6 @@ export default function Tokens() {
 
   const model = buildChartModel(timeline);
   const anchors = chartAnchors(model);
-  const noop = () => {};
 
   return (
     <article className={styles.page}>
@@ -108,7 +107,7 @@ export default function Tokens() {
 
       <section className={styles.block}>
         <h2 className={styles.h2}>A hairline chart</h2>
-        <TimelineChart model={model} anchors={anchors} finishTicks={recordFacts(timeline).final} shown={null} onPreview={noop} onSelect={noop} />
+        <TimelineChart model={model} anchors={anchors} finishTicks={recordFacts(timeline).final} />
       </section>
     </article>
   );

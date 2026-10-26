@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { timeline } from '../data/timeline';
 import { capitalize, countWord, fmtInt, timesWord } from '../lib/numbers';
-import { fmtUtcDateRange } from '../lib/time';
+import { fmtPacificDateRange } from '../lib/time';
 import { buildChartModel, chartAnchors, deaths, headlineFacts, recordFacts, type Mark } from '../attempts/model';
 import { Legend, QuoteStrip, TimelineChart } from '../attempts/TimelineChart';
 import { ReadingPane } from '../attempts/ReadingPane';
@@ -35,16 +35,14 @@ export function AttemptsPage() {
       <div className={styles.figure}>
         <figure>
           <figcaption className={styles.caption}>
-            <span className={styles.chartTitle}>Logged-in time, {fmtUtcDateRange(...model.domain)}</span>
+            <span className={styles.chartTitle}>Logged-in time, {fmtPacificDateRange(...model.domain)}</span>
             <Legend />
           </figcaption>
           <TimelineChart
             model={model}
             anchors={anchors}
             finishTicks={record.final}
-            shown={shown}
-            onPreview={setPreview}
-            onSelect={setPinned}
+            interaction={{ shown, onPreview: setPreview, onSelect: setPinned }}
           />
         </figure>
         <ReadingPane model={model} anchors={anchors} shown={shown} pinned={pinned} onSelect={setPinned} />

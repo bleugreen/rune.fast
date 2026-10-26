@@ -35,6 +35,8 @@ const pacDayKey = new Intl.DateTimeFormat('en-CA', { timeZone: PACIFIC, year: 'n
 const pacWeekdayDay = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric' });
 const pacDayLong = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long', day: 'numeric', month: 'long' });
 const pacWeekday = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long' });
+const pacDayShort = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric', month: 'short' });
+const pacDayMonthYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'long', year: 'numeric' });
 
 export const fmtUtcDayShort = (t: number) => utcDayShort.format(t);
 /** 'Thu 22' */
@@ -49,6 +51,12 @@ export const fmtPacificWeekdayDay = (t: number) => pacWeekdayDay.format(t);
 export const fmtPacificDayLong = (t: number) => pacDayLong.format(t);
 /** 'Thursday', Pacific */
 export const fmtPacificWeekday = (t: number) => pacWeekday.format(t);
+/** 'Thu 22 Oct', Pacific */
+export const fmtPacificDayShort = (t: number) => pacDayShort.format(t);
+/** '22 October 2026', Pacific */
+export const fmtPacificDate = (t: number) => pacDayMonthYear.format(t);
+/** The Pacific hour of t, 0-23. */
+export const pacificHour = (t: number) => Number(pacHm.format(t).slice(0, 2));
 export const fmtUtcDayLong = (t: number) => utcDayLong.format(t);
 export const fmtUtcDate = (t: number) => utcDayMonthYear.format(t);
 export const fmtUtcHm = (t: number) => utcHm.format(t);
@@ -67,6 +75,14 @@ export function fmtUtcDateRange(a: number, b: number): string {
     return `${da.getUTCDate()}–${fmtUtcDate(b)}`;
   }
   return `${fmtUtcDate(a)} – ${fmtUtcDate(b)}`;
+}
+
+/** The Pacific dates a span covers: '26 October 2026', '23–26 October 2026', or both dates in full across months. */
+export function fmtPacificDateRange(a: number, b: number): string {
+  const [ka, kb] = [pacificDayKey(a), pacificDayKey(b)];
+  if (ka === kb) return fmtPacificDate(a);
+  if (ka.slice(0, 7) === kb.slice(0, 7)) return `${Number(ka.slice(8))}–${fmtPacificDate(b)}`;
+  return `${fmtPacificDate(a)} – ${fmtPacificDate(b)}`;
 }
 
 /** '9 h 08 min', '14 min', or with seconds '3 h 58 min 34 s'. Truncates, never rounds up. */
