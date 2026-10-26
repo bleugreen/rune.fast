@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { timeline } from '../data/timeline';
-import { buildChartModel, ladderEntry, recordFacts, type LadderEntry } from '../attempts/model';
-import { TicksLadder } from '../attempts/TicksLadder';
+import { buildChartModel, chartAnchors, recordFacts } from '../attempts/model';
+import { TimelineChart } from '../attempts/TimelineChart';
 import styles from './Tokens.module.css';
 
 const COLOURS = ['--paper', '--paper-shade', '--ink', '--ink-muted', '--ink-faint', '--accent', '--hairline', '--rule'] as const;
@@ -32,7 +32,8 @@ export default function Tokens() {
   }, []);
 
   const model = buildChartModel(timeline);
-  const ladder = model.scored.map((am) => ladderEntry(am.attempt)).filter((e): e is LadderEntry => e !== null);
+  const anchors = chartAnchors(model);
+  const noop = () => {};
 
   return (
     <article className={styles.page}>
@@ -107,7 +108,7 @@ export default function Tokens() {
 
       <section className={styles.block}>
         <h2 className={styles.h2}>A hairline chart</h2>
-        <TicksLadder entries={ladder} record={recordFacts(timeline)} />
+        <TimelineChart model={model} anchors={anchors} finishTicks={recordFacts(timeline).final} shown={null} onPreview={noop} onSelect={noop} />
       </section>
     </article>
   );

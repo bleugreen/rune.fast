@@ -6,12 +6,36 @@
   gap: var(--space-4);
 }
 
-/* Reserves room for a typical mark and its neighbours, so scrubbing does not shove the page. */
+/*
+ * The mark on the left, the events around it on the right. A fixed height keeps the
+ * page still while scrubbing; a long run of neighbours scrolls inside its column.
+ */
 .body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  min-height: 20rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-7);
+  height: 15rem;
+}
+.body > * {
+  min-height: 0;
+}
+.context {
+  overflow-y: auto;
+  padding-left: var(--space-5);
+  border-left: var(--stroke-hair) solid var(--hairline);
+  scrollbar-width: thin;
+}
+
+@media (max-width: 48rem) {
+  .body {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 15rem;
+  }
+  .context {
+    padding-left: 0;
+    border-left: 0;
+  }
 }
 
 .nav {

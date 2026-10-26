@@ -36,9 +36,10 @@ export function ReadingPane({ model, anchors, shown, pinned, onSelect }: Props) 
       <div className={styles.body} aria-live="polite">
         {shown && am && (
           <>
-            <EventList marks={group?.before ?? []} />
             <EventCard mark={shown} attemptName={am.attempt.name} />
-            <EventList marks={group?.after ?? []} />
+            <div className={styles.context}>
+              <EventList marks={[...(group?.before ?? []), ...(group?.after ?? [])]} />
+            </div>
           </>
         )}
       </div>

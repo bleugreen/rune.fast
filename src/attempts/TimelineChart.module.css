@@ -186,7 +186,7 @@
 /* The plot is one pointer target; the mark nearest the pointer in time is the one shown. */
 .band {
   fill: transparent;
-  cursor: col-resize;
+  cursor: pointer;
 }
 
 /* Legend */

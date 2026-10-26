@@ -1,20 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { timeline } from '../data/timeline';
-import { capitalize, countWord, fmtInt, ordinalWord, timesWord } from '../lib/numbers';
+import { capitalize, countWord, fmtInt, timesWord } from '../lib/numbers';
 import { fmtUtcDateRange } from '../lib/time';
-import {
-  buildChartModel,
-  chartAnchors,
-  deaths,
-  headlineFacts,
-  ladderEntry,
-  recordFacts,
-  type LadderEntry,
-  type Mark,
-} from '../attempts/model';
-import { Legend, TimelineChart } from '../attempts/TimelineChart';
+import { buildChartModel, chartAnchors, deaths, headlineFacts, recordFacts, type Mark } from '../attempts/model';
+import { Legend, QuoteStrip, TimelineChart } from '../attempts/TimelineChart';
 import { ReadingPane } from '../attempts/ReadingPane';
-import { TicksLadder } from '../attempts/TicksLadder';
 import styles from './AttemptsPage.module.css';
 
 export function AttemptsPage() {
@@ -22,7 +12,6 @@ export function AttemptsPage() {
   const anchors = useMemo(() => chartAnchors(model), [model]);
   const facts = headlineFacts(model);
   const record = recordFacts(timeline);
-  const ladder = model.scored.map((am) => ladderEntry(am.attempt)).filter((e): e is LadderEntry => e !== null);
   const [pinned, setPinned] = useState<Mark | null>(() => deaths(model.last)[0] ?? anchors.list[0] ?? null);
   const [preview, setPreview] = useState<Mark | null>(null);
   const shown = preview ?? pinned;
@@ -43,34 +32,24 @@ export function AttemptsPage() {
         </p>
       </header>
 
-      <figure className={styles.wide}>
-        <figcaption className={styles.caption}>
-          <span className={styles.chartTitle}>Logged-in time, {fmtUtcDateRange(...model.domain)}</span>
-          <Legend />
-        </figcaption>
-        <TimelineChart
-          model={model}
-          anchors={anchors}
-          finishTicks={record.final}
-          shown={shown}
-          onPreview={setPreview}
-          onSelect={setPinned}
-        />
-      </figure>
-
-      <div className={styles.wide}>
+      <div className={styles.figure}>
+        <figure>
+          <figcaption className={styles.caption}>
+            <span className={styles.chartTitle}>Logged-in time, {fmtUtcDateRange(...model.domain)}</span>
+            <Legend />
+          </figcaption>
+          <TimelineChart
+            model={model}
+            anchors={anchors}
+            finishTicks={record.final}
+            shown={shown}
+            onPreview={setPreview}
+            onSelect={setPinned}
+          />
+        </figure>
         <ReadingPane model={model} anchors={anchors} shown={shown} pinned={pinned} onSelect={setPinned} />
+        <QuoteStrip anchors={anchors} shown={shown} onSelect={setPinned} />
       </div>
-
-      <figure className={styles.measure} id="ticks">
-        <figcaption className={styles.caption}>
-          <span className={styles.chartTitle}>
-            The {ordinalWord(model.scored.length)} attempt finished {fmtInt(record.margin)} ticks under the record
-          </span>
-          <span className={styles.chartSub}>Ticks per scored attempt; ~ estimated</span>
-        </figcaption>
-        <TicksLadder entries={ladder} record={record} />
-      </figure>
     </article>
   );
 }
