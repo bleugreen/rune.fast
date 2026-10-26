@@ -34,6 +34,7 @@ export function storySections(record: RecordFacts, facts: HeadlineFacts): StoryS
         'Charge has no cooldown, so Magic went from 80 to 99 in about 33.',
         'A knife click after each woodcutting roll saved about 2,739 ticks, and five dialogue clicks a tick saved 878.',
       ],
+      figure: { to: '/tricks', label: 'The tricks' },
     },
     {
       // Source: rs-document pages/v3-data/summary.json (peak_conc, day_usd); operator messages in the timeline.

@@ -1,0 +1,110 @@
+.card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) 13.5rem;
+  gap: var(--space-5) var(--space-6);
+  align-items: start;
+  padding: var(--space-6) 0;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 38rem;
+}
+.text[data-wide] {
+  grid-column: span 2;
+}
+
+.name {
+  font-size: 1.375rem;
+  line-height: var(--leading-snug);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+
+.body {
+  line-height: var(--leading-body);
+}
+
+.aside {
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+
+/* Sources: closed by default, one small target per card. */
+.sources summary {
+  display: inline-block;
+  padding: var(--space-1) 0;
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  color: var(--ink-muted);
+  cursor: pointer;
+  list-style: none;
+}
+.sources summary::-webkit-details-marker {
+  display: none;
+}
+.sources summary::after {
+  content: ' +';
+}
+.sources[open] summary::after {
+  content: ' −';
+}
+.sources summary:hover {
+  color: var(--ink);
+}
+.sources ul {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--label-sm);
+  line-height: 1.5;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+/* The clip slot. The lab footage is 764 x 502. */
+.clip video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 764 / 502;
+  background: var(--paper-shade);
+}
+.clip figcaption {
+  margin-top: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--label-sm);
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+.noClip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 764 / 502;
+  border: var(--stroke-hair) solid var(--hairline);
+  font-family: var(--font-sans);
+  font-size: var(--label-sm);
+  color: var(--ink-faint);
+}
+
+@media (max-width: 56rem) {
+  .card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .text[data-wide] {
+    grid-column: auto;
+  }
+  .noClip {
+    aspect-ratio: auto;
+    justify-content: flex-start;
+    padding: var(--space-2) var(--space-3);
+  }
+}

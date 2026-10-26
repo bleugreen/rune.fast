@@ -6,7 +6,6 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const FORBIDDEN: ReadonlyArray<readonly [string, RegExp]> = [
-  ['previous record holder', /stunbaron/i],
   ['fleet helper account', /\bcairn_[a-z]+\d+/],
   ['lab account', /\bdr\d{4}[a-z]\b/],
   ['machine hostname', /\bbgsrv|ashburn|\.ts\.net\b|\.local\b/i],

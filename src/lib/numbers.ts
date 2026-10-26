@@ -2,7 +2,10 @@ const grouped = new Intl.NumberFormat('en-US');
 
 export const fmtInt = (n: number) => grouped.format(n);
 
-const CARDINALS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const CARDINALS = [
+  'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
+];
 
 /** Small counts as words, larger ones as figures (newspaper style). */
 export const countWord = (n: number) => CARDINALS[n] ?? fmtInt(n);

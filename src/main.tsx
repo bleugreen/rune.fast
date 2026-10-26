@@ -6,6 +6,7 @@ import './styles/base.css';
 import { Layout } from './components/Layout';
 import { StoryPage } from './pages/StoryPage';
 import { AttemptsPage } from './pages/AttemptsPage';
+import { TricksPage } from './pages/TricksPage';
 import { NotFound } from './pages/NotFound';
 
 /* The tokens screen exists only in development; the production build drops it. */
@@ -14,6 +15,7 @@ const Tokens = import.meta.env.DEV ? lazy(() => import('./dev/Tokens')) : null;
 const pages: RouteObject[] = [
   { index: true, element: <StoryPage /> },
   { path: 'attempts', element: <AttemptsPage /> },
+  { path: 'tricks', element: <TricksPage /> },
   ...(Tokens ? [{ path: 'tokens', element: <Suspense><Tokens /></Suspense> }] : []),
   { path: '*', element: <NotFound /> },
 ];
