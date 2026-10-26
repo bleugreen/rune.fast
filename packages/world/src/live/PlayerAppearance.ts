@@ -65,6 +65,39 @@ export function base37ToName(value: bigint): string {
     return name;
 }
 
+// The client's base37 name encoding (TextUtil.toBase37): lowercase, at most 12 characters,
+// letters 1-26, digits 27-36, anything else (spaces) 0, trailing underscores dropped.
+export function nameToBase37(name: string): bigint {
+    let value = 0n;
+    for (const ch of name.toLowerCase().slice(0, 12)) {
+        value *= 37n;
+        const code = ch.charCodeAt(0);
+        if (code >= 97 && code <= 122) {
+            value += BigInt(code - 96);
+        } else if (code >= 48 && code <= 57) {
+            value += BigInt(code - 48 + 27);
+        }
+    }
+    while (value !== 0n && value % 37n === 0n) {
+        value /= 37n;
+    }
+    return value;
+}
+
+// The appearance block ends with five colours, seven u16 animations, the u64 name, a combat
+// byte and a u16 skill level: the name is the big-endian u64 eleven bytes from the end.
+const APPEARANCE_NAME_FROM_END = 11;
+
+export function readAppearanceName(block: Uint8Array): bigint {
+    const view = new DataView(block.buffer, block.byteOffset, block.byteLength);
+    return view.getBigUint64(block.length - APPEARANCE_NAME_FROM_END);
+}
+
+export function writeAppearanceName(block: Uint8Array, value: bigint): void {
+    const view = new DataView(block.buffer, block.byteOffset, block.byteLength);
+    view.setBigUint64(block.length - APPEARANCE_NAME_FROM_END, value);
+}
+
 export function toDisplayName(raw: string): string {
     return raw
         .split("_")

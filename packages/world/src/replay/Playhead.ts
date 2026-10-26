@@ -57,8 +57,10 @@ export class Playhead {
         if (next === null) return "stalled";
         if (next === undefined) return "end";
         this.world.cycle();
-        const result = this.applyDue();
-        return result === "end" ? "ok" : result === "stalled" ? "ok" : result;
+        // Running out of loaded frames here still leaves a canonical point: chunks end on cycle
+        // boundaries. The next step reports the stall or the end.
+        this.applyDue();
+        return "ok";
     }
 
     checkpoint(): Checkpoint {
