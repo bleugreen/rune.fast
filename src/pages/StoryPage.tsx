@@ -183,8 +183,7 @@ export function StoryPage() {
               <summary>Sources</summary>
               <div className={styles.sourceText}>
                 {s.sources.map((line, k) => (
-                  // A one-line receipt breaks at its semicolons; a source table keeps its own lines.
-                  <p key={k}>{line.includes('\n') ? line : line.replaceAll('; ', ';\n')}</p>
+                  <p key={k}>{line}</p>
                 ))}
               </div>
             </details>

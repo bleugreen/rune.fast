@@ -20,9 +20,9 @@ interface SectionMeta {
   /** The figure follows the one block of prose that contains this text. */
   figureAfter: string;
   /**
-   * The operator's short lines as the prose quotes them inline (the text between
-   * the double quotes, exactly), set again in the margin beside their paragraph.
-   * Quoted messages ('> ' blocks) are quotations in the prose, never pulled.
+   * The operator's short lines, set again in the margin beside the block that
+   * carries them: either quoted inline in a paragraph (the text between the double
+   * quotes, exactly) or a quoted message ('> ' block) that contains them.
    */
   pulled: readonly string[];
   /** Words in the prose that link out; each target is also in the section's sources. */
@@ -60,7 +60,7 @@ export const SECTION_META: readonly SectionMeta[] = [
     dates: '23–24 Oct',
     figure: { kind: 'timeline', crop: ['2026-10-23T17:00Z', '2026-10-24T17:00Z'] },
     figureAfter: 'ok fine one more attempt',
-    pulled: [],
+    pulled: ['ok fine one more attempt'],
     links: [],
   },
   {
@@ -68,7 +68,7 @@ export const SECTION_META: readonly SectionMeta[] = [
     dates: '25–26 Oct',
     figure: { kind: 'timeline', crop: ['2026-10-25T06:00Z', '2026-10-25T22:00Z'] },
     figureAfter: 'Attempt 5 logged in',
-    pulled: [],
+    pulled: ['wall clock is free, ticks are not'],
     links: [],
   },
   {
@@ -90,6 +90,10 @@ export interface StorySection extends SectionMeta, DraftSection {
 
 const blockText = (b: StoryBlock) => (b.kind === 'p' ? b.text : b.paragraphs.join('\n\n'));
 
+/** Whether the block quotes these words: inside double quotes in a paragraph, or anywhere in a quoted message. */
+export const quotes = (b: StoryBlock, q: string) =>
+  b.kind === 'p' ? b.text.includes(`"${q}"`) : b.paragraphs.some((p) => p.includes(q));
+
 /** The draft's sections with what the page adds to them; fails loudly if the draft no longer supports an addition. */
 export function storySections(story: Story): StorySection[] {
   if (story.sections.length !== SECTION_META.length) {
@@ -109,13 +113,13 @@ export function storySections(story: Story): StorySection[] {
 
     const pulledAt = new Map<number, string[]>();
     for (const q of meta.pulled) {
-      const at = d.blocks.findIndex((b) => b.kind === 'p' && b.text.includes(`"${q}"`));
+      const at = d.blocks.findIndex((b) => quotes(b, q));
       if (at < 0) throw new Error(`${where}: the prose does not quote "${q}"`);
       pulledAt.set(at, [...(pulledAt.get(at) ?? []), q]);
     }
     for (const [at, qs] of pulledAt) {
       const text = blockText(d.blocks[at]!);
-      qs.sort((a, b) => text.indexOf(`"${a}"`) - text.indexOf(`"${b}"`));
+      qs.sort((a, b) => text.indexOf(a) - text.indexOf(b));
     }
 
     for (const l of meta.links) {

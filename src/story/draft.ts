@@ -15,12 +15,15 @@
  *                        paragraph after it belongs to the last section
  *
  * Each section's sources are its key anchors plus, where the narrator wrote one,
- * the source table from its dig file (data/receipts/section-N.md).
+ * the source table from its dig file (data/receipts/section-N.md), put in plain
+ * words for the page: the files keep their cairn:// addresses, the page does not.
  *
  * Inline markdown is limited to `code` spans and *emphasis*, which the page
  * renders; anything else is refused rather than shown to the reader as literal
  * brackets or asterisks.
  */
+
+import { plainReceiptLines, plainSourceLines } from './sources';
 
 export type StoryBlock = { kind: 'p'; text: string } | { kind: 'quote'; paragraphs: string[] };
 
@@ -28,7 +31,7 @@ export interface DraftSection {
   number: number;
   title: string;
   blocks: StoryBlock[];
-  /** The section's receipts and source table, verbatim. */
+  /** The section's receipts, then its dig table's sources, one per line, in plain words (src/story/sources.ts). */
   sources: string[];
 }
 
@@ -176,7 +179,7 @@ export function parseStory(md: string, digs: Readonly<Record<number, string>> = 
     if (b.kind !== 'p') throw new Error('story.md: the Receipts hold paragraphs only');
     const parts = labelledReceipts(b.text);
     if (!parts.length) {
-      if (labelled) sections.at(-1)!.sources.push(b.text);
+      if (labelled) sections.at(-1)!.sources.push(...plainReceiptLines(b.text));
       continue;
     }
     labelled = true;
@@ -184,7 +187,7 @@ export function parseStory(md: string, digs: Readonly<Record<number, string>> = 
       for (let n = p.from; n <= p.to; n++) {
         const s = sections[n - 1];
         if (!s) throw new Error(`story.md: a receipt names section ${n}, which the draft lacks`);
-        s.sources.push(p.text);
+        s.sources.push(...plainReceiptLines(p.text));
       }
     }
   }
@@ -192,7 +195,7 @@ export function parseStory(md: string, digs: Readonly<Record<number, string>> = 
     const s = sections[Number(n) - 1];
     if (!s) throw new Error(`receipts: a dig file for section ${n}, which the draft lacks`);
     const table = sourceTable(dig);
-    if (table) s.sources.push(table);
+    if (table) s.sources.push(...plainSourceLines(table));
   }
   const bare = sections.find((s) => !s.sources.length);
   if (bare) throw new Error(`story.md: section ${bare.number} has no receipts`);
