@@ -45,6 +45,12 @@ export function Layout() {
         <div className={styles.footInner}>
           <span>Every number on this site traces to a source</span>
           <span>Generated {fmtUtcDate(parseUtc(`${__BUILD_DATE__}T00:00Z`))}</span>
+          <p className={styles.credits}>
+            3D replays use rs-map-viewer (BSD-2-Clause) via RS World and rs-dash · Credits: rs-sdk and LostCity (MIT),
+            Jagex, RuneLite, OpenRS2 Archive, RuneScape Archive, OSRS Wiki, 2004scape, 2009scape, RuneStar, Blurite,
+            RuneApps Model Viewer · <a href="/licenses/LICENSE.txt">Licence</a> ·{' '}
+            <a href="/licenses/UPSTREAM.md">Provenance</a>
+          </p>
         </div>
       </footer>
       <ScrollRestoration />

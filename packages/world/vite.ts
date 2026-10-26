@@ -95,6 +95,35 @@ function notFound(res: ServerResponse): void {
   res.end();
 }
 
+const LICENCE_FILES = [
+  ['licenses/LICENSE.txt', 'LICENSE'],
+  ['licenses/UPSTREAM.md', 'UPSTREAM.md'],
+] as const;
+
+/**
+ * Publishes the engine's licence and provenance at /licenses/ (emitted into the build, served in
+ * dev), so the site can link them.
+ */
+export function worldLicences(): Plugin {
+  const here = dirname(new URL(import.meta.url).pathname);
+  return {
+    name: 'rune:world-licences',
+    generateBundle() {
+      for (const [fileName, source] of LICENCE_FILES) {
+        this.emitFile({ type: 'asset', fileName, source: readFileSync(join(here, source)) });
+      }
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const entry = LICENCE_FILES.find(([fileName]) => req.url === `/${fileName}`);
+        if (!entry) return next();
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.end(readFileSync(join(here, entry[1])));
+      });
+    },
+  };
+}
+
 /** Headers that make the page cross-origin isolated, so the worker pool can share the cache. */
 export const ISOLATION_HEADERS = {
   'Cross-Origin-Opener-Policy': 'same-origin',
@@ -108,7 +137,7 @@ export const ISOLATION_HEADERS = {
  */
 export function worldViteConfig(): UserConfig {
   return {
-    plugins: [glslInclude()],
+    plugins: [glslInclude(), worldLicences()],
     resolve: {
       extensions: ['.web.ts', '.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
     },
