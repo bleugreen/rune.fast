@@ -3,7 +3,7 @@
  * (requested tick reached, the followed account drawn, no map squares or bakes outstanding).
  *
  *   bun scripts/world/shoot.ts [--base http://localhost:4173] [--out .world/shots] [--headed] \
- *     [--shot 6095:finish-agility-99] [--shot 1:finish-login]
+ *     [--shot agility-99@6095:agility-99] [--shot rekit@10:rekit]
  *
  * Prints each page's console errors and, against a dev server, its dev status line.
  */
@@ -15,9 +15,8 @@ import { chromium } from 'playwright-core';
 const { values: args } = parseArgs({
   options: {
     base: { type: 'string', default: 'http://localhost:4173' },
-    clip: { type: 'string', default: 'finish' },
     out: { type: 'string', default: '.world/shots' },
-    shot: { type: 'string', multiple: true, default: ['6095:finish-agility-99', '1:finish-login'] },
+    shot: { type: 'string', multiple: true, default: ['rekit@12:rekit', 'cannon@232:cannon', 'agility-99@6095:agility-99'] },
     headed: { type: 'boolean', default: false },
     timeout: { type: 'string', default: '180000' },
   },
@@ -32,14 +31,15 @@ const browser = await chromium.launch({
 let failed = 0;
 try {
   for (const spec of args.shot) {
-    const [tick, name] = spec.split(':') as [string, string];
+    const [where, name] = spec.split(':') as [string, string];
+    const [moment, tick] = where.split('@') as [string, string];
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
     const errors: string[] = [];
     page.on('console', (m) => {
       if (m.type() === 'error') errors.push(m.text());
     });
     page.on('pageerror', (e) => errors.push(e.message));
-    const url = `${args.base}/replay/${args.clip}?t=${tick}&paused`;
+    const url = `${args.base}/replay/${moment}?t=${tick}&paused`;
     const started = Date.now();
     await page.goto(url);
     const replay = page.locator('[data-replay]');
