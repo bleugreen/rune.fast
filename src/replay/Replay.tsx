@@ -70,6 +70,8 @@ export function Replay({ clip }: { clip: ReplayClip }) {
       loaded = await loadWorld(abort.signal, setProgress);
       const driver = new ReplayDriver(manifest, (i) => fetchChunk(clip.base, manifest.chunks[i]!));
       const controller = loaded.viewer.startLive(driver.feed);
+      // Only the followed account is named; everyone else stays unlabelled.
+      controller.options.showPlayerNames = false;
       driver.bind(controller);
       const { k, paused } = requestedTick(manifest);
       await driver.seek(k);

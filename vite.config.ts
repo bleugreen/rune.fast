@@ -1,5 +1,6 @@
 import { defineConfig, mergeConfig, type Plugin, type UserConfig } from 'vite';
-import { worldAssets, worldViteConfig } from '@rune/world/vite';
+// Relative, so Vite bundles it into the config: Node would load the package's .ts raw.
+import { worldAssets, worldViteConfig } from './packages/world/vite';
 import { projectTimeline } from './scripts/public-timeline';
 import { projectCostData, projectRoles } from './scripts/public-cost';
 import { projectTricks } from './scripts/public-tricks';

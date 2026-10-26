@@ -91,5 +91,6 @@ export async function fetchXteas(url: RequestInfo, signal?: AbortSignal): Promis
     const resp = await fetch(url, {
         signal,
     });
+    if (!resp.ok) throw new WorldLoadError("The game cache is unavailable");
     return parseXteas(await resp.json());
 }

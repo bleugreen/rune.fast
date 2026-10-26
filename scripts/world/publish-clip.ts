@@ -32,8 +32,11 @@ import { RecordingError, StreamSource, headlessController, openChain, recordedFr
 import { RedactionError, Redactor, scanEmitted } from './redact';
 
 /** Per clip: how session ticks are numbered, how long chunks are, and marks the tick numbering must hit. */
-const CLIPS: Record<string, { kOffset: number; ticksPerChunk: number; marks: { k: number; at: string; what: string }[] }> = {
+const CLIPS: Record<string, { kOffset: number; slot: number; ticksPerChunk: number; marks: { k: number; at: string; what: string }[] }> = {
   finish: {
+    // The scored account's roster slot through the window, as measured: a valid but wrong name
+    // in RUNE_SCORED_ACCOUNT would hold some other slot, and fail here instead of publishing it.
+    slot: 1167,
     // Login after the final recovery is session tick 1 at k 118025 (timeline: 10:27:14.715Z).
     kOffset: 118024,
     ticksPerChunk: 150,
@@ -178,6 +181,7 @@ const kStart = chunks[0]!.k0;
 const kEnd = chunks[chunks.length - 1]!.k1;
 const slots = redactor.scoredSlotsBetween(kStart, kEnd);
 if (slots.length !== 1) fail(`the scored account holds ${slots.length} roster slots in the window; expected exactly 1`);
+if (slots[0] !== clip.slot) fail(`the scored account holds slot ${slots[0]}, not the clip's slot ${clip.slot}: is RUNE_SCORED_ACCOUNT the record account?`);
 const followName = process.env.RUNE_SCORED_ACCOUNT!.trim();
 
 const manifest: ClipManifest = {
@@ -240,20 +244,22 @@ if (args.upload || args['upload-cache']) {
   if (args['upload-cache']) {
     // The store goes up as files, streamed from disk; keys.json is never read into memory here.
     const cacheDir = args.cache;
-    const put = async (rel: string, type: string) => {
-      await s3.write(`world/cache/${rel}`, Bun.file(join(cacheDir, rel)), { type });
-      console.log(`uploaded world/cache/${rel} (${statSync(join(cacheDir, rel)).size} bytes)`);
-    };
-    for (const name of readdirSync(join(cacheDir, cacheName))) await put(`${cacheName}/${name}`, name.endsWith('.json') ? 'application/json' : 'application/octet-stream');
-    await put('caches.json', 'application/json');
+    // Streamed from disk; the store's directory is named by content, so its files are immutable.
+    const put = (rel: string, type: string, cacheControl: string) =>
+      fetchPut(s3, `world/cache/${rel}`, Bun.file(join(cacheDir, rel)), statSync(join(cacheDir, rel)).size, { type, cacheControl });
+    for (const name of readdirSync(join(cacheDir, cacheName))) {
+      await put(`${cacheName}/${name}`, name.endsWith('.json') ? 'application/json' : 'application/octet-stream', IMMUTABLE);
+    }
+    await put('caches.json', 'application/json', 'public, max-age=300');
   }
   if (args.upload) {
     if (scanOut() > 0) fail('the scan failed on the bytes about to be uploaded');
     for (const w of written) {
       const br = readFileSync(join(outDir, w.file + '.br'));
-      await fetchPut(s3, `world/replays/${clipId}/${w.file}`, br, { type: 'application/x-ndjson', contentEncoding: 'br', cacheControl: IMMUTABLE });
+      await fetchPut(s3, `world/replays/${clipId}/${w.file}`, new Uint8Array(br), br.length, { type: 'application/x-ndjson', contentEncoding: 'br', cacheControl: IMMUTABLE });
     }
-    await fetchPut(s3, `world/replays/${clipId}/manifest.json`, readFileSync(join(outDir, 'manifest.json')), { type: 'application/json', cacheControl: 'public, max-age=300' });
+    const manifestBytes = readFileSync(join(outDir, 'manifest.json'));
+    await fetchPut(s3, `world/replays/${clipId}/manifest.json`, new Uint8Array(manifestBytes), manifestBytes.length, { type: 'application/json', cacheControl: 'public, max-age=300' });
     console.log(`uploaded ${written.length} chunks and the manifest to world/replays/${clipId}/`);
   }
 }
@@ -261,16 +267,17 @@ if (args.upload || args['upload-cache']) {
 async function fetchPut(
   s3: Bun.S3Client,
   key: string,
-  body: Buffer,
+  body: Uint8Array | Blob,
+  size: number,
   meta: { type: string; cacheControl: string; contentEncoding?: string },
 ): Promise<void> {
   // Bun's S3 writer sets Content-Type; Cache-Control and Content-Encoding go through a presigned PUT.
   const url = s3.presign(key, { method: 'PUT', expiresIn: 600 });
   const headers: Record<string, string> = { 'Content-Type': meta.type, 'Cache-Control': meta.cacheControl };
   if (meta.contentEncoding) headers['Content-Encoding'] = meta.contentEncoding;
-  const resp = await fetch(url, { method: 'PUT', body: new Uint8Array(body), headers });
+  const resp = await fetch(url, { method: 'PUT', body, headers });
   if (!resp.ok) fail(`upload of ${key} failed: HTTP ${resp.status}`);
-  console.log(`uploaded ${key} (${body.length} bytes)`);
+  console.log(`uploaded ${key} (${size} bytes)`);
 }
 
 if (!existsSync(join(outDir, 'manifest.json'))) fail('manifest missing after write');
