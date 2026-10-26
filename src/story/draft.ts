@@ -8,14 +8,18 @@
  *   <reader line: an editorial note, not page copy>
  *   ---
  *   ## Byline            one paragraph
- *   ## 1. Section title  paragraphs and '> ' block quotes
+ *   ## 1. Section title  paragraphs and '> ' block quotes (quoted messages)
  *   ...
- *   ---
- *   ## Receipts ...      'S1: ... S2: ... S4-S6: ...' lines for each section's
- *                        sources; an unlabelled paragraph belongs to the last section
+ *   ## Receipts ...      one paragraph that introduces the receipts, then labels
+ *                        each section's key anchors ('S1 ...', 'S2 ...'); any
+ *                        paragraph after it belongs to the last section
  *
- * Markdown beyond headings, paragraphs and block quotes is refused rather than
- * shown to the reader as literal asterisks or brackets.
+ * Each section's sources are its key anchors plus, where the narrator wrote one,
+ * the source table from its dig file (data/receipts/section-N.md).
+ *
+ * Inline markdown is limited to `code` spans and *emphasis*, which the page
+ * renders; anything else is refused rather than shown to the reader as literal
+ * brackets or asterisks.
  */
 
 export type StoryBlock = { kind: 'p'; text: string } | { kind: 'quote'; paragraphs: string[] };
@@ -24,7 +28,7 @@ export interface DraftSection {
   number: number;
   title: string;
   blocks: StoryBlock[];
-  /** The section's lines from the Receipts, verbatim, label included. */
+  /** The section's receipts and source table, verbatim. */
   sources: string[];
 }
 
@@ -34,16 +38,31 @@ export interface Story {
   sections: DraftSection[];
 }
 
+export type InlineToken = { kind: 'text' | 'code' | 'em'; text: string };
+
+/** A prose string as text, `code` and *emphasis* runs; throws on markup the page does not render. */
+export function inlineTokens(s: string): InlineToken[] {
+  const out: InlineToken[] = [];
+  const re = /`([^`\n]+)`|\*([^*\s](?:[^*\n]*[^*\s])?)\*/g;
+  let at = 0;
+  for (const m of s.matchAll(re)) {
+    if (m.index > at) out.push({ kind: 'text', text: s.slice(at, m.index) });
+    out.push(m[1] !== undefined ? { kind: 'code', text: m[1] } : { kind: 'em', text: m[2]! });
+    at = m.index + m[0].length;
+  }
+  if (at < s.length) out.push({ kind: 'text', text: s.slice(at) });
+  for (const t of out) {
+    if (t.kind !== 'text') continue;
+    if (/[`*]|\]\(|^#|^\s*(?:[-+]|\d+\.)\s/m.test(t.text)) {
+      throw new Error(`story.md: markdown the page would show literally: ${t.text.slice(0, 80)}`);
+    }
+  }
+  return out;
+}
+
 interface Group {
   heading: string;
   blocks: StoryBlock[];
-}
-
-const MARKUP = /[*_`[\]]|^#|^\s*(?:[-+]|\d+\.)\s/m;
-
-function plain(text: string, where: string): string {
-  if (MARKUP.test(text)) throw new Error(`story.md: ${where} holds markdown the page would show literally: ${text.slice(0, 80)}`);
-  return text;
 }
 
 function block(lines: string[]): StoryBlock {
@@ -76,7 +95,7 @@ function groups(lines: string[]): Group[] {
     if (l.startsWith('## ')) {
       flush();
       out.push({ heading: l.slice(3), blocks: [] });
-    } else if (l.trim() === '') flush();
+    } else if (l.trim() === '' || l === '---') flush();
     else buf.push(l);
   }
   flush();
@@ -85,52 +104,95 @@ function groups(lines: string[]): Group[] {
 
 const blockText = (b: StoryBlock) => (b.kind === 'p' ? [b.text] : b.paragraphs);
 
-export function parseStory(md: string): Story {
+/**
+ * The source table in a dig file: from its first heading that names sources to the
+ * next heading at the same level or above. Null when the file has none.
+ */
+export function sourceTable(dig: string): string | null {
+  const lines = dig.split('\n');
+  const start = lines.findIndex((l) => /^#{2,6} .*\bsources\b/i.test(l));
+  if (start < 0) return null;
+  const level = /^#+/.exec(lines[start]!)![0].length;
+  const rest = lines.slice(start);
+  const end = rest.findIndex((l, i) => i > 0 && /^#+ /.test(l) && /^#+/.exec(l)![0].length <= level);
+  return rest.slice(0, end < 0 ? undefined : end).join('\n').trim();
+}
+
+/** The receipts paragraph's labelled parts: 'S1 ...', 'S2: ...', 'S4-S6 ...'. The introduction before 'S1' is not a source line. */
+function labelledReceipts(text: string): { from: number; to: number; text: string }[] {
+  const first = text.search(/(?:^| )S1[: ]/);
+  if (first < 0) return [];
+  const parts = text
+    .slice(first)
+    .trim()
+    .split(/ (?=S\d(?:-S\d)?:? )/);
+  let last = 0;
+  return parts.map((part) => {
+    const m = /^S(\d)(?:-S(\d))?:? /.exec(part);
+    if (!m) throw new Error(`story.md: a receipt without a section label: ${part.slice(0, 60)}`);
+    const from = Number(m[1]);
+    const to = Number(m[2] ?? m[1]);
+    if (from !== last + 1 || to < from) throw new Error(`story.md: receipt labels out of order at '${part.slice(0, 20)}'`);
+    last = to;
+    return { from, to, text: part };
+  });
+}
+
+/** @param digs each section's dig file, by section number, where one exists */
+export function parseStory(md: string, digs: Readonly<Record<number, string>> = {}): Story {
   if (md.includes('\r')) throw new Error('story.md: expected LF line endings');
   const lines = md.split('\n');
-  const rules = lines.flatMap((l, i) => (l === '---' ? [i] : []));
-  if (rules.length !== 2) throw new Error(`story.md: expected two '---' rules, found ${rules.length}`);
-  const [r0, r1] = rules as [number, number];
+  const rule = lines.indexOf('---');
+  if (rule < 0) throw new Error("story.md: expected a '---' rule under the reader line");
 
-  const h1 = lines.slice(0, r0).filter((l) => l.startsWith('# '));
+  const h1 = lines.slice(0, rule).filter((l) => l.startsWith('# '));
   if (h1.length !== 1) throw new Error('story.md: expected one title line above the first rule');
-  const title = plain(h1[0]!.slice(2), 'the title');
+  const title = h1[0]!.slice(2);
+  inlineTokens(title);
 
-  const [bylineGroup, ...rest] = groups(lines.slice(r0 + 1, r1));
+  const all = groups(lines.slice(rule + 1));
+  const receiptsAt = all.findIndex((g) => g.heading.startsWith('Receipts'));
+  if (receiptsAt !== all.length - 1) throw new Error('story.md: expected the Receipts section last');
+  const [bylineGroup, ...rest] = all.slice(0, receiptsAt);
   const bylineBlock = bylineGroup?.blocks[0];
   if (bylineGroup?.heading !== 'Byline' || bylineGroup.blocks.length !== 1 || bylineBlock?.kind !== 'p') {
     throw new Error('story.md: expected a Byline section of one paragraph first');
   }
-  const byline = plain(bylineBlock.text, 'the byline');
+  const byline = bylineBlock.text;
+  inlineTokens(byline);
 
   const sections: DraftSection[] = rest.map((g, i) => {
     const m = /^(\d+)\. (.+)$/.exec(g.heading);
     if (!m || Number(m[1]) !== i + 1) throw new Error(`story.md: expected section ${i + 1}, found '## ${g.heading}'`);
     if (!g.blocks.length) throw new Error(`story.md: section ${i + 1} has no prose`);
-    g.blocks.flatMap(blockText).forEach((t) => plain(t, `section ${i + 1}`));
-    return { number: i + 1, title: plain(m[2]!, `section ${i + 1}'s title`), blocks: g.blocks, sources: [] };
+    g.blocks.flatMap(blockText).forEach(inlineTokens);
+    inlineTokens(m[2]!);
+    return { number: i + 1, title: m[2]!, blocks: g.blocks, sources: [] };
   });
   if (!sections.length) throw new Error('story.md: no sections');
 
-  const receipts = groups(lines.slice(r1 + 1));
-  if (receipts.length !== 1 || !receipts[0]!.heading.startsWith('Receipts')) {
-    throw new Error('story.md: expected one Receipts section after the second rule');
-  }
-  for (const b of receipts[0]!.blocks) {
+  let labelled = false;
+  for (const b of all[receiptsAt]!.blocks) {
     if (b.kind !== 'p') throw new Error('story.md: the Receipts hold paragraphs only');
-    if (!/^S\d/.test(b.text)) {
-      sections.at(-1)!.sources.push(b.text);
+    const parts = labelledReceipts(b.text);
+    if (!parts.length) {
+      if (labelled) sections.at(-1)!.sources.push(b.text);
       continue;
     }
-    for (const part of b.text.split(/ (?=S\d(?:-S\d)?: )/)) {
-      const m = /^S(\d)(?:-S(\d))?: /.exec(part);
-      if (!m) throw new Error(`story.md: a receipt without a section label: ${part.slice(0, 60)}`);
-      for (let n = Number(m[1]); n <= Number(m[2] ?? m[1]); n++) {
+    labelled = true;
+    for (const p of parts) {
+      for (let n = p.from; n <= p.to; n++) {
         const s = sections[n - 1];
         if (!s) throw new Error(`story.md: a receipt names section ${n}, which the draft lacks`);
-        s.sources.push(part);
+        s.sources.push(p.text);
       }
     }
+  }
+  for (const [n, dig] of Object.entries(digs)) {
+    const s = sections[Number(n) - 1];
+    if (!s) throw new Error(`receipts: a dig file for section ${n}, which the draft lacks`);
+    const table = sourceTable(dig);
+    if (table) s.sources.push(table);
   }
   const bare = sections.find((s) => !s.sources.length);
   if (bare) throw new Error(`story.md: section ${bare.number} has no receipts`);

@@ -9,7 +9,7 @@ plugin({
   name: 'rune:test-loaders',
   setup(build) {
     build.onLoad({ filter: /\/data\/story\.md$/ }, async ({ path }) => ({
-      contents: storyModule(await Bun.file(path).text()),
+      contents: storyModule(await Bun.file(path).text(), path).code,
       loader: 'js',
     }));
     build.onLoad({ filter: /\.module\.css$/ }, () => ({
