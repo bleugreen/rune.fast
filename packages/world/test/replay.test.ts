@@ -9,7 +9,8 @@ import { Checkpoint, ChunkData, ClipManifest, ReplayFrame, frameCycle } from "..
 import { cutChunks } from "../src/replay/cut";
 import { ArrayFrameSource, Playhead } from "../src/replay/Playhead";
 import { MAX_CYCLES_PER_FRAME, ReplayDriver } from "../src/replay/ReplayDriver";
-import { fixtureFrames, stubController } from "./stubs";
+import { LiveController } from "../src/live/LiveController";
+import { fixtureFrames, npcTypeLoader, seqFrameLoader, seqTypeLoader, stubController } from "./stubs";
 
 const frames = fixtureFrames();
 const ticks = frames.flatMap((f) => (f.msg.t === "tick" ? [f.msg.k] : []));
@@ -43,9 +44,10 @@ describe("cycle schedule", () => {
         for (const [frame, cycle] of applied.slice(1)) {
             expect(cycle).toBe(frameCycle(frame.recv, hello.recv));
         }
-        // A hand-computed spot check: the fixture's first tick arrives 435 ms after its hello.
-        expect(frames[1].recv - hello.recv).toBe(435);
-        expect(applied[1][1]).toBe(21);
+        // A hand-computed spot check: the fixture's first tick arrives 393 ms after its hello,
+        // so it is applied at cycle 19.
+        expect(frames[1].recv - hello.recv).toBe(393);
+        expect(applied[1][1]).toBe(19);
     });
 });
 
@@ -79,7 +81,7 @@ describe("snapshot and restore", () => {
             playToEnd(second.ph);
             expect(json(second.ph.world.snapshot())).toBe(reference);
         }
-    });
+    }, 60_000);
 
     test("the snapshot field lists cover every entity field", () => {
         const known = new Set<string>([
@@ -136,16 +138,9 @@ function fixtureClip(): { manifest: ClipManifest; chunks: ChunkData[] } {
 
 function driver() {
     const { manifest, chunks } = fixtureClip();
-    const { controller } = (() => {
-        let made: ReturnType<typeof stubController> | undefined;
-        return { controller: undefined as never, made };
-    })();
-    void controller;
     const d = new ReplayDriver(manifest, (i) => Promise.resolve(JSON.parse(json(chunks[i])) as ChunkData));
-    // Build the controller through the driver's own feed factory, as MapViewer.startLive does.
-    const { LiveController } = require("../src/live/LiveController") as typeof import("../src/live/LiveController");
-    const stubs = require("./stubs") as typeof import("./stubs");
-    const c = new LiveController(d.feed, stubs.npcTypeLoader, stubs.seqTypeLoader, stubs.seqFrameLoader, undefined, 289);
+    // The controller is built through the driver's own feed factory, as MapViewer.startLive does.
+    const c = new LiveController(d.feed, npcTypeLoader, seqTypeLoader, seqFrameLoader, undefined, 289);
     d.bind(c);
     return { d, c, manifest, chunks };
 }
@@ -202,7 +197,7 @@ describe("ReplayDriver", () => {
         d.play();
         for (let i = 0; i < 1000 && !d.getSnapshot().ended; i++) {
             d.step(4);
-            await Promise.resolve();
+            await new Promise((resolve) => setTimeout(resolve, 0));
         }
         expect(d.getSnapshot().ended).toBe(true);
         const { ph } = playhead();

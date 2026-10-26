@@ -190,8 +190,10 @@ export class ReplayDriver implements FeedSource, WorldStepper {
     step(wallCycles: number): void {
         if (this.paused || this.seeking > 0 || !this.playhead || !this.positioned) return;
         const cycles = Math.min(MAX_CYCLES_PER_FRAME, wallCycles * this.speed);
+        const wasStalled = this.stalled;
         this.run(cycles);
-        this.notify(false);
+        // Ending or stalling changes what the timeline shows at once; plain progress is throttled.
+        this.notify(this.ended || this.stalled !== wasStalled);
     }
 
     // Runs up to `cycles` replay cycles; returns how many ran.
