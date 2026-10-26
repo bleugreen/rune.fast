@@ -42,9 +42,7 @@ export function AttemptsPage() {
             model={model}
             anchors={anchors}
             finishTicks={record.final}
-            shown={shown}
-            onPreview={setPreview}
-            onSelect={setPinned}
+            interaction={{ shown, onPreview: setPreview, onSelect: setPinned }}
           />
         </figure>
         <ReadingPane model={model} anchors={anchors} shown={shown} pinned={pinned} onSelect={setPinned} />

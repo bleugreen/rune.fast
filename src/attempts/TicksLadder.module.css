@@ -1,0 +1,72 @@
+.ladder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  font-size: var(--label-lg);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--ink);
+}
+
+.label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1);
+  padding-right: var(--space-2);
+}
+.label + .track + .label {
+  margin-top: var(--space-3);
+}
+
+.num {
+  font-weight: 600;
+}
+.accent {
+  font-weight: 600;
+  color: var(--accent);
+}
+.under {
+  color: var(--ink-muted);
+}
+
+.track {
+  position: relative;
+  height: 0.5rem;
+}
+.bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ink);
+}
+.recordBar {
+  background: var(--ink-faint);
+}
+
+/* The record, carried down through the finish's bar so the margin reads as a gap. */
+.recordLine {
+  position: absolute;
+  top: 0;
+  bottom: 1.25rem;
+  right: 0;
+  border-right: var(--stroke-thin) solid var(--ink);
+}
+
+.axis {
+  position: relative;
+  height: 1.25rem;
+  margin-top: var(--space-2);
+  border-top: var(--stroke-thin) solid var(--rule);
+}
+.tick {
+  position: absolute;
+  top: 0;
+  padding-top: 0.3rem;
+  transform: translateX(-50%);
+  font-size: var(--label-sm);
+  color: var(--ink-muted);
+}
+.tick[data-first] {
+  transform: none;
+}
