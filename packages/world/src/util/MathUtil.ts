@@ -41,8 +41,3 @@ export function nextPow2(i: number): number {
 export function toSigned16bit(n: number) {
     return (n << 16) >> 16;
 }
-
-function boundJagex(value: number, bound: number): number {
-    const i_78_ = (value >> 31) & (bound - 1);
-    return i_78_ + ((value + (value >>> 31)) % bound);
-}
