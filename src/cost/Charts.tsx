@@ -95,6 +95,8 @@ export function DayLegend() {
 
 const ACT_H = 270;
 const ACT_M = { top: 40, right: 6, bottom: 26, left: 30 };
+/** Room the peak's two-line label needs beside the dot. */
+const PEAK_LABEL_W = 90;
 
 /** Numerals over bands that nearly coincide are drawn as one label ('1 2 3'). */
 function groupLabels(items: { x: number; n: number }[]) {
@@ -122,6 +124,8 @@ export function ActivityChart({ model, label }: { model: CostModel; label: strin
   const bands = model.attempts.map((a) => ({ ...a, x0: x(a.from), x1: Math.max(x(a.to), x(a.from) + 1.5) }));
   const px = x(peak.t);
   const py = y(peak.v);
+  /** The peak's label goes to its right unless it would run off the chart. */
+  const peakSide = px + PEAK_LABEL_W < width - ACT_M.right ? 1 : -1;
 
   return (
     <div ref={ref} className={styles.root}>
@@ -154,11 +158,11 @@ export function ActivityChart({ model, label }: { model: CostModel; label: strin
             </text>
           ))}
         <circle className={styles.peakDot} cx={px} cy={py} r={3} />
-        {/* Above the peak, nothing on the curve can reach the label. */}
-        <text className={styles.peakValue} x={px + 3} y={py - 21} textAnchor="end">
+        {/* Level with the peak, not above it: above it sit the attempt numbers. Nothing else on the curve reaches that height. */}
+        <text className={styles.peakValue} x={px + peakSide * 8} y={py + 4} textAnchor={peakSide > 0 ? 'start' : 'end'}>
           {fmtInt(peak.v)} agents
         </text>
-        <text className={styles.peakWhen} x={px + 3} y={py - 8} textAnchor="end">
+        <text className={styles.peakWhen} x={px + peakSide * 8} y={py + 17} textAnchor={peakSide > 0 ? 'start' : 'end'}>
           {fmtPacificWeekdayDay(peak.t)}, {fmtPacificHm(peak.t)}
         </text>
       </svg>
