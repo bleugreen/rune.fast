@@ -44,11 +44,14 @@
   border-color: transparent transparent transparent var(--ink);
   transition: border-color 140ms ease-out;
 }
-.frame:hover .play {
-  transform: scale(1.06);
-}
-.frame:hover .play::before {
-  border-left-color: var(--accent);
+/* Only where there is a pointer to hover with; a tap would otherwise leave the mark lit. */
+@media (hover: hover) {
+  .frame:hover .play {
+    transform: scale(1.06);
+  }
+  .frame:hover .play::before {
+    border-left-color: var(--accent);
+  }
 }
 .clip[data-phase='loading'] .play {
   opacity: 0.6;
