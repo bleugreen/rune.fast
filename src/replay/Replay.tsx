@@ -11,7 +11,6 @@ import { parseChunk, type ChunkData, type ClipChunk, type ClipManifest } from '@
 import { ReplayDriver, type ReplaySpeed } from '@rune/world/replay/ReplayDriver';
 import { fmtInt } from '../lib/numbers';
 import type { ReplayClip } from './clips';
-import { RosterPicker } from './RosterPicker';
 import { Timeline } from './Timeline';
 import { loadWorld, type LoadedWorld } from './world';
 import styles from './Replay.module.css';
@@ -196,9 +195,27 @@ function ReplayStage({ clip, viewer, pool, driver, controller, manifest, request
         </div>
         <Timeline manifest={manifest} state={state} marks={clip.marks} onSeek={seek} onPlay={play} onPause={pause} onSpeed={speed} />
       </div>
-      <RosterPicker viewer={viewer} controller={controller} recordName={manifest.follow.name} />
+      <RecordFollow viewer={viewer} controller={controller} recordName={manifest.follow.name} />
       {import.meta.env.DEV && <DevStatus controller={controller} viewer={viewer} />}
     </div>
+  );
+}
+
+/**
+ * Moving the camera yourself (WASD, panning) stops following; this brings it back. Rotating
+ * orbits the account and keeps the follow.
+ */
+function RecordFollow({ viewer, controller, recordName }: Pick<Ready, 'controller' | 'viewer'> & { recordName: string }) {
+  const [following, setFollowing] = useState(true);
+  useEffect(() => {
+    const timer = setInterval(() => setFollowing(controller.isFollowing() || controller.pendingFollow !== undefined), 500);
+    return () => clearInterval(timer);
+  }, [controller]);
+  if (following) return null;
+  return (
+    <button type="button" className={styles.back} onClick={() => controller.goToPlayer(recordName, viewer.camera)}>
+      Back to the record account
+    </button>
   );
 }
 
