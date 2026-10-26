@@ -373,7 +373,7 @@ export function Legend() {
       {item('operator message', <line className={styles.operator} x1={8} x2={8} y1={2} y2={12} />, 16)}
       {item('ruling', <line className={styles.ruling} x1={8} x2={8} y1={5} y2={12} />, 16)}
       {item('note', <circle className={styles.dot} cx={8} cy={9} r={1.6} />, 16)}
-      {item('rehearsal and lab run', <line className={styles.extent} x1={1} x2={21} y1={9} y2={9} />)}
+      {item('rehearsal and lab run, start to end', <line className={styles.extent} x1={1} x2={21} y1={9} y2={9} />)}
     </div>
   );
 }

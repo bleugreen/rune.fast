@@ -32,7 +32,9 @@ export function AttemptsPage() {
 
       <figure className={styles.wide}>
         <figcaption className={styles.caption}>
-          <span className={styles.chartTitle}>Time on the demo server, {fmtUtcDateRange(...model.domain)}</span>
+          <span className={styles.chartTitle}>
+            When each account was logged in to the demo server, {fmtUtcDateRange(...model.domain)}
+          </span>
           <Legend />
         </figcaption>
         <TimelineChart model={model} finishTicks={record.final} selected={selected} onSelect={setSelected} />
@@ -47,7 +49,7 @@ export function AttemptsPage() {
           <span className={styles.chartTitle}>
             The {ordinalWord(model.scored.length)} attempt finished {fmtInt(record.margin)} ticks under the record
           </span>
-          <span className={styles.chartSub}>Logged-in ticks per scored attempt; ~ marks an estimate</span>
+          <span className={styles.chartSub}>Logged-in ticks spent by each scored attempt; ~ marks an estimate</span>
         </figcaption>
         <TicksLadder entries={ladder} record={record} />
       </figure>

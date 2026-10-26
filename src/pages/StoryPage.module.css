@@ -112,14 +112,9 @@
   border-bottom: var(--stroke-hair) solid var(--hairline);
 }
 
-.slotLabel,
 .slotLink {
   font-family: var(--font-sans);
   font-size: var(--label);
-  color: var(--ink-muted);
-}
-.slotLink {
-  color: var(--ink);
   font-weight: 500;
 }
 

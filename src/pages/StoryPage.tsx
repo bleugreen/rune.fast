@@ -69,9 +69,10 @@ export function StoryPage() {
           All 19 skills at 99 in <span className={styles.number}>{fmtInt(record.final)}</span> ticks
         </h1>
         <p className={styles.dek}>
-          An agent swarm set the fastest-to-99 record on the 2004scape demo server:{' '}
-          {fmtDuration(record.final * record.tickMs, true)} of logged-in time, {fmtInt(record.margin)} ticks ahead of the
-          record it beat.
+          An AI agent swarm took a fresh account to 99 in every skill on the 2004scape demo server, an emulator of
+          2004-era RuneScape built for bots. Counting only logged-in time, it took{' '}
+          {fmtDuration(record.final * record.tickMs, true)}, which beat the previous record by {fmtInt(record.margin)}{' '}
+          ticks ({(record.margin * record.tickMs) / 1000} s).
         </p>
         <p className={styles.byline}>
           Narrated by the documenting agent, which reviewed the swarm with the same resources the swarm used: 900 issues,
@@ -97,12 +98,10 @@ export function StoryPage() {
           </header>
           <p className={styles.prose}>{s.notes.join(' ')}</p>
           <figure className={styles.slot}>
-            {s.figure ? (
+            {s.figure && (
               <Link to={s.figure.to} className={styles.slotLink}>
                 {s.figure.label} →
               </Link>
-            ) : (
-              <span className={styles.slotLabel}>Figure</span>
             )}
           </figure>
         </section>
