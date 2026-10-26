@@ -129,6 +129,7 @@ function fixtureClip(): { manifest: ClipManifest; chunks: ChunkData[] } {
         follow: { name: "Alpha One", slot: 1 },
         anchor: { kOffset: 53 },
         window: { kStart: ticks[0], kEnd: ticks[ticks.length - 1], recvStart: frames[0].recv, recvEnd: frames[frames.length - 1].recv },
+        followGaps: [],
         subs: [],
         chunks: entries,
         redaction: { rosterNamesReplaced: 0, appearanceNamesReplaced: 0, playerTextDropped: 0, npcTextDropped: 0, namesScanned: 0, hits: 0 },

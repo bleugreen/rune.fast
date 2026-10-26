@@ -199,8 +199,23 @@ const controller = new LiveController(
   loaderFactory.getSpotAnimTypeLoader?.(),
   info.revision,
 );
+// Ticks in the window where the scored account is not among the streamed players.
+const followGaps: [number, number][] = [];
+const { canonicalAccountName } = await import('@rune/world/live/accountName');
+const observed: FeedHandlers = {
+  ...handlers!,
+  onTick(tick) {
+    handlers!.onTick(tick);
+    if (tick.k < CLIPS[clipId]!.kOffset) return;
+    const inView = [...controller.world.players.values()].some((p) => canonicalAccountName(p.name) === redactor.scored);
+    const last = followGaps[followGaps.length - 1];
+    if (inView) return;
+    if (last && last[1] === tick.k - 1) last[1] = tick.k;
+    else followGaps.push([tick.k, tick.k]);
+  },
+};
 const source = new StreamSource(frames());
-const playhead = new Playhead(controller.world, handlers!, source);
+const playhead = new Playhead(controller.world, observed, source);
 
 let t0 = performance.now();
 for (;;) {
@@ -274,6 +289,8 @@ const manifest: ClipManifest = {
   follow: { name: followName, slot: slots[0]! },
   anchor: { kOffset: clip.kOffset },
   window: { kStart, kEnd, recvStart: chunks[0]!.recv0, recvEnd: chunks[chunks.length - 1]!.recv1 },
+  // From login on: before it the account is simply not online, which is not a gap.
+  followGaps: followGaps.filter(([, k1]) => k1 < kEnd && k1 > clip.kOffset + 1),
   subs,
   chunks,
   redaction: { ...redactor.counts, namesScanned: redactor.names.size, hits: 0 },
@@ -305,6 +322,7 @@ if (hits > 0) {
   rmSync(outDir, { recursive: true, force: true });
   fail(`${hits} scan hit(s); output deleted`);
 }
+console.log(`follow gaps: ${manifest.followGaps.map(([a, b]) => `${a - clip.kOffset}-${b - clip.kOffset}`).join(', ')} (session ticks)`);
 console.log(`wrote ${relative('.', outDir)}/ (${chunks.length} chunks + manifest.json)`);
 
 // --- R2 ---

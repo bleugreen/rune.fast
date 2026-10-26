@@ -54,6 +54,9 @@ export type ClipManifest = {
     // sessionTick = k - kOffset: the scored session's own tick count, as the timeline numbers it.
     anchor: { kOffset: number };
     window: { kStart: number; kEnd: number; recvStart: number; recvEnd: number };
+    // Tick ranges [k0, k1] in which the followed account was outside the recorded area, so the
+    // camera has only the roster to go on.
+    followGaps: [number, number][];
     // Where the recorder was subscribed, from its `sent` lines.
     subs: { recv: number; x: number; z: number; w: number; h: number }[];
     chunks: ClipChunk[];
