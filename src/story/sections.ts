@@ -57,7 +57,8 @@ export function storySections(record: RecordFacts, facts: HeadlineFacts): StoryS
       dates: '23–24 Oct',
       notes: [
         'Attempt 1 failed 34 seconds after login, 77 tiles from where its Firemaking step expected it, and stayed in the world another seven minutes while a chicken kept it in combat.',
-        'Attempt 2 stalled waiting for bones from helper accounts, and Attempt 3 ended its scored run at 2,290 ticks, one inventory slot short at the willow trees; the same account then ran a live rehearsal and died twice in the Wilderness, and Attempt 4 died of poison at the Grand Tree door.',
+        'Attempt 2 stalled waiting for bones from helper accounts, and Attempt 3 ended its scored run at 2,290 ticks, one inventory slot short at the willow trees.',
+        'The same account then ran a live rehearsal and died twice in the Wilderness, and Attempt 4 died of poison at the Grand Tree door.',
         'At 05:01 UTC on 24 October the operator wrote “attempt 4 is your last attempt”, and at 16:28 “ok fine one more attempt”.',
       ],
       figure: { to: '/attempts', label: 'The attempts timeline' },
