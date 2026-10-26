@@ -1,0 +1,5 @@
+# Cross-origin isolation for the replay's worker pool (SharedArrayBuffer). Site-wide, because a
+# client-side navigation to /replay/* never re-fetches the document that carries these headers.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp

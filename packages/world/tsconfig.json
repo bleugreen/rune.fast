@@ -1,0 +1,24 @@
+{
+  // The engine is upstream code: strict, but without the site's noUncheckedIndexedAccess and
+  // verbatimModuleSyntax, which would flag thousands of index sites it was never written for.
+  // The site consumes this project's emitted declarations through a project reference.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": ".",
+    "outDir": "types",
+    "types": ["bun", "vite/client"]
+  },
+  "include": ["src", "test", "vite.ts"]
+}

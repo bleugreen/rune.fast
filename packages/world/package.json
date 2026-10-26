@@ -1,0 +1,28 @@
+{
+  "name": "@rune/world",
+  "private": true,
+  "type": "module",
+  "description": "rs-dash's world renderer and live layer (rs-map-viewer lineage, BSD-2-Clause), ported to Vite and driven by recorded world-feed clips",
+  "exports": {
+    ".": "./src/index.ts",
+    "./vite": "./vite.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "bzip2": "^0.1.1",
+    "denque": "^2.1.0",
+    "gl-matrix": "^3.4.3",
+    "java-random": "^0.4.0",
+    "js-xxhash": "^2.0.0",
+    "pako": "^2.1.0",
+    "picogl": "^0.17.9",
+    "wasm-gzip": "^1.0.1",
+    "xxhash-wasm": "^1.0.2"
+  },
+  "peerDependencies": {
+    "react": "18"
+  },
+  "devDependencies": {
+    "@types/pako": "^2.0.3"
+  }
+}
