@@ -17,7 +17,7 @@ export function Sources({ sources }: { sources: readonly string[] }) {
   );
 }
 
-/** One technique: what the game does and what the run did instead, beside its chart and its clip. */
+/** One technique: what the game does and what the run did instead, its chart under the prose, and its clip beside them. */
 export function TrickCard({ trick: t }: { trick: Trick }) {
   return (
     <article className={styles.card} id={t.id}>
@@ -27,12 +27,12 @@ export function TrickCard({ trick: t }: { trick: Trick }) {
         {t.steps_plain.length > 0 && <p className={styles.aside}>Used in {listJoin(t.steps_plain)}.</p>}
         {t.failed_live && <p className={styles.aside}>{t.failed_live}</p>}
       </div>
+      {t.saving && (
+        <div className={styles.chart}>
+          <SavingChart saving={t.saving} />
+        </div>
+      )}
       <div className={styles.media}>
-        {t.saving && (
-          <div className={styles.chart}>
-            <SavingChart saving={t.saving} />
-          </div>
-        )}
         {t.clip ? (
           <Clip clip={clipById(t.clip)} />
         ) : (

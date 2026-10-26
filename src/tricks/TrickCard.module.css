@@ -1,11 +1,11 @@
 /*
- * Prose and its sources down the first column; the media column beside them holds
- * the chart and the clip, and the clip takes the column's full width.
+ * Prose, its chart and its sources down the first column; the clip beside them
+ * takes the second column's full width.
  */
 .card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   gap: var(--space-3) var(--space-7);
   align-items: start;
   padding: var(--space-6) 0;
@@ -19,20 +19,20 @@
   gap: var(--space-3);
   max-width: 38rem;
 }
+.chart {
+  grid-column: 1;
+  grid-row: 2;
+  max-width: 30rem;
+  margin-top: var(--space-3);
+}
 .media {
   grid-column: 2;
-  grid-row: 1 / span 2;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
+  grid-row: 1 / span 3;
   min-width: 0;
-}
-.chart {
-  max-width: 30rem;
 }
 .sourcesCell {
   grid-column: 1;
-  grid-row: 2;
+  grid-row: 3;
   max-width: 38rem;
 }
 
@@ -109,6 +109,7 @@
     row-gap: var(--space-5);
   }
   .text,
+  .chart,
   .media,
   .sourcesCell {
     grid-column: 1;
