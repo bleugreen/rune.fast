@@ -4,7 +4,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { StoryPage } from '../pages/StoryPage';
 import { sourceTable } from './draft';
-import { SECTION_META, storySections } from './sections';
+import { SECTION_META, quotes, storySections } from './sections';
+import { plainReceiptLines, plainSourceLines } from './sources';
 import { story } from './story';
 
 const data = new URL('../../data/', import.meta.url);
@@ -99,30 +100,42 @@ describe('sources', () => {
     expect(html.match(/<summary>Sources<\/summary>/g)?.length).toBe(SECTION_META.length);
   });
 
-  test('each section’s key anchors reach it, and the introduction to the receipts does not', () => {
+  test('each section’s key anchors open its disclosure, and the introduction to the receipts is left out', () => {
     const intro = receipts[0]!.slice(0, receipts[0]!.search(/(?:^| )S1[: ]/)).trim();
     expect(intro.length).toBeGreaterThan(0);
     expect(text).not.toContain(intro.slice(0, 40));
-    story.sections.forEach((s, i) => {
-      expect(s.sources[0]).toMatch(new RegExp(`^S${i + 1}[: ]`));
-      expect(receipts[0]).toContain(s.sources[0]!);
-    });
-    for (const later of receipts.slice(1)) expect(story.sections.at(-1)!.sources).toContain(later);
+    story.sections.forEach((s, i) => expect(s.sources[0]).toMatch(new RegExp(`^S${i + 1}[: ]`)));
+    for (const later of receipts.slice(1)) {
+      for (const line of plainReceiptLines(later)) expect(story.sections.at(-1)!.sources).toContain(line);
+    }
   });
 
-  test('each section’s dig table, where it has one, is in its disclosure', () => {
+  test('each section’s dig table, where it has one, closes its disclosure', () => {
     story.sections.forEach((s) => {
       const file = new URL(`receipts/section-${s.number}.md`, data);
       const table = existsSync(file) ? sourceTable(readFileSync(file, 'utf8')) : null;
-      if (table) expect(s.sources.at(-1)).toBe(table);
-      else expect(s.sources.some((x) => x.includes('\n|'))).toBe(false);
+      if (!table) return;
+      const lines = plainSourceLines(table);
+      expect(lines.length).toBeGreaterThan(0);
+      expect(s.sources.slice(-lines.length)).toEqual(lines);
     });
   });
 
+  test('sources print no cairn addresses, raw store numbers or transcript turns', () => {
+    const all = JSON.stringify(story);
+    expect(all).not.toContain('cairn://');
+    for (const line of story.sections.flatMap((s) => s.sources)) {
+      expect(line).not.toMatch(/\b\d{10,}\b/);
+      expect(line).not.toMatch(/\b(?:createdAt|epoch|raw seq)/i);
+      expect(line).not.toMatch(/\b[Tt]urns? \d/);
+    }
+  });
+
   test('nothing from the receipts is on the open surface', () => {
-    expect(surface).not.toContain('cairn://');
     expect(surface).not.toContain('http');
-    for (const s of story.sections) for (const line of s.sources) expect(surface.includes(line.slice(0, 30))).toBe(false);
+    for (const s of story.sections) {
+      for (const line of s.sources.filter((l) => l.length > 40)) expect(surface.includes(line.slice(0, 40))).toBe(false);
+    }
   });
 });
 
@@ -132,7 +145,7 @@ describe('what the page adds to the draft', () => {
   test('every pulled quote is the operator’s words exactly as the prose quotes them', () => {
     for (const s of sections) {
       for (const q of s.pulled) {
-        expect(s.blocks.some((b) => b.kind === 'p' && b.text.includes(`"${q}"`))).toBe(true);
+        expect(s.blocks.some((b) => quotes(b, q))).toBe(true);
         expect(html).toContain(`<blockquote class="pulled">${q.replace(/'/g, '&#x27;').replace(/"/g, '&quot;')}</blockquote>`);
       }
     }
