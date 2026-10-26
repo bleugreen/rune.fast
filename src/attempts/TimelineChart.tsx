@@ -1,12 +1,10 @@
-import { useMemo, useRef, useState, type KeyboardEvent, type ReactElement } from 'react';
+import { useMemo, useRef, type KeyboardEvent, type ReactElement } from 'react';
 import { scaleUtc } from 'd3-scale';
 import { utcDay, utcHour } from 'd3-time';
 import { useWidth } from '../lib/useWidth';
 import { fmtDuration, fmtPacificHm, fmtUtcDayLong, fmtUtcDayShort, fmtUtcHm, pacificZone } from '../lib/time';
 import { fmtInt } from '../lib/numbers';
-import { findMark, type AttemptModel, type ChartModel, type Mark } from './model';
-import { PULLED } from './pulled';
-import { EventCard } from './EventCard';
+import type { AttemptModel, ChartAnchors, ChartModel, Mark } from './model';
 import styles from './TimelineChart.module.css';
 
 /* Layout constants, in CSS pixels. */
@@ -15,30 +13,19 @@ const MARGIN = { top: 26, right: 84, left: 92 };
 const ROW_PITCH = 38;
 const AXIS_GAP = 30;
 const AXIS_HEIGHT = 58;
-const HIT = 14;
-const TOOLTIP_W = 340;
 const ONE_OFF_W = 1.5;
 const AXIS_STEP_HOURS = 6;
+/** Pulled-quote ticks closer than this share one numeral label. */
+const QUOTE_LABEL_GAP = 12;
 
 /** Short row labels where the attempt's own name will not fit the label column. */
 const ROW_LABEL: Readonly<Record<string, string>> = { L2: 'Lab run 2' };
 
 type Scale = (t: number) => number;
 
-/**
- * The chart draws three things: logged-in time, stops while the account was in
- * the world, and deaths, plus a numbered tick for each pulled quote. Every other
- * event stays reachable from the keyboard and the reading pane.
- */
-function drawn(m: Mark, quoted: ReadonlyMap<string, number>): boolean {
-  return m.kind === 'death' || (m.kind === 'stop' && m.inWorld !== false) || quoted.has(m.key);
-}
-
-/** Pulled-quote ticks closer than this share one numeral label. */
-const QUOTE_LABEL_GAP = 12;
-
-function Glyph({ m, x, y, n }: { m: Mark; x: number; y: number; n?: number }) {
-  if (n !== undefined) return <line className={styles.quoteTick} x1={x} x2={x} y1={y - 5} y2={y - 12} />;
+function Glyph({ m, x, y, anchors }: { m: Mark; x: number; y: number; anchors: ChartAnchors }) {
+  if (anchors.quoteNumber.has(m.key)) return <line className={styles.quoteTick} x1={x} x2={x} y1={y - 5} y2={y - 12} />;
+  if (m.key === anchors.finish?.key) return null; // the finish number is its glyph
   if (m.kind === 'death') return <circle className={styles.death} cx={x} cy={y} r={4.5} />;
   return <line className={styles.stop} x1={x} x2={x} y1={y - 5} y2={y + 5} />;
 }
@@ -65,9 +52,11 @@ function QuoteNumerals({ marks, x, y }: { marks: Mark[]; x: Scale; y: (m: Mark) 
   );
 }
 
-function AttemptLine({ am, x, y, quoted }: { am: AttemptModel; x: Scale; y: number; quoted: ReadonlyMap<string, number> }) {
+function AttemptLine({ am, x, y, anchors }: { am: AttemptModel; x: Scale; y: number; anchors: ChartAnchors }) {
   const [l0, l1] = am.line;
-  const marks = am.marks.filter((m) => drawn(m, quoted)).sort((a, b) => Number(a.kind === 'death') - Number(b.kind === 'death'));
+  const marks = am.marks
+    .filter((m) => anchors.keys.has(m.key))
+    .sort((a, b) => Number(a.kind === 'death') - Number(b.kind === 'death'));
   return (
     <g className={am.scored ? undefined : styles.faint}>
       {am.spans ? (
@@ -93,7 +82,7 @@ function AttemptLine({ am, x, y, quoted }: { am: AttemptModel; x: Scale; y: numb
         </text>
       ))}
       {marks.map((m) => (
-        <Glyph key={m.key} m={m} x={x(m.t)} y={y} n={quoted.get(m.key)} />
+        <Glyph key={m.key} m={m} x={x(m.t)} y={y} anchors={anchors} />
       ))}
     </g>
   );
@@ -101,16 +90,18 @@ function AttemptLine({ am, x, y, quoted }: { am: AttemptModel; x: Scale; y: numb
 
 interface Props {
   model: ChartModel;
+  anchors: ChartAnchors;
   finishTicks: number;
-  selected: Mark | null;
+  /** The mark the reading pane shows: the previewed one while hovering, else the pinned one. */
+  shown: Mark | null;
+  onPreview: (m: Mark | null) => void;
   onSelect: (m: Mark) => void;
 }
 
-export function TimelineChart({ model, finishTicks, selected, onSelect }: Props) {
+export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, onSelect }: Props) {
   const [measureRef, measured] = useWidth<HTMLDivElement>();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const [hover, setHover] = useState<{ mark: Mark; px: number; py: number } | null>(null);
 
   const width = Math.max(measured, MIN_WIDTH);
   const rowY = (i: number) => MARGIN.top + i * ROW_PITCH;
@@ -123,80 +114,65 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
   );
   const x: Scale = (t) => scale(t);
 
-  const quotes = useMemo(() => PULLED.map((q) => findMark(model, q.attempt, q.utc)), [model]);
-  const quoted = useMemo(() => new Map(quotes.map((m, i) => [m.key, i + 1])), [quotes]);
-
-  /** Every event per row, for the keyboard; the drawn ones, for the pointer. */
-  const rowMarks = useMemo(
-    () => model.rows.map((row) => row.flatMap((am) => am.marks).sort((a, b) => a.t - b.t)),
-    [model.rows],
+  /** The anchors of each row, in time order: what the pointer and the arrow keys move between. */
+  const rowAnchors = useMemo(
+    () => model.rows.map((row) => row.flatMap((am) => am.marks.filter((m) => anchors.keys.has(m.key))).sort((a, b) => a.t - b.t)),
+    [model.rows, anchors],
   );
-  const rowTargets = useMemo(() => rowMarks.map((list) => list.filter((m) => drawn(m, quoted))), [rowMarks, quoted]);
   const rowOf = useMemo(() => {
     const m = new Map<string, number>();
-    rowMarks.forEach((list, i) => list.forEach((mk) => m.set(mk.key, i)));
+    model.rows.forEach((row, i) => row.forEach((am) => am.marks.forEach((mk) => m.set(mk.key, i))));
     return m;
-  }, [rowMarks]);
+  }, [model.rows]);
 
   const ticks = scale.ticks(utcHour.every(AXIS_STEP_HOURS) ?? utcHour).map((d) => +d);
   const [d0, d1] = model.domain;
   const midnights = utcDay.range(new Date(d0), new Date(d1), 1).map((d) => +d).filter((t) => t > d0);
   const dayBands = [d0, ...midnights].map((from, i, all) => ({ from, to: all[i + 1] ?? d1 }));
-
   const lastRow = model.rows.findIndex((r) => r.includes(model.last));
 
-  const locate = (e: { clientX: number; clientY: number }) => {
+  /** The anchor nearest the pointer in the row under it, however far along the row. */
+  const locate = (e: { clientX: number; clientY: number }): Mark | null => {
     const r = svgRef.current?.getBoundingClientRect();
     if (!r) return null;
     const px = e.clientX - r.left;
     const py = e.clientY - r.top;
     const ri = Math.round((py - MARGIN.top) / ROW_PITCH);
-    const list = rowTargets[ri];
-    if (!list || Math.abs(py - rowY(ri)) > ROW_PITCH / 2) return null;
-    let best: Mark | null = null;
-    let bestD = HIT;
-    for (const m of list) {
-      const d = Math.abs(x(m.t) - px);
-      if (d < bestD) {
-        bestD = d;
-        best = m;
-      }
-    }
-    return best ? { mark: best, px, py } : null;
+    const list = rowAnchors[ri];
+    if (!list?.length || Math.abs(py - rowY(ri)) > ROW_PITCH / 2) return null;
+    return list.reduce((a, b) => (Math.abs(x(b.t) - px) < Math.abs(x(a.t) - px) ? b : a));
   };
 
   const reveal = (m: Mark) => {
     const el = scrollRef.current;
     if (!el) return;
     const px = x(m.t);
-    if (px < el.scrollLeft + 40 || px > el.scrollLeft + el.clientWidth - 40) {
-      el.scrollLeft = px - el.clientWidth / 2;
-    }
+    if (px < el.scrollLeft + 40 || px > el.scrollLeft + el.clientWidth - 40) el.scrollLeft = px - el.clientWidth / 2;
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const cur = selected ?? rowMarks[0]?.[0];
+    const all = anchors.list;
+    const cur = shown ?? all[0];
     if (!cur) return;
-    const ri = rowOf.get(cur.key) ?? 0;
-    const list = rowMarks[ri] ?? [];
-    const i = list.findIndex((m) => m.key === cur.key);
+    const i = all.findIndex((m) => m.key === cur.key);
     let next: Mark | undefined;
     switch (e.key) {
       case 'ArrowRight':
-        next = list[i + 1];
+        next = all[i + 1];
         break;
       case 'ArrowLeft':
-        next = list[i - 1];
+        next = all[i - 1];
         break;
       case 'Home':
-        next = list[0];
+        next = all[0];
         break;
       case 'End':
-        next = list.at(-1);
+        next = all.at(-1);
         break;
       case 'ArrowDown':
       case 'ArrowUp': {
-        const other = rowMarks[ri + (e.key === 'ArrowDown' ? 1 : -1)];
+        const ri = rowOf.get(cur.key) ?? 0;
+        const other = rowAnchors[ri + (e.key === 'ArrowDown' ? 1 : -1)];
         next = other?.reduce((a, b) => (Math.abs(b.t - cur.t) < Math.abs(a.t - cur.t) ? b : a));
         break;
       }
@@ -210,23 +186,10 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
     }
   };
 
-  const ringAt = (m: Mark) => {
-    const ri = rowOf.get(m.key) ?? 0;
-    return { cx: x(m.t), cy: rowY(ri) - (quoted.has(m.key) ? 9 : 0) };
-  };
-  const sel = selected ? ringAt(selected) : null;
-  const hov = hover && hover.mark.key !== selected?.key ? ringAt(hover.mark) : null;
-
-  // The tooltip lives outside the scroller so it is never clipped; place it in the visible frame.
-  const tooltipStyle = (() => {
-    if (!hover) return undefined;
-    const el = scrollRef.current;
-    const px = hover.px - (el?.scrollLeft ?? 0);
-    const viewW = el?.clientWidth ?? width;
-    const left = px + 14 + TOOLTIP_W > viewW ? Math.max(0, px - 14 - TOOLTIP_W) : px + 14;
-    const below = hover.py < height * 0.4;
-    return { left, top: below ? hover.py + 14 : hover.py - 14, transform: below ? undefined : 'translateY(-100%)', width: TOOLTIP_W };
-  })();
+  const ring = shown
+    ? { cx: x(shown.t), cy: rowY(rowOf.get(shown.key) ?? 0) - (anchors.quoteNumber.has(shown.key) ? 9 : 0) }
+    : null;
+  const finishX = width - MARGIN.right + 10;
 
   return (
     <div ref={measureRef} className={styles.root}>
@@ -235,7 +198,7 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
         className={styles.scroller}
         tabIndex={0}
         role="group"
-        aria-label="Attempts timeline. Arrow keys move between events; the reading pane below shows the selected one."
+        aria-label="Attempts timeline. Arrow keys move between the marked events; the reading pane below shows the selected one."
         onKeyDown={onKeyDown}
       >
         <svg
@@ -243,20 +206,24 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
           className={styles.svg}
           width={width}
           height={height}
-          onPointerMove={(e) => setHover(locate(e))}
-          onPointerLeave={() => setHover(null)}
+          onPointerMove={(e) => onPreview(locate(e))}
+          onPointerLeave={() => onPreview(null)}
           onClick={(e) => {
             const hit = locate(e);
-            if (hit) onSelect(hit.mark);
+            if (hit) onSelect(hit);
           }}
-          style={{ cursor: hover ? 'pointer' : 'default' }}
           aria-hidden="true"
         >
           {midnights.map((t) => (
             <line key={t} className={styles.midnight} x1={x(t)} x2={x(t)} y1={MARGIN.top - 18} y2={axisY} />
           ))}
 
-          {sel && <line className={styles.guide} x1={sel.cx} x2={sel.cx} y1={sel.cy + 7} y2={axisY} />}
+          {/* Row bands: the whole row is the pointer target. */}
+          {model.rows.map((_, ri) => (
+            <rect key={ri} className={styles.band} x={MARGIN.left} y={rowY(ri) - ROW_PITCH / 2} width={width - MARGIN.left} height={ROW_PITCH} />
+          ))}
+
+          {ring && <line className={styles.guide} x1={ring.cx} x2={ring.cx} y1={ring.cy + 7} y2={axisY} />}
 
           {model.rows.map((row, ri) => (
             <g key={ri}>
@@ -269,22 +236,21 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
                 </text>
               ))}
               {row.map((am) => (
-                <AttemptLine key={am.attempt.id} am={am} x={x} y={rowY(ri)} quoted={quoted} />
+                <AttemptLine key={am.attempt.id} am={am} x={x} y={rowY(ri)} anchors={anchors} />
               ))}
             </g>
           ))}
 
-          <QuoteNumerals marks={quotes} x={x} y={(m) => rowY(rowOf.get(m.key) ?? 0)} />
+          <QuoteNumerals marks={anchors.quotes} x={x} y={(m) => rowY(rowOf.get(m.key) ?? 0)} />
 
-          <text className={styles.finish} x={width - MARGIN.right + 10} y={rowY(lastRow) + 8}>
+          <text className={styles.finish} x={finishX} y={rowY(lastRow) + 8}>
             {fmtInt(finishTicks)}
           </text>
-          <text className={styles.finishUnit} x={width - MARGIN.right + 11} y={rowY(lastRow) + 21}>
+          <text className={styles.finishUnit} x={finishX + 1} y={rowY(lastRow) + 21}>
             ticks
           </text>
 
-          {hov && <circle className={styles.ringHover} cx={hov.cx} cy={hov.cy} r={7.5} />}
-          {sel && <circle className={styles.ring} cx={sel.cx} cy={sel.cy} r={7.5} />}
+          {ring && <circle className={styles.ring} cx={ring.key === undefined ? ring.cx : ring.cx} cy={ring.cy} r={7.5} />}
 
           <line className={styles.axis} x1={MARGIN.left} x2={width - MARGIN.right} y1={axisY} y2={axisY} />
           {ticks.map((t, i) => (
@@ -308,19 +274,13 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
         </svg>
       </div>
 
-      {hover && (
-        <div className={styles.tooltip} style={tooltipStyle} role="presentation">
-          <EventCard mark={hover.mark} attemptName={model.byId.get(hover.mark.attemptId)?.attempt.name ?? ''} compact />
-        </div>
-      )}
-
       <ol className={styles.quotes}>
-        {quotes.map((m, i) => (
+        {anchors.quotes.map((m, i) => (
           <li key={m.key}>
             <button
               type="button"
               className={styles.quote}
-              data-selected={selected?.key === m.key || undefined}
+              data-selected={shown?.key === m.key || undefined}
               onClick={() => onSelect(m)}
             >
               <span className={styles.quoteNum}>{i + 1}</span>
