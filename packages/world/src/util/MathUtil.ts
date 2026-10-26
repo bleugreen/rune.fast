@@ -1,5 +1,3 @@
-import JavaRandom from "java-random";
-
 export const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max);
 
 export const lerp = (start: number, end: number, progress: number) => {
@@ -42,21 +40,6 @@ export function nextPow2(i: number): number {
 
 export function toSigned16bit(n: number) {
     return (n << 16) >> 16;
-}
-
-export function nextIntJagex(random: JavaRandom, bound: number): number {
-    if (bound <= 0) {
-        throw new Error("bound must be positive");
-    }
-    if (isPowerOfTwo(bound)) {
-        return Number((BigInt(bound) * (BigInt(random.nextInt()) & 0xffffffffn)) >> 32n);
-    }
-    const maxValue = (-0x80000000 - (0x100000000 % bound | 0)) | 0;
-    let rndValue: number;
-    do {
-        rndValue = random.nextInt();
-    } while (rndValue >= maxValue);
-    return boundJagex(rndValue, bound);
 }
 
 function boundJagex(value: number, bound: number): number {

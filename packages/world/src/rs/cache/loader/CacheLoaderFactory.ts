@@ -20,7 +20,6 @@ import { CacheIndex } from "../CacheIndex";
 import { CacheInfo } from "../CacheInfo";
 import { CacheSystem } from "../CacheSystem";
 import { detectCacheType } from "../CacheType";
-import { Dat2CacheLoaderFactory } from "./Dat2CacheLoaderFactory";
 import { DatCacheLoaderFactory } from "./DatCacheLoaderFactory";
 import { LegacyCacheLoaderFactory } from "./LegacyCacheLoaderFactory";
 
@@ -68,8 +67,7 @@ export function getCacheLoaderFactory(
             return new LegacyCacheLoaderFactory(cacheInfo, cacheSystem);
         case "dat":
             return new DatCacheLoaderFactory(cacheInfo, cacheType, cacheSystem);
-        case "dat2":
-            return new Dat2CacheLoaderFactory(cacheInfo, cacheType, cacheSystem);
     }
-    throw new Error("Not implemented");
+    // dat2 (revision 410+, OSRS) and its procedural textures are not part of this port.
+    throw new Error("Unsupported cache type: " + cacheType);
 }
