@@ -1,0 +1,52 @@
+[
+  {
+    "id": "levelup-firemaking",
+    "src": "/clips/levelup-firemaking.mp4",
+    "poster": "/clips/levelup-firemaking.jpg",
+    "width": 764,
+    "height": 502,
+    "seconds": 12.96,
+    "caption": "Firemaking 80 to 83. The bot answers each level-up page in the tick it opens and lights the next log in that same tick, so the four-tick rhythm holds.",
+    "time": "Lab, 23 Oct 2026, 21:50:03–21:50:16 UTC",
+    "step": "Firemaking, rehearsed",
+    "source": "The lab capture of the Firemaking step module from level 80, 5.52 s to 18.48 s into the capture; the counter is the server tick its trace records.",
+    "trace": "rs-sdk film/samples/firemaking-80/trace.jsonl",
+    "ticks": [[0,67],[91,68],[490,69],[885,70],[1287,71],[1700,72],[2095,73],[2490,74],[2892,75],[3299,76],[3696,77],[4101,78],[4502,79],[4906,80],[5302,81],[5704,82],[6096,83],[6511,84],[6901,85],[7293,86],[7689,87],[8094,88],[8496,89],[8893,90],[9297,91],[9715,92],[10095,93],[10499,94],[11307,96],[11702,97],[12100,98],[12501,99],[12910,100]]
+  },
+  {
+    "id": "finish-rekit",
+    "src": "/clips/finish-rekit.mp4",
+    "poster": "/clips/finish-rekit.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 12,
+    "caption": "Lumbridge, seconds after the recovery login. A helper trades the rebuilt kit across and the inventory fills: 1,500 cannonballs, the potions and the food.",
+    "time": "26 Oct 2026, 10:27:15–10:27:27 UTC",
+    "step": "The recovery’s re-kit",
+    "source": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the SDK log stamps on screen."
+  },
+  {
+    "id": "finish-cannon",
+    "src": "/clips/finish-cannon.mp4",
+    "poster": "/clips/finish-cannon.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 14.5,
+    "caption": "Under the spiders in the Wilderness. The account is poisoned as it arrives, drinks its antipoison, sets the cannon down piece by piece and loads it with 30 cannonballs; the first Ranged level follows within seconds.",
+    "time": "26 Oct 2026, 10:28:39–10:28:53 UTC",
+    "step": "The cannon step, the run’s last combat",
+    "source": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the SDK log stamps on screen."
+  },
+  {
+    "id": "finish-agility99",
+    "src": "/clips/finish-agility99.mp4",
+    "poster": "/clips/finish-agility99.jpg",
+    "width": 1036,
+    "height": 680,
+    "seconds": 14,
+    "caption": "The last obstacles of the Wilderness Agility Course, the level-up message for Agility 99, and the runner logging out in the same tick.",
+    "time": "26 Oct 2026, 11:07:41–11:07:55 UTC",
+    "step": "Agility 75 to 99, the run’s last step",
+    "source": "The run host’s screen recording of attempt 5, cropped to the game canvas and scaled to three quarters; times from the SDK log stamps on screen."
+  }
+]

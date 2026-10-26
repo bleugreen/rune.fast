@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { clipById } from '../clips/registry';
 import { GROUPS, TRICKS, cardText, headlineFacts, hi, inGroup, lo, rejected, savedShare } from './model';
 
 const BASES = ['measured', 'inferred', 'estimated'];
@@ -46,12 +45,14 @@ describe('the data', () => {
     }
   });
 
-  test('every clip and poster is in public/', () => {
-    for (const t of TRICKS) {
-      if (!t.clip) continue;
-      expect(existsSync(join('public', t.clip.src))).toBe(true);
-      expect(existsSync(join('public', t.clip.poster))).toBe(true);
-    }
+  test('every card clip is in the clip registry', () => {
+    for (const t of TRICKS) if (t.clip) expect(() => clipById(t.clip!)).not.toThrow();
+  });
+
+  test('the level-up and cannon cards carry their clips', () => {
+    const byId = new Map(TRICKS.map((t) => [t.id, t]));
+    expect(byId.get('level-up-dismissal')!.clip).toBe('levelup-firemaking');
+    expect(byId.get('cannon')!.clip).toBe('finish-cannon');
   });
 });
 

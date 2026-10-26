@@ -145,6 +145,7 @@ export function StoryPage() {
 
             {s.blocks.map((b, j) => {
               const pulled = s.pulledAt.get(j);
+              const figures = s.figuresAt.get(j) ?? [];
               return (
                 <Fragment key={j}>
                   {b.kind === 'p' ? (
@@ -166,14 +167,9 @@ export function StoryPage() {
                       ))}
                     </aside>
                   )}
-                  {j === s.figureIndex && (
-                    <StoryFigure
-                      figure={s.figure}
-                      model={model}
-                      anchors={anchors}
-                      record={record}
-                    />
-                  )}
+                  {figures.map((f, k) => (
+                    <StoryFigure key={k} figure={f} model={model} anchors={anchors} record={record} />
+                  ))}
                 </Fragment>
               );
             })}

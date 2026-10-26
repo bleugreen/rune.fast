@@ -1,11 +1,11 @@
 import type { DraftSection, Story, StoryBlock } from './draft';
 
-/** The one figure each section carries. */
+/** A figure the page sets between two blocks of a section's prose. */
 export type StoryFigure =
   /** The record against this run, in ticks. */
   | { kind: 'ladder' }
-  /** A 10-15 s lab clip; until one is placed here, a slot that links to the tricks page. */
-  | { kind: 'clip' }
+  /** A 10-15 s clip from data/clips.json; with no id yet, a slot that links to the tricks page. */
+  | { kind: 'clip'; id?: string }
   /** The cost page's day chart, linked. */
   | { kind: 'cost' }
   /** The attempts chart, cropped to the section's hours (instants given in UTC; the chart reads Pacific). */
@@ -16,9 +16,8 @@ interface SectionMeta {
   id: string;
   /** Pacific, as the prose dates things; the draft's headings carry no dates. */
   dates: string;
-  figure: StoryFigure;
-  /** The figure follows the one block of prose that contains this text. */
-  figureAfter: string;
+  /** Each figure follows the one block of prose that contains its `after` text; the first is the section's own figure. */
+  figures: readonly { figure: StoryFigure; after: string }[];
   /**
    * The operator's short lines, set again in the margin beside the block that
    * carries them: either quoted inline in a paragraph (the text between the double
@@ -34,56 +33,56 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-number',
     dates: '20 Oct 2026',
-    figure: { kind: 'ladder' },
-    figureAfter: 'The number that never moved was 35,916 ticks',
+    figures: [{ figure: { kind: 'ladder' }, after: 'The number that never moved was 35,916 ticks' }],
     pulled: ['sounds like a plan', 'Sure!', 'absolutely! Swarm out my guy :)'],
     links: [{ text: 'RuneScape Bench: MMOs for Agents', href: 'https://www.youtube.com/watch?v=cNm4zyUtWj0' }],
   },
   {
     id: 'the-tricks',
     dates: '20–21 Oct',
-    figure: { kind: 'clip' },
-    figureAfter: 'Five minutes later main had the wine script open',
+    figures: [{ figure: { kind: 'clip' }, after: 'Five minutes later main had the wine script open' }],
     pulled: [],
     links: [],
   },
   {
     id: 'the-swarm',
     dates: '21–22 Oct',
-    figure: { kind: 'cost' },
-    figureAfter: 'The day cost $5,448',
+    figures: [{ figure: { kind: 'cost' }, after: 'The day cost $5,448' }],
     pulled: [],
     links: [],
   },
   {
     id: 'four-attempts',
     dates: '23–24 Oct',
-    figure: { kind: 'timeline', crop: ['2026-10-23T17:00Z', '2026-10-24T17:00Z'] },
-    figureAfter: 'ok fine one more attempt',
+    figures: [
+      { figure: { kind: 'timeline', crop: ['2026-10-23T17:00Z', '2026-10-24T17:00Z'] }, after: 'ok fine one more attempt' },
+    ],
     pulled: ['ok fine one more attempt'],
     links: [],
   },
   {
     id: 'twenty-eight-hours',
     dates: 'Sat 24–Sun 25 Oct',
-    figure: { kind: 'timeline', crop: ['2026-10-25T06:00Z', '2026-10-25T22:00Z'] },
-    figureAfter: 'Attempt 5 logged in',
+    figures: [{ figure: { kind: 'timeline', crop: ['2026-10-25T06:00Z', '2026-10-25T22:00Z'] }, after: 'Attempt 5 logged in' }],
     pulled: ['wall clock is free, ticks are not'],
     links: [],
   },
   {
     id: 'the-death',
     dates: '25–26 Oct',
-    figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] },
-    figureAfter: 'incredible work couldnt have done it without you',
+    figures: [
+      { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'incredible work couldnt have done it without you' },
+      // The kit the paragraph says was rebuilt overnight, arriving in the trade after the recovery login.
+      { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt the lost kit' },
+    ],
     pulled: ['Every tick counts'],
     links: [],
   },
 ];
 
 export interface StorySection extends SectionMeta, DraftSection {
-  /** The block the figure follows. */
-  figureIndex: number;
+  /** The figures by the index of the block they follow. */
+  figuresAt: ReadonlyMap<number, StoryFigure[]>;
   /** Pulled quotes by the index of the paragraph that quotes them, in reading order. */
   pulledAt: ReadonlyMap<number, string[]>;
 }
@@ -103,12 +102,17 @@ export function storySections(story: Story): StorySection[] {
     const meta = SECTION_META[i]!;
     const where = `Section ${d.number}`;
 
-    const hits = d.blocks.flatMap((b, j) => (blockText(b).includes(meta.figureAfter) ? [j] : []));
-    if (hits.length !== 1) throw new Error(`${where}: '${meta.figureAfter}' is in ${hits.length} blocks, not one`);
-    const anchor = d.blocks[hits[0]!]!;
-    // A paragraph ending in a colon introduces the quotation under it; a figure must not come between them.
-    if (anchor.kind === 'p' && anchor.text.trimEnd().endsWith(':')) {
-      throw new Error(`${where}: the figure would split '${meta.figureAfter}' from the quotation it introduces`);
+    const figuresAt = new Map<number, StoryFigure[]>();
+    for (const { figure, after } of meta.figures) {
+      const hits = d.blocks.flatMap((b, j) => (blockText(b).includes(after) ? [j] : []));
+      if (hits.length !== 1) throw new Error(`${where}: '${after}' is in ${hits.length} blocks, not one`);
+      const at = hits[0]!;
+      const anchor = d.blocks[at]!;
+      // A paragraph ending in a colon introduces the quotation under it; a figure must not come between them.
+      if (anchor.kind === 'p' && anchor.text.trimEnd().endsWith(':')) {
+        throw new Error(`${where}: the figure would split '${after}' from the quotation it introduces`);
+      }
+      figuresAt.set(at, [...(figuresAt.get(at) ?? []), figure]);
     }
 
     const pulledAt = new Map<number, string[]>();
@@ -127,6 +131,6 @@ export function storySections(story: Story): StorySection[] {
       if (!d.sources.some((s) => s.includes(l.href))) throw new Error(`${where}: ${l.href} is not in its sources`);
     }
 
-    return { ...meta, ...d, figureIndex: hits[0]!, pulledAt };
+    return { ...meta, ...d, figuresAt, pulledAt };
   });
 }
