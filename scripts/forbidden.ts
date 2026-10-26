@@ -10,6 +10,7 @@ export const FORBIDDEN: ReadonlyArray<readonly [string, RegExp]> = [
   ['game-process token', /\bmv[a-z0-9]{6}\b/],
   ['home directory path', /\/Users\/|\/home\//],
   ['message id field', /msg_id/],
+  ['cairn address', /cairn:\/\//],
   ['IPv4 address', /\b(?:\d{1,3}\.){3}\d{1,3}\b/],
 ];
 
