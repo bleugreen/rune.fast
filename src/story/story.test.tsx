@@ -174,6 +174,17 @@ describe('what the page adds to the draft', () => {
     expect(html.match(/<figure/g)?.length).toBe(placed);
   });
 
+  test('the death section sets its timeline after the death beat, the re-kit clip after the overnight paragraph, and the Agility clip last', () => {
+    const s = sections.find((x) => x.id === 'the-death')!;
+    const placed = [...s.figuresAt].sort(([a], [b]) => a - b).flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
+    expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['timeline', 'finish-rekit', 'finish-agility99']);
+    const [death, rekit] = placed;
+    expect(quotes(s.blocks[death!.at]!, 'I WANT A #1')).toBe(true);
+    expect(death!.f).toEqual({ kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] });
+    const rekitBlock = s.blocks[rekit!.at]!;
+    expect(rekitBlock.kind === 'p' && rekitBlock.text.startsWith('Overnight the helpers rebuilt the lost kit')).toBe(true);
+  });
+
   test('each clip in the story renders with its caption, time and step', () => {
     const ids = SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' && f.figure.id ? [f.figure.id] : [])));
     expect(ids.length).toBeGreaterThan(0);
