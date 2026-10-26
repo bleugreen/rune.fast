@@ -196,8 +196,8 @@ export function CostPage() {
           <SwarmChart model={m} label={swarmTitle} />
         </figure>
         <p className={styles.prose}>
-          The swarm spawned {fmtInt(g0.spawns + g1.spawns)} issues on {new Date(g0.t).getUTCDate()} and{' '}
-          {fmtUtcDayMonth(g1.t)} and merged {fmtInt(g0.merges + g1.merges)}; every later day spawned fewer than either.
+          The swarm spawned {fmtInt(swarm.growthSpawns)} issues on {new Date(g0.t).getUTCDate()} and{' '}
+          {fmtUtcDayMonth(g1.t)} and merged {fmtInt(swarm.growthMerges)}; every later day spawned fewer than either.
           Messages between units peaked on {fmtUtcDayMonth(swarm.messagePeak.t)} too, at{' '}
           {fmtInt(swarm.messagePeak.messages)}.
         </p>

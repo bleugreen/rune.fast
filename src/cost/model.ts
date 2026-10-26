@@ -147,6 +147,8 @@ export interface CostModel {
     turns: number;
     /** The two adjacent days that spawned the most, in order. */
     growth: [SwarmDay, SwarmDay];
+    growthSpawns: number;
+    growthMerges: number;
     spawnPeak: SwarmDay;
     mergePeak: SwarmDay;
     messagePeak: SwarmDay;
@@ -188,6 +190,7 @@ export function buildCostModel(inputs: CostInputs, timeline: Timeline): CostMode
     return d.spawns + swarmDays[i - 1]!.spawns;
   });
   const gi = swarmDays.indexOf(growthEnd);
+  const growth: [SwarmDay, SwarmDay] = [swarmDays[gi - 1]!, growthEnd];
 
   return {
     total: cost.total,
@@ -219,7 +222,9 @@ export function buildCostModel(inputs: CostInputs, timeline: Timeline): CostMode
       swaps: events.backend_swaps,
       runs: summary.runs,
       turns: summary.turns,
-      growth: [swarmDays[gi - 1]!, growthEnd],
+      growth,
+      growthSpawns: growth[0].spawns + growth[1].spawns,
+      growthMerges: growth[0].merges + growth[1].merges,
       spawnPeak: argmax(swarmDays, (d) => d.spawns),
       mergePeak: argmax(swarmDays, (d) => d.merges),
       messagePeak: argmax(swarmDays, (d) => d.messages),
