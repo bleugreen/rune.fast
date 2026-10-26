@@ -14,7 +14,7 @@ export type StoryFigure =
 interface SectionMeta {
   /** The section's anchor on the page. */
   id: string;
-  /** From the story spine; the draft does not date its sections. */
+  /** Pacific, as the prose dates things; the draft's headings carry no dates. */
   dates: string;
   figure: StoryFigure;
   /** The figure follows the one block of prose that contains this text. */
@@ -41,7 +41,7 @@ export const SECTION_META: readonly SectionMeta[] = [
   },
   {
     id: 'the-tricks',
-    dates: '20–22 Oct',
+    dates: '20–21 Oct',
     figure: { kind: 'clip' },
     figureAfter: 'Five minutes later main had the wine script open',
     pulled: [],
@@ -65,7 +65,7 @@ export const SECTION_META: readonly SectionMeta[] = [
   },
   {
     id: 'twenty-eight-hours',
-    dates: '25–26 Oct',
+    dates: 'Sat 24–Sun 25 Oct',
     figure: { kind: 'timeline', crop: ['2026-10-25T06:00Z', '2026-10-25T22:00Z'] },
     figureAfter: 'Attempt 5 logged in',
     pulled: ['wall clock is free, ticks are not'],
@@ -73,7 +73,7 @@ export const SECTION_META: readonly SectionMeta[] = [
   },
   {
     id: 'the-death',
-    dates: '26 Oct',
+    dates: '25–26 Oct',
     figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] },
     figureAfter: 'incredible work couldnt have done it without you',
     pulled: ['Every tick counts'],
