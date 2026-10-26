@@ -37,7 +37,7 @@ function StatusBar({ segments }: { segments: readonly StatusSegment[] }) {
       </div>
       <ol className={styles.statusLabels} style={{ gridTemplateColumns: columns }}>
         {segments.map((s) => (
-          <li key={s.key}>
+          <li key={s.key} data-segment={s.key}>
             <span className={styles.statusValue}>{fmtUsd(s.usd)}</span>
             <span>{STATUS_LABEL[s.key](s.count)}</span>
           </li>

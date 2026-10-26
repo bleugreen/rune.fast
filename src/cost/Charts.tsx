@@ -94,7 +94,7 @@ export function DayLegend() {
 /* ------------------------------------------------------------------------- */
 
 const CONC_H = 270;
-const CONC_M = { top: 30, right: 6, bottom: 26, left: 30 };
+const CONC_M = { top: 40, right: 6, bottom: 26, left: 30 };
 
 /** Numerals over bands that nearly coincide are drawn as one label ('1 2 3'). */
 function groupLabels(items: { x: number; n: number }[]) {
@@ -122,7 +122,6 @@ export function ConcurrencyChart({ model, label }: { model: CostModel; label: st
   const bands = model.attempts.map((a) => ({ ...a, x0: x(a.from), x1: Math.max(x(a.to), x(a.from) + 1.5) }));
   const px = x(peak.t);
   const py = y(peak.v);
-  const peakRight = px < width - 150;
 
   return (
     <div ref={ref} className={styles.root}>
@@ -155,10 +154,11 @@ export function ConcurrencyChart({ model, label }: { model: CostModel; label: st
             </text>
           ))}
         <circle className={styles.peakDot} cx={px} cy={py} r={3} />
-        <text className={styles.peakValue} x={px + (peakRight ? 8 : -8)} y={py + 4} textAnchor={peakRight ? 'start' : 'end'}>
+        {/* Above the peak, nothing on the curve can reach the label. */}
+        <text className={styles.peakValue} x={px + 3} y={py - 21} textAnchor="end">
           {fmtInt(Math.round(peak.v))} turns
         </text>
-        <text className={styles.peakWhen} x={px + (peakRight ? 8 : -8)} y={py + 18} textAnchor={peakRight ? 'start' : 'end'}>
+        <text className={styles.peakWhen} x={px + 3} y={py - 8} textAnchor="end">
           {fmtPacificWeekdayDay(peak.t)}, {fmtPacificHm(peak.t)} {pacificZone(peak.t)}
         </text>
       </svg>
@@ -171,7 +171,9 @@ export function ConcurrencyChart({ model, label }: { model: CostModel; label: st
 /* ------------------------------------------------------------------------- */
 
 const SWARM_H = 230;
-const SWARM_M = { top: 28, right: 24, bottom: 26, left: 30 };
+const SWARM_M = { top: 28, right: 62, bottom: 26, left: 30 };
+/** Least vertical distance between the two series names at the lines' ends. */
+const END_LABEL_GAP = 13;
 
 export function SwarmChart({ model, label }: { model: CostModel; label: string }) {
   const [ref, width] = useChartWidth();
@@ -181,8 +183,13 @@ export function SwarmChart({ model, label }: { model: CostModel; label: string }
   const y = scaleLinear().domain([0, max(days, (d) => d.spawns) ?? 0]).nice(4).range([base, SWARM_M.top]);
   const series = [
     { key: 'spawns', cls: styles.spawns, at: (d: (typeof days)[number]) => d.spawns, peak: spawnPeak, word: 'spawned', dy: -9 },
-    { key: 'merges', cls: styles.merges, at: (d: (typeof days)[number]) => d.merges, peak: mergePeak, word: 'merged', dy: 16 },
+    { key: 'merges', cls: styles.merges, at: (d: (typeof days)[number]) => d.merges, peak: mergePeak, word: 'merged', dy: 22 },
   ] as const;
+  const last = days.at(-1)!;
+  const xEnd = x(last.key)! + 8;
+  const [ySpawn, yMerge] = series.map((s) => y(s.at(last)) + 3.5) as [number, number];
+  const spread = Math.max(0, (END_LABEL_GAP - (yMerge - ySpawn)) / 2);
+  const endY = [ySpawn - spread, yMerge + spread];
 
   return (
     <div ref={ref} className={styles.root}>
@@ -201,10 +208,15 @@ export function SwarmChart({ model, label }: { model: CostModel; label: string }
             {days.map((d) => (
               <circle key={d.key} className={s.cls} cx={x(d.key)} cy={y(s.at(d))} r={2.25} />
             ))}
-            <text className={styles.seriesLabel} x={x(s.peak.key)} y={y(s.at(s.peak)) + s.dy} textAnchor="middle">
-              {fmtInt(s.at(s.peak))} {s.word}
+            <text className={styles.peakNumber} x={x(s.peak.key)} y={y(s.at(s.peak)) + s.dy} textAnchor="middle">
+              {fmtInt(s.at(s.peak))}
             </text>
           </g>
+        ))}
+        {series.map((s, i) => (
+          <text key={s.key} className={styles.seriesLabel} x={xEnd} y={endY[i]}>
+            {s.word}
+          </text>
         ))}
         {days.map((d) => (
           <text key={d.key} className={styles.day} x={x(d.key)} y={base + 17} textAnchor="middle">
