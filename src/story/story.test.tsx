@@ -133,9 +133,15 @@ describe('sources', () => {
 
   test('nothing from the receipts is on the open surface', () => {
     expect(surface).not.toContain('http');
+    // Source lines often open with the quote the prose prints; what must stay closed is where and when it was said.
     for (const s of story.sections) {
-      for (const line of s.sources.filter((l) => l.length > 40)) expect(surface.includes(line.slice(0, 40))).toBe(false);
+      expect(surface.includes(s.sources[0]!)).toBe(false);
+      for (const line of s.sources) {
+        const where = line.slice(line.indexOf('": ') + 3);
+        if (line.includes('": ') && where.length > 20) expect(surface.includes(where)).toBe(false);
+      }
     }
+    expect(surface).not.toContain('issue rs/');
   });
 });
 
