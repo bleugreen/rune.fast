@@ -1,0 +1,2488 @@
+{
+ "meta": {
+  "title": "rs project agent-swarm speedrun: attempts timeline",
+  "generated_utc": "2026-10-26T20:33:56Z",
+  "timezone": "All times UTC. PDT = UTC-7. Times printed inside messages (e.g. main's '(PDT)' or '(xx:xxZ)' stamps) were often drifted; the timestamp used here is the message's stored created_at.",
+  "IMPORTANT_data_caveat": "attempts-window-msgs.jsonl's 'ts' field is Pacific local time with a misleading 'Z' suffix (e.g. ts 2026-10-23T09:01:46Z = created_at 1792771306 = 16:01:46Z). The DuckDB recipe strftime(to_timestamp(x),...) renders local time on this Mac and reproduces the same 7-hour shift. This timeline converts created_at epochs to UTC in Python.",
+  "source_conventions": {
+   "messages": "uri = the sender's messages collection; msg_id = DuckDB messages.id in rs-20261026.duckdb (some recorded as an 8-hex prefix)",
+   "rs843": "cairn://p/rs/843 comment number; ts_as_printed is the comment's PDT stamp",
+   "operator": "operator messages are DuckDB events with event_type='user' on the named thread's run; quoted verbatim"
+  },
+  "naming": "Scored account names are withheld (the swarm's rule: 'SCORED'). Fleet helper names (cairn_b03 etc.) are kept where they are part of a verbatim cause.",
+  "tick_units": "Scored playtime is logged-in ticks; logged-out wall time is free on the record. The official score is normalized to 400 ms ticks.",
+  "record": {
+   "previous_record_ticks": 35916,
+   "previous_holder": "stunbaron (public leaderboard)",
+   "final_ticks": 35787,
+   "exact_margin": "129 ticks / 51.6 s (never 130)"
+  }
+ },
+ "project_start": {
+  "utc": "2026-10-20T21:37:42Z",
+  "pdt": "2026-10-20 14:37:42 PDT"
+ },
+ "attempts": [
+  {
+   "id": "A1",
+   "name": "Attempt 1",
+   "kind": "scored attempt",
+   "account": "fresh (first scored account)",
+   "start": {
+    "utc": "2026-10-23T17:38:59.3Z",
+    "evidence": "host: 'run.ts started 17:38:53.9Z ... SCORED's server tick 0 = ~17:38:59.3Z, derived from run.jsonl's census at tick 5 = 17:39:01.320Z'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-23T17:41:41Z",
+      "msg_id": "26f1b2c9-65ca-4900-913f-d3a0eee222cc"
+     }
+    ]
+   },
+   "end": {
+    "utc": "2026-10-23T17:46:31.2Z",
+    "evidence": "host: 'the logout click went at 17:46:31.2Z' (run failed at 17:39:33.654Z but the logout was refused for combat, so the account stayed in the world)",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-23T17:49:12Z",
+      "msg_id": "c45c8b35-3ccb-4905-93fa-0c6b4e925a98"
+     }
+    ]
+   },
+   "outcome": "Failed at S03 (Firemaking) on a chain/config row mismatch; account retired for the record.",
+   "final_ticks": {
+    "value": "~1,127-1,130 logged-in ticks (gateway counter 1126 at last state)",
+    "basis": "host estimate from tick 0 to logout at 400 ms",
+    "uncertain": true,
+    "why": "approximate; no hiscore figure for this account"
+   },
+   "events": [
+    {
+     "utc": "2026-10-23T17:38:53.9Z",
+     "type": "start",
+     "title": "run.ts started on the twin after gate, load and handoff passed",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T17:40:48Z",
+       "msg_id": "2926c4d4-d60d-4d77-8cb0-482719aa9089"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T17:39:33.654Z",
+     "type": "stop",
+     "title": "S03 precondition failed at tick 86",
+     "cause_verbatim": "'FAILED: step \"S03 firemaking\" precondition failed: not within 15 tiles of the row's entry 3222,3219 (77 away)'",
+     "detail": "host's reading: run-config's firemakingTiles was the Lumbridge castle row while the chain walked SCORED to the coop row. run.ts logout then 'logout refused (combat)' at tick 152.",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T17:40:48Z",
+       "msg_id": "2926c4d4-d60d-4d77-8cb0-482719aa9089"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T17:41:41Z",
+       "msg_id": "26f1b2c9-65ca-4900-913f-d3a0eee222cc"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T17:41:43Z",
+     "type": "ruling",
+     "title": "main orders an immediate re-run (later cancelled)",
+     "quote": "main: 'GO RE-RUN NOW. SCORED's playtime is running while it stands in the world, so do not wait on diagnosis.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T17:41:43Z",
+       "msg_id": "c379cd8b-fae3-4cc5-a4ea-d0d96a1aa0e5"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T17:43:06Z",
+     "type": "ruling",
+     "title": "main cancels the re-run and orders logout",
+     "quote": "main: 'CANCEL the re-run order. LOG SCORED OUT NOW: it has been logged in since ~17:38:59Z (~600 ticks) against a record margin of ~226, so this account cannot set the record today and every tick it stays in is waste.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T17:43:06Z",
+       "msg_id": "6a1a39b2-1049-4501-941f-5dd549e3e3c5"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T17:46:31.2Z",
+     "type": "logout",
+     "title": "host walks off, kills the attacking chicken, logs out",
+     "detail": "walkTo 17:44:45.9Z, chicken killed 17:46:16-17:46:25Z, logout click 17:46:31.2Z; absent from /playerpositions 17:49Z",
+     "by": "host",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T17:49:12Z",
+       "msg_id": "c45c8b35-3ccb-4905-93fa-0c6b4e925a98"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T17:46:33Z",
+     "type": "result",
+     "title": "main declares the account retired",
+     "quote": "main: 'Attempt 1 failed at S03 on a chain/config row mismatch (castle vs coop); [the account] is retired for the record.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T17:46:33Z",
+       "msg_id": "4d369706-4e8b-4ac3-ae46-87a4e0e19131"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "A2",
+   "name": "Attempt 2",
+   "kind": "scored attempt",
+   "account": "fresh",
+   "start": {
+    "utc": "2026-10-23T19:23:33.9Z",
+    "evidence": "host: 'run.ts started 19:23:29.071Z (runId run-20261023-192329) ... SCORED TICK 0 ~19:23:33.9Z'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-23T19:25:11Z",
+      "msg_id": "3120308e-ac03-4e62-b601-d0c2c907980e"
+     }
+    ]
+   },
+   "end": {
+    "utc": "2026-10-23T19:49:26.8Z",
+    "evidence": "host: 'SIGINT to run.ts at 19:48:54.7Z, exited 19:49:27.3Z. SCORED LOGGED OUT BY run.ts at tick 836 ... session closed 19:49:26.8Z'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-23T19:50:38Z",
+      "msg_id": "5203554b-f6a7-4c21-a21c-91bf02757003"
+     }
+    ]
+   },
+   "outcome": "Stopped twice (S04, then S07); ruled not resumable because the record was out of reach on the expected rows.",
+   "final_ticks": {
+    "value": "~1,727 playtime ticks",
+    "basis": "main: 'S00-S03 883, exchanges 8+2, resume 836'",
+    "uncertain": true,
+    "why": "includes estimated login ticks; no hiscore figure",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/main/messages",
+      "ts": "2026-10-23T19:51:38Z",
+      "msg_id": "c96f357d-41e7-4062-a6a4-9791e4706c48"
+     }
+    ]
+   },
+   "events": [
+    {
+     "utc": "2026-10-23T19:19:50Z",
+     "type": "ruling",
+     "title": "main GO now",
+     "quote": "main: 'GO NOW. The gate chooses the start, not the clock (tenet 12)'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T19:19:50Z",
+       "msg_id": "c9d9d18c-2637-4882-b750-73ea1bcc8108"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:29:26.76Z",
+     "type": "stop",
+     "title": "S04 enchanting timeout; run.ts logs SCORED out itself (tick 882/883)",
+     "cause_verbatim": "'FAILED: step \"S04 magic\" run failed: enchanting: timeout'",
+     "detail": "root cause (host): a ring giver's package was NOTED emerald rings (1640) where helpers.json said 1639; the server answered 'This spell can only be cast on Emerald Amulets and Rings.' 27 times. Logout page-confirmed 19:29:27.5Z.",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T19:30:49Z",
+       "msg_id": "f248f725-f082-40e1-a9a0-b77cc1a81bb7"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T19:31:35Z",
+       "msg_id": "6e4755e1-dfaf-4439-9951-775faf1083fe"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T19:32:07Z",
+       "msg_id": "a6a439d1-6984-474b-9724-02d8584e910f"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:35:24Z",
+     "type": "operator",
+     "title": "operator wants a resume",
+     "quote": "I think we still go for it if resumable",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-23T19:35:24Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "I think we still go for it if resumable"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:36:50Z",
+     "type": "ruling",
+     "title": "resume by exchange: two scored one-off logins to un-note the rings",
+     "quote": "main: 'the exchange becomes TWO scored logins because no real emerald rings exist in the fleet'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T19:36:50Z",
+       "msg_id": "551692a9-43ff-4d4f-b389-dd90f8a59e47"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:41:54.8Z",
+     "type": "recovery",
+     "title": "login A: SCORED gives the noted rings to a fleet account (4 in-world ticks)",
+     "by": "host",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T19:42:10Z",
+       "msg_id": "f5c17cc4-67e7-442c-aa61-2dc1c6c05773"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:43:44.7Z",
+     "type": "recovery",
+     "title": "login B: SCORED receives 19 unnoted rings (4 ticks); resume --from=S04 starts 19:43:46.98Z",
+     "by": "host",
+     "offline_note": "SCORED offline 19:29:27.5Z-19:43:44.7Z except login A (~14 min wall, free on the record)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T19:44:40Z",
+       "msg_id": "0eb06750-a2ff-4139-8683-695977761edf"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T19:44:40Z",
+       "msg_id": "694ef5c1-a488-4ec5-8213-108f0afbd8e8"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:47:30Z",
+     "type": "operator",
+     "title": "operator notices the stall",
+     "quote": "seems stuck again",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-23T19:47:30Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "seems stuck again"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:48:54.7Z",
+     "type": "stop",
+     "title": "S07 oak band stalled with no bone load; host SIGINTs run.ts",
+     "cause_verbatim": "'bone load 1 from the group (cairn_b01..b04) failed: no giver of the group served within 400 observed ticks'",
+     "detail": "root cause (host): all four bone givers had looped 'travel -> fault: Error: could not stand on 2920,3407' about every 70 s since 17:28:51Z, through both launches.",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T19:48:41Z",
+       "msg_id": "b99311c8-a3bb-4d6b-86cf-0d45a99a805e"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T19:50:38Z",
+       "msg_id": "5203554b-f6a7-4c21-a21c-91bf02757003"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:49:24Z",
+     "type": "operator",
+     "title": "operator asks about restarting fresh",
+     "quote": "We were pretty early on could we restart?",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-23T19:49:24Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "We were pretty early on could we restart?"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T19:54:52Z",
+     "type": "ruling",
+     "title": "account not resumed; attempt 3 = fresh account",
+     "quote": "main: 'RULING: [SCORED] does NOT resume: rs/158's number puts it 207-254 over the record on the expected rows (432 behind plan), and every remaining step is helper-fed from stock attempt 3 needs.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T19:54:52Z",
+       "msg_id": "e5de1efb-bef5-4bff-9170-bfa9123c03fa"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T19:54:52Z",
+       "msg_id": "6c2eac76-6d17-4ff0-9d89-029d89df5670"
+      }
+     ],
+     "note": "main's own timeline (22:26Z 24 Oct) says 'ruled not resumed 19:58Z'; that is main's in-text stamp, the message was stored at 19:54:52Z"
+    }
+   ]
+  },
+  {
+   "id": "A3",
+   "name": "Attempt 3",
+   "kind": "scored attempt",
+   "account": "fresh",
+   "start": {
+    "utc": "2026-10-23T21:34:53.2Z",
+    "evidence": "host: 'run.ts STARTED 21:34:46.872Z, runId run-20261023-213447 ... SCORED TICK 0 ~21:34:53.2Z'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-23T21:36:05Z",
+      "msg_id": "d23729d0-82b7-47ca-9770-3340340004f6"
+     }
+    ]
+   },
+   "end": {
+    "utc": "2026-10-23T23:17:41Z",
+    "evidence": "host: 'run.ts logged out on tick 866 (page-confirmed); absent from the public list at 23:17:41Z'; run.jsonl session end row 23:16:22",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-23T23:18:50Z",
+      "msg_id": "d60a1484-3ee8-4a25-9ff2-1370a13284a0"
+     },
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-24T06:36:33Z",
+      "msg_id": "5248778e-0f59-4881-a986-5234d01ab7dd"
+     }
+    ]
+   },
+   "outcome": "Scored portion ended at the willow band precondition at playtime 2,290; the same account then ran as the first full live rehearsal.",
+   "final_ticks": {
+    "value": 2290,
+    "basis": "host: 'playtime = 1,424 + tick' with the stop at session tick 866",
+    "uncertain": false,
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-23T23:18:50Z",
+      "msg_id": "d60a1484-3ee8-4a25-9ff2-1370a13284a0"
+     },
+     {
+      "uri": "cairn://p/rs/main/messages",
+      "ts": "2026-10-23T23:20:21Z",
+      "msg_id": "153b6e51-aefb-4b5b-8761-f7538f05fe77"
+     }
+    ]
+   },
+   "events": [
+    {
+     "utc": "2026-10-23T21:30:51Z",
+     "type": "ruling",
+     "title": "no split of the bone givers into pinned pairs",
+     "quote": "main: 'HOLD RELEASED, no split: rs/186's code read shows a pinned split would DEADLOCK the oak band'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T21:30:51Z",
+       "msg_id": "c94d8ca7-6dc2-4a9a-a035-7fc05d0aab64"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T21:44:22Z",
+     "type": "stop",
+     "title": "stop 1: S07 oak band, bone load 2 fails at once (tick 1423); run.ts logs out",
+     "cause_verbatim": "'woodcutting:bones-load' load 2 at ticks 1418-1423: ok:false, reason 'player_not_found', giver 'cairn_b03', received 0, serverWait 0",
+     "detail": "host: the group's server was picked by longest wait from givers at EITHER site; b03 was ~87 tiles away at the willows. Absent from /playerpositions 21:44:51Z.",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T21:45:06Z",
+       "msg_id": "a86d59d1-1d4a-41e9-b96b-019a2601f3cf"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T21:45:33Z",
+       "msg_id": "45f7aa12-e453-4639-af12-613e2b8d7128"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T21:45:59Z",
+     "type": "operator",
+     "title": "operator asks about resuming",
+     "quote": "we can still resume after right?",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/chat",
+       "ts": "2026-10-23T21:45:59Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "we can still resume after right?"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T21:46:45Z",
+     "type": "ruling",
+     "title": "resume --from=S07 after a code fix",
+     "quote": "main: 'RULED (a): attempt 3 RESUMES on [SCORED] with `--from=S07` after a code fix (woodcutting.ts: wait for the chosen server to be in sight, re-pick on player_not_found)'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T21:46:45Z",
+       "msg_id": "5f1169ce-f0b3-4c33-97d8-b6a02995928b"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T21:54:22Z",
+     "type": "recovery",
+     "title": "helper launcher stopped for a bone top-up (relaunched 22:02:43Z)",
+     "by": "host + rs/41",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T21:55:08Z",
+       "msg_id": "d3e653b2-4850-4e6e-beeb-af6288bf3ad3"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T22:07:59Z",
+       "msg_id": "61594937-a8cc-44b7-91ac-eb38b1e3b8b9"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T22:28:47.5Z",
+     "type": "stop",
+     "title": "resume refused before login (no ticks spent)",
+     "cause_verbatim": "'role phase S07/bone cairn_b02/b03/b04: phase travel, not waiting (site 0)'",
+     "detail": "run.ts with --from=S07 required every rotating bone giver to be waiting at once; host measured 0 of 480 samples with all four waiting",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T22:30:23Z",
+       "msg_id": "76381dce-7b6f-42d3-a147-c0a72781c290"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T22:34:50Z",
+       "msg_id": "4f3e93fb-22bc-41b9-a637-2b2baf50ec8c"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T22:47:08Z",
+     "type": "ruling",
+     "title": "run commit 32f39720 named for the resume (phase-gate fix)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T22:47:08Z",
+       "msg_id": "0936514b-f027-447c-83f6-e16ece3332f2"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T23:10:17.05Z",
+     "type": "recovery",
+     "title": "resume launched on an oak-only trigger; first state 23:10:25.4Z",
+     "by": "host",
+     "offline_note": "offline 21:44:22Z-23:10:25Z (~86 min wall, free on the record)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T23:12:36Z",
+       "msg_id": "b931863d-3747-418b-9776-c4af23121db3"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T23:16:22Z",
+     "type": "stop",
+     "title": "stop 2: willow band precondition at session tick 866 (playtime 2,290)",
+     "cause_verbatim": "'[run] FAILED: step \"woodcutting:willow-73-99\" precondition failed: 1 free inventory slots, 2 needed'",
+     "detail": "the resumed oak band ran technique PLAIN with no bury, so 23 Dragon bones filled the pack. rs/186's diagnosis accepted by main: 'the band's own gate fell back to plain on the ragged demo, and plain neither buries nor requests loads'. Fixed as rs/642.",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-23T23:18:50Z",
+       "msg_id": "d60a1484-3ee8-4a25-9ff2-1370a13284a0"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T23:22:06Z",
+       "msg_id": "4ec35037-8d35-4074-84c0-0691817c5b39"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T23:22:06Z",
+     "type": "ruling",
+     "title": "record not reachable for this account",
+     "quote": "main: 'Numbers accepted: the record is NOT reachable for attempt 3 on the expected row (~227 over at best with a knife willow band, ~600-775 over with the missing bone/Prayer xp, ~960 over on plain).'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T23:22:06Z",
+       "msg_id": "0013d88d-75ea-48c9-a0ba-14d692d6008a"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-23T23:40:47Z",
+     "type": "ruling",
+     "title": "account continues as a live rehearsal; attempt 4 = fresh account tomorrow",
+     "quote": "main: 'RULED: attempt 3 continues as a live rehearsal from S07's willow band through S27 ... attempt 4 = fresh account tomorrow ... the record of attempt 3 ends at the willow precondition (playtime 2,290)'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T23:40:47Z",
+       "msg_id": "0ad781d2-032f-451c-8fd4-e75e65f52128"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-23T23:40:50Z",
+       "msg_id": "40c4a495-175f-4d6c-8cb5-4c0d138d6566"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "R3",
+   "name": "Live rehearsal (attempt 3 account continued)",
+   "kind": "unscored live rehearsal",
+   "account": "same as A3",
+   "start": {
+    "utc": "2026-10-24T01:04:03.39Z",
+    "evidence": "host: 'attempt 3 rehearsal resumed at S07 willow-73-99, run commit 1e536f76, runId run-20261024-010403, launch 01:04:03.39Z'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-24T01:05:08Z",
+      "msg_id": "4aaab065-df96-449d-b378-bda8e59fdce3"
+     }
+    ]
+   },
+   "end": {
+    "utc": "2026-10-24T06:32:27Z",
+    "evidence": "main: 'RULED: STOP attempt 3's rehearsal now ('rehearsal over' as of this message)'; host archive 06:35:07Z",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/main/messages",
+      "ts": "2026-10-24T06:32:27Z",
+      "msg_id": "dabc3adc-460b-4908-b4bb-77c187b9515f"
+     },
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-24T06:35:07Z",
+      "msg_id": "67f92614-e17c-4214-877e-1817ea7ea5f0"
+     }
+    ]
+   },
+   "outcome": "Ran S07 through S13 live and reached S14 twice; two Wilderness deaths at the S14 spiders; called over.",
+   "final_ticks": {
+    "value": null,
+    "uncertain": true,
+    "why": "no final account playtime was reported; intermediate figures: playtime 7,317 at 01:41Z logout, 16,083 at the 04:06:34Z logout",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-24T01:43:14Z",
+      "msg_id": "48ad4450-6248-4522-a335-85a902f62b3f"
+     },
+     {
+      "uri": "cairn://p/rs/main/messages",
+      "ts": "2026-10-24T04:08:39Z",
+      "msg_id": "0e160e2f-b6cc-46fd-b122-af6af7f0f944"
+     }
+    ]
+   },
+   "events": [
+    {
+     "utc": "2026-10-24T01:33:30Z",
+     "type": "stop",
+     "title": "twin run stack expired (9 h tmux bound); 13 drops; watchdog logout delivered on reconnect",
+     "cause_verbatim": "host: 'the 9 h stack bound expired (gateway 7780, proxy 8899, live view)' ... '[run] FAILED: SCORED: not back in the world within 120000 ms'",
+     "detail": "740 ticks in the world without a link; logout session tick 5,027, absent 01:41:38Z, playtime 7,317",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T01:37:25Z",
+       "msg_id": "33e860d6-bc3e-4e34-a40f-6d58943b5cba"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T01:43:14Z",
+       "msg_id": "48ad4450-6248-4522-a335-85a902f62b3f"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T02:04:28Z",
+     "type": "note",
+     "title": "S07 closes (WC 99, Prayer 99); then H6 refused for room",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T02:06:47Z",
+       "msg_id": "e8518422-7044-47a0-9de4-b69ead392f04"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T06:36:33Z",
+       "msg_id": "5248778e-0f59-4881-a986-5234d01ab7dd"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T02:10:52Z",
+     "type": "stop",
+     "title": "a run of rehearsal stops through S08-S13 (kit water runes, Edmond dialogue, arrival tile, Grand Tree level, prayer points, slots, double teleport law)",
+     "detail": "see host's full row table; main counted 'seven attempt-enders fixed before the attempt that counts'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T06:36:33Z",
+       "msg_id": "5248778e-0f59-4881-a986-5234d01ab7dd"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T06:32:27Z",
+       "msg_id": "dabc3adc-460b-4908-b4bb-77c187b9515f"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T04:38:45Z",
+     "type": "death",
+     "title": "first death: S14 refused (Attack 94), logout held by combat, SCORED died at the spiders",
+     "cause_verbatim": "'S14 cannon session: precondition failed: Attack 94: the cannon's accuracy is the scimitar's at Attack 99'",
+     "detail": "host: 'SCORED died during the previous session's held logout (S14 refused at tick 231, logout landed at 268, 37 ticks)'; detected only at the 04:58:30Z login at the Lumbridge respawn",
+     "uncertain": true,
+     "uncertain_why": "no death row; time inferred between 04:38:45Z and the gateway state at 04:40Z",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T04:40:41Z",
+       "msg_id": "3f21efc2-b584-4742-a7e7-82fc081aab60"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T05:00:05Z",
+       "msg_id": "f7815f1d-dde9-4912-bae3-d1aaed848f77"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T05:01:36Z",
+     "type": "operator",
+     "title": "operator: attempt 4 will be the last",
+     "quote": "I'm thinking attempt 4 is your last attempt, I've sunk enough into this and its getting time for my accs to get back to work, make it count",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-24T05:01:36Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "I'm thinking attempt 4 is your last attempt, I've sunk enough into this and its getting time for my accs to get back to work, make it count"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T05:05:37Z",
+     "type": "ruling",
+     "title": "continue the rehearsal with a re-kit",
+     "quote": "main: 'CONTINUE is GO on rs/41's timing'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T05:05:37Z",
+       "msg_id": "a17f7fe9-949f-4697-972a-b50f838835df"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T06:28:01Z",
+     "type": "death",
+     "title": "second death: S14 cannon refused, logout refused (combat), SCORED died again",
+     "cause_verbatim": "'cannon set-up: the game refuses a cannon for this account (a cannon already owned, or Dwarf Cannon not complete)'",
+     "detail": "cause of the refusal: the %ownedmcannon varp left by the first lost set (cannon_setup.rs2:59-62); tab-logout 06:29:41Z",
+     "uncertain": true,
+     "uncertain_why": "death time is within the 235-302 tick logout window (~06:28Z); no death row",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T06:30:07Z",
+       "msg_id": "65c03b51-c2f3-4fb1-8919-b1191c16d25e"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T06:32:27Z",
+       "msg_id": "dabc3adc-460b-4908-b4bb-77c187b9515f"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T06:32:27Z",
+     "type": "result",
+     "title": "rehearsal over",
+     "quote": "main: 'RULED: STOP attempt 3's rehearsal now ... Well run tonight; the rehearsal bought seven attempt-enders fixed before the attempt that counts.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T06:32:27Z",
+       "msg_id": "dabc3adc-460b-4908-b4bb-77c187b9515f"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "A4",
+   "name": "Attempt 4",
+   "kind": "scored attempt",
+   "account": "fresh",
+   "start": {
+    "utc": "2026-10-24T12:14:45Z",
+    "evidence": "host: 'SCORED LOGIN ~12:14:45Z (session 1's first record, tick 4, at 12:14:46.3Z). runId run-20261024-121414'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-24T12:16:03Z",
+      "msg_id": "d93a1c4d-4206-4eca-af06-900fb0a933d2"
+     }
+    ]
+   },
+   "end": {
+    "utc": "2026-10-24T16:31:57Z",
+    "evidence": "main: 'ATTEMPT 4 IS OVER; the operator has ruled ONE MORE, FRESH ATTEMPT 5'. Last scored logout 14:26:16.4Z (roster absent 14:26:19.4Z).",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/main/messages",
+      "ts": "2026-10-24T16:31:57Z",
+      "msg_id": "6fe5a91d-afc6-45e7-b72d-68d4a96d8911"
+     },
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-24T14:29:50Z",
+      "msg_id": "58870fa1-4946-4be3-89f4-0cc4cc08b68e"
+     }
+    ]
+   },
+   "outcome": "Died at the Grand Tree door at S15:A (Monkey Madness) from poison carried in from S14, inside a carrier-readiness wait; record already out of reach.",
+   "final_ticks": {
+    "value": "14,097 run ticks at the 14:06:32Z stop, plus session 4 (604 ticks) and one-offs",
+    "basis": "host 14:08Z 'run total 14,097 ticks'; main's timeline 'about 14,100 run ticks plus ~515 off-row'",
+    "uncertain": true,
+    "why": "no account-clock or hiscore total; session 4 and off-row ticks are added by inference only",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-24T14:08:05Z",
+      "msg_id": "64a2639a-a45c-4e89-8bd5-3561990bf28b"
+     },
+     {
+      "uri": "cairn://p/rs/main/messages",
+      "ts": "2026-10-24T22:26:06Z",
+      "msg_id": "d8c375c4-a8de-43e7-b795-635626d71445"
+     }
+    ]
+   },
+   "events": [
+    {
+     "utc": "2026-10-24T12:13:02Z",
+     "type": "note",
+     "title": "false start: run.ts died in preflight (bun not on PATH), no login",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T12:16:03Z",
+       "msg_id": "d93a1c4d-4206-4eca-af06-900fb0a933d2"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T12:49:08Z",
+     "type": "stop",
+     "title": "planned tab reset 1 (renderer memory), logout tick 5081; session 2 13:03:39Z",
+     "detail": "axe one-off #1 stranded the body ~500 ticks (12:54:42-12:59:40Z); one-off #2 12:59:50Z; SCORED out 14.5 min wall",
+     "by": "host",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T16:45:15Z",
+       "msg_id": "5d2ae9e4-bf60-4451-9c27-4111e719cb43"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T16:40:27Z",
+       "msg_id": "d045dfef-37b8-4565-bae7-86ff7a65794d"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T13:53:07Z",
+     "type": "stop",
+     "title": "planned tab reset 2, logout tick 7344; session 3 13:55:05Z",
+     "by": "host",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T13:55:58Z",
+       "msg_id": "19abf1c3-b8c2-4d7b-a464-74a89ea0fbd1"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T14:06:32Z",
+     "type": "stop",
+     "title": "S15:A stop: one shark short after the H12 kit swap (tick 1683)",
+     "cause_verbatim": "'[run] FAILED: step \"S15:A-narnode\" run failed: after the swap the kit still lacks 1 ^Shark$'",
+     "detail": "S14 cannon session ate 1 of 2 sharks; rs/83 saw SCORED leave 14:06:35.3Z",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T14:08:05Z",
+       "msg_id": "64a2639a-a45c-4e89-8bd5-3561990bf28b"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T14:09:28Z",
+     "type": "ruling",
+     "title": "one shark by courier, then --from=139",
+     "quote": "main: 'ruling: ONE SHARK TO SCORED, then --from=139.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T14:09:28Z",
+       "msg_id": "717c0f6d-241d-4927-a1b4-1858a2252b58"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T14:18:40Z",
+     "type": "recovery",
+     "title": "receive one-off (shark from a markets courier after the fleet courier died); pack 28/28; log-drop one-off 14:21:49Z",
+     "by": "host, markets, rs/41",
+     "offline_note": "SCORED out 14:06:32Z-14:22:13Z except two one-offs (15 min 41 s wall)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T14:14:46Z",
+       "msg_id": "58761262-bb5b-4123-bea2-25702884be71"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T14:19:10Z",
+       "msg_id": "64ebbe44-9d33-4c97-951e-da25f97abc8d"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T14:23:25Z",
+       "msg_id": "a6f70e3c-bdb2-402a-b3e5-4623a19ca29d"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T14:22:13Z",
+     "type": "recovery",
+     "title": "resume --from=139 (S15:A), session 4",
+     "by": "host",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T14:23:25Z",
+       "msg_id": "a6f70e3c-bdb2-402a-b3e5-4623a19ca29d"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T14:23:29.97Z",
+     "type": "death",
+     "title": "SCORED died at the Grand Tree door (tile jump to the Lumbridge respawn)",
+     "cause_verbatim": "run.ts: '[run] FAILED: step \"S15:A-narnode\" run failed: H12: carrier cairn_h55 was not ready within 600 ticks (maxTicks): no readiness status'",
+     "detail": "rs/83: 'at 14:23:29.97Z (tick 216740) it JUMPED straight to 3221,3220'. HP series: T14-15b hpMin 1 (ate 0). Death check did not run during the carrier wait; logout tick 604 at 14:26:16.4Z.",
+     "uncertain": true,
+     "uncertain_why": "death is inferred from the roster tile jump; HP/poison were not recorded",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/83/2/coordinator/messages",
+       "ts": "2026-10-24T14:26:40Z",
+       "msg_id": "230c563d-e7bf-428e-8249-d5350e93e19a"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T14:29:50Z",
+       "msg_id": "58870fa1-4946-4be3-89f4-0cc4cc08b68e"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T16:41:01Z",
+       "msg_id": "70a078da-fc62-4ca8-a433-0b4784a706c6"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T14:29:55.270Z",
+     "type": "note",
+     "title": "demo game-process restart (token mvl1k1jw -> mvmhwngm), ~6.5 min after the death; not its cause",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/83/2/coordinator/messages",
+       "ts": "2026-10-24T14:30:27Z",
+       "msg_id": "0eba47f0-81ad-4bc3-899d-48c0380d3f76"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T16:34:29Z",
+       "msg_id": "3ea16a76-f38c-48d7-996a-9f03cb6e12e6"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T14:32:42Z",
+     "type": "note",
+     "title": "read-only one-off confirms SCORED at the Lumbridge respawn with keep-3",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-24T14:34:14Z",
+       "msg_id": "8b92d097-5195-4975-bbde-06be338a59b3"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T16:28:33Z",
+     "type": "operator",
+     "title": "operator allows one more attempt",
+     "quote": "ok fine one more attempt",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-24T16:27:50Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "what happened"
+      },
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-24T16:28:33Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "ok fine one more attempt"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-24T16:31:57Z",
+     "type": "result",
+     "title": "attempt 4 over; fresh attempt 5 ruled",
+     "quote": "main to document: 'ATTEMPT 4 IS OVER: the scored account died at the Grand Tree door at the start of Monkey Madness (poison carried from the cannon session, inside a readiness wait that never ends); the record was already out of reach.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T16:31:57Z",
+       "msg_id": "6fe5a91d-afc6-45e7-b72d-68d4a96d8911"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-24T16:32:01Z",
+       "msg_id": "74bfe309-200f-4e30-bab8-017e75e30bfc"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "L2",
+   "name": "Lab dress rehearsal run 2 (full chain on a lab engine)",
+   "kind": "lab run (not scored, not on the demo)",
+   "account": "fresh lab accounts (dr7642a at start, dr7643b at the end; chunks staged)",
+   "start": {
+    "utc": "2026-10-24T22:36:42Z",
+    "evidence": "rs/764: 'RUN 2 START ... started 22:36:42Z on bgsrv-mac, one lab engine at 150 ms'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/764/1/builder/messages",
+      "ts": "2026-10-24T22:40:07Z",
+      "msg_id": "0a42efad-d161-41c2-8a77-0e9136ba49a3"
+     }
+    ]
+   },
+   "end": {
+    "utc": "2026-10-25T07:55:47Z",
+    "evidence": "rs/764: 'RUN 2 REACHED THE END: total level 1,881 ... The last chunk exited 0 at 07:55:47Z'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/764/1/builder/messages",
+      "ts": "2026-10-25T07:57:05Z",
+      "msg_id": "24246556-001e-48e0-b34d-040ff5d3f945"
+     }
+    ]
+   },
+   "outcome": "First complete end-to-end lab run of the route to total 1,881, in chunks with labelled seams and staged resumes, at 150 ms ticks; overlapped attempt 5 (live from 06:56Z).",
+   "final_ticks": {
+    "value": null,
+    "uncertain": true,
+    "why": "no single run total was reported (chunked, staged, 150 ms); last chunk 7,715 ticks; S17 4,271"
+   },
+   "events": [
+    {
+     "utc": "2026-10-24T23:37:21Z",
+     "type": "note",
+     "title": "planned seam: resumed --from=67 (S10b) on a new tree",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/764/1/builder/messages",
+       "ts": "2026-10-24T23:39:17Z",
+       "msg_id": "46c58f57-cfbf-4d29-80ef-bcb419db5811"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T00:00:24Z",
+     "type": "death",
+     "title": "F15: SCORED died in the S14 cannon setup (lab)",
+     "cause_verbatim": "'(3286,3812,0) on tick 4104 to (3289,3809,0) on tick 4126 (dead; hp 42 at the start, lowest 0, 0 after)'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/764/1/builder/messages",
+       "ts": "2026-10-25T00:08:34Z",
+       "msg_id": "b48b3fc3-8187-46aa-853d-454708385f04"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T02:47:36Z",
+     "type": "stop",
+     "title": "F16: S18 start deadlock (courier never logs in)",
+     "cause_verbatim": "'thieving:knights precondition: the stun pack's giver cairn_dc15 is not in sight'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/764/1/builder/messages",
+       "ts": "2026-10-25T02:56:55Z",
+       "msg_id": "4047ec8b-aa7e-4154-be89-c548488fe54a"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T03:55:28.3Z",
+     "type": "note",
+     "title": "unplanned server restart rehearsal (SIGKILL of the lab engine), hands-off relog",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/764/1/builder/messages",
+       "ts": "2026-10-25T04:01:04Z",
+       "msg_id": "12635c48-19be-4478-94a3-ec20eb7f748b"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T07:55:47Z",
+     "type": "result",
+     "title": "total level 1,881 reached",
+     "quote": "main: '1,881 end to end is the first complete lab run of the route; well done, and the night's F14-F21 list is the reason attempt 5 is still alive.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/764/1/builder/messages",
+       "ts": "2026-10-25T07:57:05Z",
+       "msg_id": "24246556-001e-48e0-b34d-040ff5d3f945"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T07:57:42Z",
+       "msg_id": "b815a619-13a0-44c7-9be4-a3e65bbd9729"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "A5",
+   "name": "Attempt 5",
+   "kind": "scored attempt",
+   "account": "fresh",
+   "start": {
+    "utc": "2026-10-25T06:56:33Z",
+    "evidence": "host: 'run.ts started 06:56:33Z'; main: 'SCORED logged in at 06:56:33Z (23:56 PDT)'; host to rs/83: 'logged in at ~06:56:40Z'",
+    "uncertain": true,
+    "why": "06:56:33Z is run.ts start; the first in-world tick is ~06:56:40Z",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-25T06:57:27Z",
+      "msg_id": "5f0e1856-a794-438e-9524-ac700b121c30"
+     },
+     {
+      "uri": "cairn://p/rs/main/messages",
+      "ts": "2026-10-25T06:57:59Z",
+      "msg_id": "1eaa7d3d-2c4d-4c08-8fb4-6343d08a5a2b"
+     },
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-25T06:59:02Z",
+      "msg_id": "9de0192f-cc66-4f22-8998-68b9f6c28388"
+     }
+    ]
+   },
+   "end": {
+    "utc": "2026-10-26T11:07:53.933Z",
+    "evidence": "host: 'Runnerexit0 at11:07:53.933082; 83 independent firstabsent11:07:57.889'",
+    "sources": [
+     {
+      "uri": "cairn://p/rs/host/messages",
+      "ts": "2026-10-26T11:08:47Z",
+      "msg_id": "cc021885-3c7f-4309-9858-b5d4c2f13852"
+     }
+    ]
+   },
+   "outcome": "All 19 skills 99, total 1,881; official 35,787 ticks normalized to 400 ms (3h58m34s); #1 at 11:14:43Z, 129 ticks / 51.6 s ahead of 35,916. Achieved by recovering the same account after a death at the S27 site.",
+   "final_ticks": {
+    "value": 35787,
+    "basis": "official hiscore title '35,787 ticks normalized to 400 ms per tick'",
+    "uncertain": false,
+    "other_figures": {
+     "observed_client_ledger": 35225,
+     "runner_aggregate": 35275,
+     "final_99_milestone_observed": 35224,
+     "residual_official_minus_observed": 562,
+     "note": "the 562 residual cannot be allocated exactly to the eight unmeasured login prefixes and the death tail (rs/843 #54, #56)"
+    },
+    "sources": [
+     {
+      "uri": "cairn://p/rs/843",
+      "comment": 54,
+      "ts": "2026-10-26T11:16Z",
+      "ts_as_printed": "04:16 (26 Oct) PDT"
+     },
+     {
+      "uri": "cairn://p/rs/843",
+      "comment": 55,
+      "ts": "2026-10-26T11:16Z",
+      "ts_as_printed": "04:16 (26 Oct) PDT"
+     },
+     {
+      "uri": "cairn://p/rs/843",
+      "comment": 56,
+      "ts": "2026-10-26T11:27Z",
+      "ts_as_printed": "04:27 (26 Oct) PDT"
+     }
+    ]
+   },
+   "events": [
+    {
+     "utc": "2026-10-25T06:41:27Z",
+     "type": "ruling",
+     "title": "82f6da3a named attempt 5 run commit of record",
+     "quote": "main: 'SWITCH 82f6da3a. rs/764's lab of the F19 fix PASSED live'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T06:41:27Z",
+       "msg_id": "a997c28d-eb76-4931-bafa-d8d06783b053"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T06:56:33Z",
+     "type": "start",
+     "title": "run.ts started; SCORED logs in on the run host",
+     "detail": "host to rs/83: 'It logged in at ~06:56:40Z'",
+     "uncertain": true,
+     "uncertain_why": "06:56:33Z is the run.ts start; the exact login instant is ~06:56:40Z per host; rs/83 was blind until 06:59:18Z",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T06:57:27Z",
+       "msg_id": "5f0e1856-a794-438e-9524-ac700b121c30"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T06:57:59Z",
+       "msg_id": "1eaa7d3d-2c4d-4c08-8fb4-6343d08a5a2b"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T06:59:02Z",
+       "msg_id": "9de0192f-cc66-4f22-8998-68b9f6c28388"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T07:33:09.659Z",
+     "type": "stop",
+     "title": "S09 iron band named stop: ore contested by another bot group (tick 5474)",
+     "cause_verbatim": "'step \"mining.iron-63\" run failed: contested at zoo and ardougneNorth (3 events in 600 ticks) and no site left after 2 switches'",
+     "detail": "session run-065634 ends 5474 at 07:33:09.659Z; rs/83 saw SCORED leave 07:33:10.926Z",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T07:34:09Z",
+       "msg_id": "528abe09-c41e-46f0-843a-78e695883078"
+      },
+      {
+       "uri": "cairn://p/rs/83/2/coordinator/messages",
+       "ts": "2026-10-25T07:33:31Z",
+       "msg_id": "2229eb43-558f-4aea-b674-b498564087a6"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 3,
+       "ts": "2026-10-25T09:19Z",
+       "ts_as_printed": "02:19 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T07:36:26Z",
+     "type": "ruling",
+     "title": "hold: logged-out time is free on the record",
+     "quote": "main: 'idle minutes are FREE on the record (the hiscore counts logged-in ticks only; SCORED is cleanly logged out), so a blind retry into the same contest costs ticks and a hold costs none'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T07:36:26Z",
+       "msg_id": "7dd6c685-71ed-40bb-9d8b-451df8c21637"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T07:40:21Z",
+     "type": "recovery",
+     "title": "resume --from=mining.iron-63 (ordinary login ~07:40:29Z)",
+     "by": "host on main GO 07:40:08Z",
+     "offline_note": "~7.3 min wall; rs/83: 'back 07:40:30.9Z ... gap 1,100 ticks off-record'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T07:40:08Z",
+       "msg_id": "39fb17c8-e578-4de9-9725-a230c8635c59"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T07:42:12Z",
+       "msg_id": "704c6c11-5d69-42a7-ab6a-da399914950c"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T08:12:47.592Z",
+     "type": "stop",
+     "title": "S11b:G named stop: cupboard search never registered (tick 4847)",
+     "cause_verbatim": "'[run] FAILED: step \"S11b:G-journal\" run failed: search the cupboard: done never held'",
+     "detail": "cause of record (rs/185): a dropped single Search click; grand-tree.ts:904 sends it once with resendEvery: 0. rs/83 saw SCORED leave 08:12:50.9Z.",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T08:13:37Z",
+       "msg_id": "0728ec15-df4f-4e22-8e30-0fe573a61be4"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T08:20:41Z",
+       "msg_id": "9e2488ac-1d8c-4ac9-9a5e-4d1ed357fe39"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "section": "description input 2",
+       "ts": "2026-10-25"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 3,
+       "ts": "2026-10-25T09:19Z",
+       "ts_as_printed": "02:19 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T08:19:08Z",
+     "type": "recovery",
+     "title": "resume at #81; G passed first try at session-3 ticks 3-7",
+     "by": "host on main GO 08:18:56Z",
+     "offline_note": "~6.3 min wall; on-record cost ~81 ticks (main)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T08:18:56Z",
+       "msg_id": "16760da9-fae2-4983-923b-067c94e58bbf"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T08:20:27Z",
+       "msg_id": "6a7dc81e-67cd-4b43-bbeb-38537e3853a7"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T08:20:41Z",
+       "msg_id": "9e2488ac-1d8c-4ac9-9a5e-4d1ed357fe39"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T09:06:10Z",
+     "type": "stop",
+     "title": "H13 hand-off precondition: one slot short to unequip four items",
+     "cause_verbatim": "`H13: 3 free slots, and taking off Magic shortbow, Rune arrow, Khazard helmet, Khazard armour to give needs 4`",
+     "detail": "12 sharks survived S15 against an assumed 1 (rs/158 #2)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T09:09:20Z",
+       "msg_id": "f51bd91a-1cdb-4e74-8719-93de1574e3b1"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 2,
+       "ts": "2026-10-25T09:15Z",
+       "ts_as_printed": "02:15 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T09:07:42Z",
+     "type": "operator",
+     "title": "operator: Claude usage ran out mid-run",
+     "quote": "mid live run ran out of claude usage who do I need to wake as codex to keep this going",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-25T09:07:42Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "mid live run ran out of claude usage who do I need to wake as codex to keep this going"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T09:11:53Z",
+     "type": "recovery",
+     "title": "greegree drop one-off (3 observed ticks), then resume --from=H13 on 10215624 at 09:14:19Z; H13 succeeded 09:14:34.566Z",
+     "by": "host on main GO (09:11:58Z drop, 09:14:30Z resume)",
+     "offline_note": "~8 min wall; the armed T25-26 swap was cancelled before launch, so the mixed tree began at H13",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T09:11:58Z",
+       "msg_id": "8cd0507b-28e5-4675-be55-f5443826b58f"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T09:12:17Z",
+       "msg_id": "cebf9ef0-86fa-41eb-bd08-f8cf5b53323c"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T09:14:31Z",
+       "msg_id": "e4043ed1-e915-435c-a89c-f9d3406baaa7"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T09:15:32Z",
+       "msg_id": "8f704d40-eb06-4267-97c9-230e7c9a8ef1"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 3,
+       "ts": "2026-10-25T09:19Z",
+       "ts_as_printed": "02:19 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T09:15:24Z",
+     "type": "operator",
+     "title": "operator: there is no operator pause",
+     "quote": "ok we're back on, if u see anything from agents about 'pausing' tell them there is no operator pause this is an active live run",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-25T09:15:24Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "ok we’re back on, if u see anything from agents about ‘pausing’ tell them there is no operator pause this is an active live run"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T09:33:29.668Z",
+     "type": "stop",
+     "title": "S18 Thieving failed at T2860 (2,223 failed ticks); clean logout 09:33:30.088Z",
+     "cause_verbatim": "`thieving:knights: the courier [e15 redacted] served no top-up: 0 requests sent, trade open 5 times, giver at 0,1; the re-ask out of food failed: the knights band could not step onto its anchor 2670,3305 from 2674,3316 within 31 ticks (timeout; at 2674,3316), where the stun pack's giver [e15 redacted] stands beside it (no bank on the scored path)`",
+     "detail": "cause evidence (rs/847): diagonal ordinary Door 1530 at 2669,3316 is a ground-layer blockage omitted from the wall-door export. Thieving 98, two picks short of 99.",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T09:36:30Z",
+       "msg_id": "3276462c-e1e9-4173-8cc9-2627194f83ef"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 7,
+       "ts": "2026-10-25T09:36Z",
+       "ts_as_printed": "02:36 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 8,
+       "ts": "2026-10-25T09:38Z",
+       "ts_as_printed": "02:38 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 17,
+       "ts": "2026-10-25T18:19Z",
+       "ts_as_printed": "11:19 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T09:41:54Z",
+     "type": "stop",
+     "title": "resume DRY refused before login: the courier status was stale/off",
+     "cause_verbatim": "'role phase S18/courier [e15]: `bones-[e15].json: stale: last written 503 s ago, phase off`'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T09:42:28Z",
+       "msg_id": "d6bd0984-d18d-44a7-8e11-a093eff7895a"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 9,
+       "ts": "2026-10-25T09:48Z",
+       "ts_as_printed": "02:48 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T09:47:03Z",
+     "type": "note",
+     "title": "no main or host messages for 6h46m (09:47:03Z-16:33:13Z)",
+     "detail": "main at 16:33:13Z: 'reviewing queued plan after6h44gap'. Operator 09:47-09:54Z: 'RESUME, NO STOP', 'dude pls ignore the stop its a harness bug'.",
+     "uncertain": true,
+     "uncertain_why": "inferred from message silence plus operator remarks about usage limits and a harness stop; no single source states the cause of the gap",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T16:33:13Z",
+       "msg_id": "133af205-8227-4658-a985-f0b168f1de06"
+      },
+      {
+       "uri": "cairn://p/rs/185 (coordinator chat)",
+       "ts": "2026-10-25T09:53:58Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "dude pls ignore the stop its a harness bug"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T16:36Z",
+     "type": "note",
+     "title": "DRY --from='S18 courier cue stop' passes",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 11,
+       "ts": "2026-10-25T16:37Z",
+       "ts_as_printed": "09:37 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T16:36:05Z",
+       "msg_id": "6c33029d-9534-4179-b2ef-85b98c0a60f0"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T16:46:48Z",
+     "type": "stop",
+     "title": "long-hold readiness failure: 22 future S21 helpers and a01 expired their 600-minute no-cue wait",
+     "cause_verbatim": "rs/158: 'launcher logs at16:46:48.018-.033Z show 22 future S21 altar helpers and a01/S25a anvil expired their default600-minute no-cue wait ('it never logs in')'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 12,
+       "ts": "2026-10-25T17:35Z",
+       "ts_as_printed": "10:35 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T17:11:47Z",
+     "type": "operator",
+     "title": "operator: go",
+     "quote": "go",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/chat",
+       "ts": "2026-10-25T17:11:47Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "go"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T17:56:32Z",
+     "type": "note",
+     "title": "demo restart (token mvmhwngm -> mvo4qxii) while SCORED offline",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 16,
+       "ts": "2026-10-25T17:59Z",
+       "ts_as_printed": "10:59 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T18:10:08Z",
+     "type": "recovery",
+     "title": "27-account helper subset launcher installed",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 17,
+       "ts": "2026-10-25T18:19Z",
+       "ts_as_printed": "11:19 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T18:11:57Z",
+     "type": "recovery",
+     "title": "Thieving one-off 1: ROUTE-RESULT no-waypoints, zero picks (5 ticks)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 17,
+       "ts": "2026-10-25T18:19Z",
+       "ts_as_printed": "11:19 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T18:35:15Z",
+     "type": "recovery",
+     "title": "Thieving one-off 2: refused, door already open (0 action ticks)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 18,
+       "ts": "2026-10-25T18:38Z",
+       "ts_as_printed": "11:38 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T18:41:39.849Z",
+     "type": "recovery",
+     "title": "Thieving one-off 3 SUCCESS: Thieving 99 (51 observed ticks)",
+     "by": "host / rs/847 builder",
+     "offline_note": "S18 offline hold 09:33:30Z-18:41:39Z (~9h08m wall, free on the record apart from the one-offs)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 19,
+       "ts": "2026-10-25T18:45Z",
+       "ts_as_printed": "11:45 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T18:48:14.711Z",
+     "type": "note",
+     "title": "planned S21 relog logout at T800 after S19/S20",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 20,
+       "ts": "2026-10-25T18:53Z",
+       "ts_as_printed": "11:53 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T18:52:06Z",
+     "type": "stop",
+     "title": "S21 precondition refused carried rune arrows; runner wrongly adopted T07a; self-logout T844 at 18:52:08.255Z",
+     "cause_verbatim": "host: '1 other items (Rune arrow): need27free slots'",
+     "detail": "cause owner rs/849: runResumable loses the explicit --from lower bound; missing quiver transition separate",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T18:52:30Z",
+       "msg_id": "0d779565-a72f-4d6a-8892-a1a378687bf5"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 21,
+       "ts": "2026-10-25T18:54Z",
+       "ts_as_printed": "11:54 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 22,
+       "ts": "2026-10-25T18:54Z",
+       "ts_as_printed": "11:54 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 23,
+       "ts": "2026-10-25T18:58Z",
+       "ts_as_printed": "11:58 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T19:35:31Z",
+     "type": "recovery",
+     "title": "arrow-equip one-off, then resume --from='S21 runecraft:pre-login' at 19:36:43.553Z on merged runner 4f62822f",
+     "offline_note": "~44 min wall (18:52-19:36)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 25,
+       "ts": "2026-10-25T19:39Z",
+       "ts_as_printed": "12:39 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T19:44:22Z",
+     "type": "operator",
+     "title": "operator asks for the estimated finish",
+     "quote": "whats our est finish tick / time?",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-25T19:44:22Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "whats our est finish tick / time?"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T19:46:27.851Z",
+     "type": "note",
+     "title": "RC 99; planned boundary logout 19:46:31.435Z; offline S21 finalization 19:53:13Z; continuation first observed 19:55:36.360Z",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 27,
+       "ts": "2026-10-25T19:49Z",
+       "ts_as_printed": "12:49 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 28,
+       "ts": "2026-10-25T19:55Z",
+       "ts_as_printed": "12:55 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 29,
+       "ts": "2026-10-25T20:00Z",
+       "ts_as_printed": "13:00 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T20:35:45.809Z",
+     "type": "stop",
+     "title": "S26:L (Elvarg) postcondition: a reward page still open (Strength 99 level-up)",
+     "cause_verbatim": "host: \"L postcondition 'a reward page is still open', NOT death\"",
+     "detail": "quest complete, QP 34, key absent; clean logout at 6026 (HP 62/97)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T20:36:41Z",
+       "msg_id": "0ee4247b-2422-4e6d-a817-e75ff71ee330"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 36,
+       "ts": "2026-10-25T20:37Z",
+       "ts_as_printed": "13:37 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 37,
+       "ts": "2026-10-25T20:40Z",
+       "ts_as_printed": "13:40 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T20:38:53Z",
+     "type": "ruling",
+     "title": "ordinary resume once from S26:L",
+     "quote": "main: 'GO ordinaryresumeONCE --from='S26:L-elvarg' --s21-relog=off'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T20:38:53Z",
+       "msg_id": "61140fd6-764c-4992-b7f6-ede2cea8d23f"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T20:40:04.783Z",
+     "type": "recovery",
+     "title": "resume; level-up cleared; T26-27a done; H23 waits on a cannon supplier stuck in a shop",
+     "detail": "main 20:40:34Z: 'h92H23supplieronline serve-travel stuck2671,3315->2658,3301 no-waypoints/failures201,same shoptrap'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T20:40:47Z",
+       "msg_id": "19ffd01e-0820-4e47-931c-8b42cafa1d61"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-25T20:40:34Z",
+       "msg_id": "e8d50a3b-92df-4d43-a316-c924b1b204af"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 38,
+       "ts": "2026-10-25T20:44Z",
+       "ts_as_printed": "13:44 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T20:41:00Z",
+     "type": "operator",
+     "title": "operator: log out",
+     "quote": "LOG OUT",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/chat",
+       "ts": "2026-10-25T20:41:00Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "LOG OUT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T20:41:10.163Z",
+     "type": "logout",
+     "title": "clean logout at T149 by a second SIGINT (H23 not completed)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T20:41:57Z",
+       "msg_id": "07e16a4b-6a5f-4a50-9e07-a11b37cfe619"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 38,
+       "ts": "2026-10-25T20:44Z",
+       "ts_as_printed": "13:44 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T21:14:49Z",
+     "type": "note",
+     "title": "demo outage/restart while SCORED offline (new token mvobsgyr first observed 21:14:49Z)",
+     "uncertain": true,
+     "uncertain_why": "rs/843 #41: 'firstobserved21:14:49 (NOTexactrestarttime)'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 40,
+       "ts": "2026-10-25T21:19Z",
+       "ts_as_printed": "14:19 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 41,
+       "ts": "2026-10-25T21:27Z",
+       "ts_as_printed": "14:27 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-25T21:15:24Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "Good timing seems server just restarted"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T21:25:21.789Z",
+     "type": "recovery",
+     "title": "helper-only escape of the cannon supplier from the shop; supplier ready 21:28:32Z",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 41,
+       "ts": "2026-10-25T21:27Z",
+       "ts_as_printed": "14:27 PDT"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 42,
+       "ts": "2026-10-25T21:30Z",
+       "ts_as_printed": "14:30 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T21:33:25.731Z",
+     "type": "recovery",
+     "title": "H23 SUCCESS (41 ticks) after resume launched 21:33:02.501Z",
+     "offline_note": "~52 min wall (20:41-21:33)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T21:34:07Z",
+       "msg_id": "4ab5b1eb-c70b-4fd5-9c8d-41d0d83c15bf"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 43,
+       "ts": "2026-10-25T21:34Z",
+       "ts_as_printed": "14:34 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T21:34:39.948Z",
+     "type": "stop",
+     "title": "S27 named stop: 0 Prayer and no prayer potion for the protected cannon set-up; retreat; logout T268 21:34:55.237Z",
+     "cause_verbatim": "'cannon set-up: 0 prayer points and no prayer potion, so protect_from_melee cannot go on for the set-up under the spiders'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-25T21:35:26Z",
+       "msg_id": "dfea0093-8306-435c-bb7c-bc94cfa9c5e5"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 44,
+       "ts": "2026-10-25T21:39Z",
+       "ts_as_printed": "14:39 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T21:39:27Z",
+     "type": "operator",
+     "title": "operator weighs altar vs potion delivery",
+     "quote": "how slow would altar be / I feel like bringing potion to current loc would be better so it can log in and continue",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-25T21:39:27Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "how slow would altar be"
+      },
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-25T21:40:38Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "I feel like bringing potion to current loc would be better so it can log in and continue"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T21:53:35Z",
+     "type": "operator",
+     "title": "operator: wall clock is free, ticks are not",
+     "quote": "builder is overestimating, wall clock is free, ticks are not",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-25T21:53:35Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "builder is overestimating, wall clock is free, ticks are not"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-25T22:43:31Z",
+     "type": "note",
+     "title": "first potion courier (h84) retired after the courier approach failed; long helper-delivery saga follows",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 46,
+       "ts": "2026-10-25T22:48Z",
+       "ts_as_printed": "15:48 PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T02:43:49Z",
+     "type": "operator",
+     "title": "operator orders reviews skipped",
+     "quote": "No. we are skipping reviews, we do not have usage for that atm. FOCUS",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T02:43:49Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "No. we are skipping reviews, we do not have usage for that atm. FOCUS"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:17:56.513Z",
+     "type": "stop",
+     "title": "courier attempt 3 not released: release gate refused on two bots 40 tiles away; courier pulled out 03:19:45Z on the operator's order",
+     "cause_verbatim": "`PLAYER-NOT-CLEAR PRE-RELEASE read 2 n=1449 near=[...]`, then `STOP PLAYER-CLEAR-REFUSED: no release`",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T03:21:15Z",
+       "msg_id": "2cfeb987-8619-4b3d-b74f-28649134decb"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:25:55.176Z",
+     "type": "recovery",
+     "title": "prayer-return one-off: potion received and drunk (Prayer 0 to 31), but the protect toggle never took; STOP at t23, offline 03:26:05.989Z (20 ticks)",
+     "cause_verbatim": "'STAGE-BOUND-protect' at 03:26:03.102 (t23, 7.9 s): activePrayers stayed ALL false through 12 ticks while prayerPoints was 31",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T03:27:10Z",
+       "msg_id": "df178c97-fc94-43c4-91a3-f4bd9b8a4033"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T03:42:20Z",
+       "msg_id": "2ccfcf56-cd2b-46d3-ab10-2ca5be83030b"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:36:26.963Z",
+     "type": "stop",
+     "title": "return-only one-off: walk to the S27 site succeeded (CHECK-OK 03:36:35.925Z) but the logout was refused in combat; runner killed 03:37:06.913Z",
+     "cause_verbatim": "host: 'the WALK SUCCEEDED, the LOGOUT did not ... the wrapper logout was REFUSED '(combat)': held from t26 to click t92'",
+     "detail": "last in world t93 at 03:37:02.907Z",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T03:38:36Z",
+       "msg_id": "ad2a4737-f70c-40d6-ae39-a565f963926f"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T03:42:20Z",
+       "msg_id": "2ccfcf56-cd2b-46d3-ab10-2ca5be83030b"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:39:17Z",
+     "type": "ruling",
+     "title": "main orders an immediate takeover login",
+     "quote": "main: 'RULING, GO NOW: launch step E IMMEDIATELY as a TAKEOVER login against the still-listed body; do not wait for removal.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-26T03:39:17Z",
+       "msg_id": "9e850be7-43b5-46e6-9caf-295db726a7d4"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:39:53Z",
+     "type": "operator",
+     "title": "operator: log out (overrides the takeover)",
+     "quote": "Log out!!!",
+     "detail": "preceded at 03:39:36Z by 'why is it logged in?' (main thread). host 03:40:12Z: 'the OPERATOR ordered 'Log out!!!' directly at 20:39 PDT, which overrides the takeover ruling. Step E is NOT launched.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/chat",
+       "ts": "2026-10-26T03:39:53Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "Log out!!!"
+      },
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T03:39:36Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "why is it logged in?"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T03:40:12Z",
+       "msg_id": "fd1da0a5-106c-4c0a-8a72-b158511089ec"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:40:37Z",
+     "type": "death",
+     "title": "SCORED died at the S27 spiders (abandoned body); respawn observed 03:40:37Z, offline 03:40:43Z",
+     "cause_verbatim": "host: 'SCORED DIED. The roster showed it at 3287,3809 through 03:40:32Z, then at 3222,3220 (the Lumbridge respawn) at 03:40:37Z, then OFFLINE at 03:40:43Z. The abandoned in-combat body was killed by the S27 spiders after protect drained, before the server's removal.'",
+     "uncertain": true,
+     "uncertain_why": "death mechanism after client loss is inferred, not client-traced (rs/843 #48); roster granularity 5-8 s",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T03:40:54Z",
+       "msg_id": "26de0e76-7a29-4c4a-9c58-6071a3937830"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 48,
+       "ts": "2026-10-26T03:42Z",
+       "ts_as_printed": "20:42 (25 Oct) PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:40:44Z",
+     "type": "operator",
+     "title": "operator reacts",
+     "quote": "Welp there goes the run……… / I WANT A #1",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T03:40:44Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "Welp there goes the run………"
+      },
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T03:42:35Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "I WANT A #1"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:41:39Z",
+     "type": "ruling",
+     "title": "main stands down all live operations",
+     "quote": "main: 'death confirmed. STAND DOWN all live operations'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-26T03:41:39Z",
+       "msg_id": "3800f467-987a-495f-9b6b-e66223608813"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:44:47Z",
+     "type": "operator",
+     "title": "operator hands main back to the GPT model (astra)",
+     "quote": "Welcome back astra, sorry but fable fumbled the run and killed the guy 40min from the finish line, lets pick up the pieces and get this record",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T03:43:47Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "actually stop, you’re done I’m giving the reigns back to astra"
+      },
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T03:44:47Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "Welcome back astra, sorry but fable fumbled the run and killed the guy 40min from the finish line, lets pick up the pieces and get this record"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T03:45:18Z",
+     "type": "note",
+     "title": "rs/158 projection: recovery 36,294.9 expected (378.9 over 35,916); fresh 35,467.4 (448.6 under)",
+     "quote": "rs/158: 'Running-route planning finish29,718.2+6,576.7=36,294.9:378.9 OVER35,916 ... FRESH-account frozen expected35,467.4,448.6 UNDER ... neither option currently proves a guaranteed #1.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/158/2/coordinator/messages",
+       "ts": "2026-10-26T03:45:18Z",
+       "msg_id": "7422ef28-da35-409a-a5d3-4f1e812a23d4"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 50,
+       "ts": "2026-10-26T03:45Z",
+       "ts_as_printed": "20:45 (25 Oct) PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T04:08:30Z",
+     "type": "operator",
+     "title": "operator: finish the run even without the record",
+     "quote": "I think even if we can’t close the gap we should still finish the run / post something, its just that if we win now we’re done vs. having to start from scratch again",
+     "detail": "main's paraphrase at 04:09:06Z: 'Operator21:08: finish existing SCORED EVEN IF record gap cannot close'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T04:08:30Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "I think even if we can’t close the gap we should still finish the run / post something, its just that if we win now we’re done vs. having to start from scratch again"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-26T04:09:06Z",
+       "msg_id": "c1042ef9-0a0e-408f-9e6a-526e8672c254"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T04:09:19Z",
+     "type": "operator",
+     "title": "operator: not done until #1 (tenet 39 approved 04:09:50Z)",
+     "quote": "we’re not done until #1",
+     "detail": "tenet 39: 'We keep pursuing the overall #1 until achieved, rather than stop after attempt5.'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T04:09:19Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "we’re not done until #1"
+      },
+      {
+       "uri": "cairn://p/rs (tenet 39)",
+       "ts": "2026-10-26T04:09:50Z",
+       "note": "DuckDB tenets.number=39, approved 04:09:54Z"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T04:09:15Z",
+     "type": "recovery",
+     "title": "helper procurement of a replacement kit (furnace, 1,500 balls, arrows, potions, gear) by the fleet; kit parked at Lumbridge 06:12:15Z",
+     "by": "host + rs/41 fleet",
+     "detail": "a helper (h21) died during a controller hand-over at ~04:56Z; scored account untouched",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T04:09:15Z",
+       "msg_id": "af218cf6-73d2-4f73-83ff-55df97e1e37b"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T06:05:45Z",
+       "msg_id": "801ebe68-998a-46c9-9238-0260b80673a8"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T06:13:02Z",
+       "msg_id": "abeed9a9-6ce0-4772-8277-72eefb652310"
+      },
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T04:57:26Z",
+       "msg_id": "3807c9c5-7fca-4178-89fe-2e628ae4ba5b"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T05:31:16Z",
+     "type": "operator",
+     "title": "operator: every tick counts",
+     "quote": "can we get amulet / hide? / Every tick counts",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T05:31:16Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "can we get amulet / hide?"
+      },
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T05:31:16Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "Every tick counts"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T10:20:34Z",
+     "type": "ruling",
+     "title": "main returns (\"03:19 PDT\") and gives the conditional recovery GO",
+     "quote": "main: 'Main03:19PDT RETURNED. APPROVE narrow8899 page-proxy switch NOW ... CONDITIONAL' / 'Finishcurrentregardlessrecord; nofreshattemptlaunch.'",
+     "detail": "main's stamp '03:19 PDT' = 10:19Z; the message was stored at 10:20:34Z; operator nudge '^' at 10:19:07Z. Kit had waited parked ~4 h.",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-26T10:20:34Z",
+       "msg_id": "49b3c29f-e894-4f39-95b3-f258296bf803"
+      },
+      {
+       "uri": "cairn://p/rs/main/messages",
+       "ts": "2026-10-26T10:20:35Z",
+       "msg_id": "7f44fdec-eafc-4684-84b8-ccc2718440c1"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T10:27:08.417Z",
+     "type": "recovery",
+     "title": "recovery launch (run-20261026-102708); first logged tick 4 at 10:27:15.738Z, HP 97/97, Prayer 99",
+     "by": "host",
+     "offline_note": "SCORED offline 03:40:43Z-10:27Z (~6h46m wall, free on the record)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T10:27:46Z",
+       "msg_id": "ad145a58-0c14-49ad-a7b5-c199ff8b9dfd"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 51,
+       "ts": "2026-10-26T11:09Z",
+       "ts_as_printed": "04:09 (26 Oct) PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T11:07:53.355Z",
+     "type": "result",
+     "title": "Agility 99 at tick 6095; all 19 skills 99; runner exit 0 at 11:07:53.933Z; roster absent 11:07:57.889Z",
+     "detail": "R1 22 + T26-27 188 + S27 1,814 + T27-17 188 + S17 3,880 = 6,092 observed ticks (4 to 6096)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T11:08:47Z",
+       "msg_id": "cc021885-3c7f-4309-9858-b5d4c2f13852"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 51,
+       "ts": "2026-10-26T11:09Z",
+       "ts_as_printed": "04:09 (26 Oct) PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T11:11:06.781Z",
+     "type": "result",
+     "title": "public capture: 35,787 ticks normalized to 400 ms (3h58m34s), but rank still stale (#137)",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T11:11:23Z",
+       "msg_id": "f48c7496-e429-4be2-8776-5fc8f92203f6"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 54,
+       "ts": "2026-10-26T11:16Z",
+       "ts_as_printed": "04:16 (26 Oct) PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T11:14:43.680Z",
+     "type": "result",
+     "title": "official #1 verified on the player page and the overall board; exact margin 129 ticks / 51.6 s over the previous record 35,916",
+     "quote": "host: 'OFFICIAL #1 VERIFIED on BOTH playerpage11:14:43.680105Z and overallboard11:14:43.695775Z ... exactmargin129ticks=51.6s (roundeddisplays differ52s, NOT130ticks)'",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/host/messages",
+       "ts": "2026-10-26T11:15:32Z",
+       "msg_id": "461b1b02-3a8e-4895-bf52-d5b1cc75ee64"
+      },
+      {
+       "uri": "cairn://p/rs/843",
+       "comment": 55,
+       "ts": "2026-10-26T11:16Z",
+       "ts_as_printed": "04:16 (26 Oct) PDT"
+      }
+     ]
+    },
+    {
+     "utc": "2026-10-26T11:16:47Z",
+     "type": "operator",
+     "title": "operator: we did it",
+     "quote": "we did it!!!! incredible work couldnt have done it without you",
+     "sources": [
+      {
+       "uri": "cairn://p/rs/main/chat",
+       "ts": "2026-10-26T11:16:47Z",
+       "kind": "operator message (DuckDB events.event_type=user)",
+       "quote": "we did it!!!! incredible work couldnt have done it without you"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "known_fact_checks": [
+  {
+   "fact": "project started 20 Oct 14:37 PDT (21:37Z)",
+   "status": "confirmed",
+   "detail": "earliest message and event in the export: 2026-10-20T21:37:42Z",
+   "sources": [
+    {
+     "uri": "DuckDB rs-20261026.duckdb",
+     "note": "min(messages.created_at)=min(events.timestamp)=1792532262"
+    }
+   ]
+  },
+  {
+   "fact": "A1 23 Oct 17:38-17:39:33Z",
+   "status": "corrected",
+   "detail": "tick 0 ~17:38:59.3Z; run failed 17:39:33.654Z but the account stayed in the world until the logout click at 17:46:31.2Z (~1,127-1,130 logged-in ticks)"
+  },
+  {
+   "fact": "A2 19:23:34-19:49:27Z",
+   "status": "confirmed",
+   "detail": "tick 0 ~19:23:33.9Z; run.ts exited 19:49:27.3Z (session closed 19:49:26.8Z); two stops (S04 19:29:27Z, S07 19:48:55Z)"
+  },
+  {
+   "fact": "A3 21:34:53-23:17:41Z, stopped at 2,290 at the willow band (knife gate fell back to plain, fixed as rs/642)",
+   "status": "confirmed with an omission",
+   "detail": "there was an earlier stop at 21:44:22Z (oak load 2, player_not_found), a refused resume at 22:28:47Z, and the resume at 23:10:17Z; 23:17:41Z is the public-roster absence (run.jsonl session end 23:16:22Z)"
+  },
+  {
+   "fact": "live rehearsal 01:04Z to ~06:40Z 24 Oct with two Wilderness deaths",
+   "status": "corrected",
+   "detail": "main called it over at 06:32:27Z (main's own '~06:40Z' was a drifted in-text stamp); deaths ~04:38-04:40Z (detected 05:00Z) and ~06:28Z"
+  },
+  {
+   "fact": "A4 ~12:14:45Z login; death at the Grand Tree door from carried poison inside a never-ending readiness wait; called over ~16:3xZ",
+   "status": "confirmed",
+   "detail": "death 14:23:29.97Z by roster tile jump; over 16:31:57Z"
+  },
+  {
+   "fact": "demo restart 14:29:55Z during A4, not the cause of death",
+   "status": "confirmed",
+   "detail": "14:29:55.270Z new process, token mvl1k1jw -> mvmhwngm, ~6.5 min after the death"
+  },
+  {
+   "fact": "lab run 2 reached 1,881 on 25 Oct 07:55Z",
+   "status": "confirmed",
+   "detail": "07:55:47Z; started 22:36:42Z 24 Oct at 150 ms in chunks; it finished while attempt 5 was live"
+  },
+  {
+   "fact": "A5 login 25 Oct 06:56:33Z",
+   "status": "confirmed with caveat",
+   "detail": "06:56:33Z is the run.ts start; host told rs/83 the account logged in at ~06:56:40Z"
+  },
+  {
+   "fact": "S11b cupboard stop 08:12Z (dropped single Search click, rs/185)",
+   "status": "confirmed",
+   "detail": "session end 08:12:47.592Z; resumed 08:19:08Z"
+  },
+  {
+   "fact": "S18 Thieving failure 09:33:29Z (re-ask could not step onto the anchor; diagonal door, rs/847)",
+   "status": "confirmed",
+   "detail": "09:33:29.668Z"
+  },
+  {
+   "fact": "long offline hold: 600-minute cue expiry, demo restart 17:56:32Z, Thieving recovery 18:41:39Z",
+   "status": "confirmed",
+   "detail": "cue expiry 16:46:48Z; also no main/host messages 09:47:03Z-16:33:13Z"
+  },
+  {
+   "fact": "S21 runner bug rs/849 (18:5xZ), resume 19:36Z",
+   "status": "confirmed",
+   "detail": "18:52:06Z failure; resume 19:36:43.553Z"
+  },
+  {
+   "fact": "S26 Melzar/Dragon Slayer stop 20:35:45Z (reward page)",
+   "status": "corrected",
+   "detail": "the stop was S26:L (Elvarg), postcondition 'a reward page is still open' (Strength 99 level-up); Melzar (S26:G) passed"
+  },
+  {
+   "fact": "H23 saga: 21:14Z demo outage, success 21:33:25Z",
+   "status": "confirmed",
+   "detail": "H23 success 21:33:25.731Z; the restart time itself is not exact (first observed 21:14:49Z)"
+  },
+  {
+   "fact": "S27 stop (prayer at zero) 21:34Z",
+   "status": "confirmed",
+   "detail": "21:34:39.948Z"
+  },
+  {
+   "fact": "prayer-return one-off 03:25Z; return-only 03:36Z logout refused in combat; operator 'Log out!!!' 03:39Z; death observed 03:40:37Z",
+   "status": "confirmed",
+   "detail": "the prayer-return one-off delivered the potion but stopped at the protect step; main had ruled a takeover at 03:39:17Z which the operator's 03:39:53Z order overrode"
+  },
+  {
+   "fact": "rs/158 projection 20:45 PDT: recovery 36,294.9 vs 35,916; fresh 35,467.4",
+   "status": "confirmed",
+   "detail": "03:45:18Z 26 Oct"
+  },
+  {
+   "fact": "operator 21:08 PDT 'finish current SCORED even if not record'",
+   "status": "corrected",
+   "detail": "that is main's paraphrase; the operator's words at 04:08:30Z: 'I think even if we can’t close the gap we should still finish the run / post something, its just that if we win now we’re done vs. having to start from scratch again'"
+  },
+  {
+   "fact": "operator 21:09 'we're not done until #1' (tenet rs #39)",
+   "status": "confirmed",
+   "detail": "04:09:19Z; tenet 39 approved 04:09:50Z"
+  },
+  {
+   "fact": "main returned 03:19 PDT 26 Oct, conditional recovery GO",
+   "status": "confirmed",
+   "detail": "message stored 10:20:34Z"
+  },
+  {
+   "fact": "recovery launch 10:27:08Z, Agility 99 11:07:53Z, official #1 11:14:43Z",
+   "status": "confirmed",
+   "detail": "10:27:08.417Z; 11:07:53.355Z; 11:14:43.680Z"
+  }
+ ],
+ "could_not_source": [
+  {
+   "item": "Attempt 5's exact login instant (server tick 0)",
+   "why": "run.ts start 06:56:33Z and host's '~06:56:40Z' are the only figures; rs/83 was blind to the new account until 06:59:18Z"
+  },
+  {
+   "item": "Time of the rehearsal's first Wilderness death",
+   "why": "no death row; host inferred it inside the combat-held logout after 04:38:45Z, from a 04:40Z gateway state"
+  },
+  {
+   "item": "Attempt 4's HP and poison at death, and the death instant",
+   "why": "not recorded by run.jsonl or the gateway; only rs/83's tile jump at 14:23:29.97Z"
+  },
+  {
+   "item": "Exact time of the 25 Oct ~21:14Z demo restart",
+   "why": "only the first observation of the new token, 21:14:49Z ('NOT exact restart time', rs/843 #41)"
+  },
+  {
+   "item": "How the 562-tick gap between official 35,787 and observed 35,225 splits",
+   "why": "eight pre-observation login intervals and the death tail were never measured (rs/843 #54, #56)"
+  }
+ ],
+ "also_unsourced": [
+  "final account playtime of the live rehearsal",
+  "final playtime of attempt 4 on the account clock",
+  "a single tick total for lab run 2",
+  "the cause of the 6h46m main/host silence on 25 Oct (inferred: usage limits and a harness stop)"
+ ],
+ "further_sources": [
+  "/Users/mitch/.rs-fleet/postrun-docs-20261026T1116/run-sanitized.jsonl (complete A5 runner log, SCORED label; sha 2c7dda63...)",
+  "host archive READMEs: ~/rs-run/run-20261023/attempt3/, ~/rs-run/run-20261024/attempt4/ (run host)",
+  "main timeline message 2026-10-24T22:26:06Z (d8c375c4) as a cross-check"
+ ]
+}

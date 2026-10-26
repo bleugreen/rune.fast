@@ -1,0 +1,15 @@
+Fonts served by rune.fast
+
+Rune Serif (RuneSerif-Roman.var.woff2, RuneSerif-Italic.var.woff2)
+  A Modified Version of Source Serif 4 (version 4.005, variable, wght 200-900, opsz 8-60)
+  by Frank Griesshammer for Adobe, https://github.com/adobe-fonts/source-serif.
+  Modification: subset to Latin-1 plus general punctuation, arrows and math signs,
+  with every OpenType layout feature kept (onum, lnum, tnum, pnum, smcp, c2sc, frac,
+  sups, case, liga, zero). Renamed from Source Serif 4 to Rune Serif because the
+  original reserves the font name 'Source'. Licence: SIL Open Font License 1.1,
+  see SourceSerif4-LICENSE.md. Thanks to Adobe and the Source Serif contributors.
+
+IBM Plex Sans (IBMPlexSans-{Regular,Medium,SemiBold}-Latin1.woff2)
+  The unmodified Latin1 split files from IBM Plex Sans 1.1.0 as published by IBM,
+  https://github.com/IBM/plex. Licence: SIL Open Font License 1.1, see
+  IBMPlexSans-LICENSE.txt.

@@ -1,0 +1,209 @@
+.root {
+  position: relative;
+  width: 100%;
+}
+
+.scroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline) transparent;
+}
+.scroller:focus-visible {
+  outline: var(--stroke-rule) solid var(--ink);
+  outline-offset: 6px;
+}
+
+.svg {
+  display: block;
+  font-family: var(--font-sans);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Lines */
+.bar {
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+.offline {
+  stroke: var(--ink-muted);
+  stroke-width: 1;
+  stroke-dasharray: 0.5 3;
+  stroke-linecap: round;
+}
+.extent {
+  stroke: var(--ink-faint);
+  stroke-width: 2.5;
+}
+
+/* Marks */
+.stop {
+  stroke: var(--ink);
+  stroke-width: 1.1;
+}
+.death {
+  fill: var(--accent);
+}
+.quoteTick {
+  stroke: var(--ink);
+  stroke-width: var(--stroke-thin);
+}
+.tickNum {
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.faint .stop {
+  stroke: var(--ink-faint);
+}
+.faint .death {
+  opacity: 0.5;
+}
+
+/* Labels */
+.rowLabel {
+  font-size: 11.5px;
+  font-weight: 500;
+  fill: var(--ink);
+}
+.inlineLabel {
+  font-size: 11px;
+  fill: var(--ink-muted);
+}
+.hold {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12px;
+  fill: var(--ink-muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.finish {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  fill: var(--accent);
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.01em;
+}
+.finishUnit {
+  font-size: 10.5px;
+  fill: var(--accent);
+}
+
+/* Axis */
+.axis {
+  stroke: var(--rule);
+  stroke-width: var(--stroke-thin);
+}
+.midnight {
+  stroke: var(--hairline);
+  stroke-width: var(--stroke-thin);
+}
+.tickUtc {
+  font-size: 10.5px;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.tickPacific {
+  font-size: 10px;
+  fill: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.day {
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--ink);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+/* Selection */
+.ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.9;
+  pointer-events: none;
+}
+.guide {
+  stroke: var(--ink);
+  stroke-width: var(--stroke-hair);
+  stroke-dasharray: 2 3;
+  pointer-events: none;
+}
+
+/* Pulled quotes, keyed to the numbered ticks */
+.quotes {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-4) 0 0;
+  border-top: var(--stroke-hair) solid var(--hairline);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-4) var(--space-5);
+}
+.quote {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  column-gap: var(--space-1);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.quoteNum {
+  grid-row: span 2;
+  font-family: var(--font-sans);
+  font-size: var(--label-sm);
+  font-weight: 600;
+  line-height: 1.9;
+  font-variant-numeric: tabular-nums;
+}
+.quoteText {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+}
+.quote:hover .quoteText,
+.quote[data-selected] .quoteText {
+  text-decoration: underline;
+  text-decoration-thickness: var(--stroke-hair);
+  text-underline-offset: 0.18em;
+}
+.quoteTime {
+  margin-top: var(--space-1);
+  font-family: var(--font-sans);
+  font-size: var(--label-sm);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The plot is one pointer target; the mark nearest the pointer in time is the one shown. */
+.band {
+  fill: transparent;
+  cursor: pointer;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  color: var(--ink-muted);
+}
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.legendItem svg {
+  display: block;
+}
