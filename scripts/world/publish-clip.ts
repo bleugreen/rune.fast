@@ -267,7 +267,7 @@ if (args.upload || args['upload-cache']) {
 async function fetchPut(
   s3: Bun.S3Client,
   key: string,
-  body: Uint8Array | Blob,
+  body: Uint8Array<ArrayBuffer> | Blob,
   size: number,
   meta: { type: string; cacheControl: string; contentEncoding?: string },
 ): Promise<void> {

@@ -25,7 +25,7 @@ export function Layout() {
           </div>
           <nav className={styles.nav} aria-label="Pages">
             {LIVE.map((n) => (
-              <NavLink key={n.to} to={n.to} end className={({ isActive }) => (isActive ? styles.current : styles.link)}>
+              <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => (isActive ? styles.current : styles.link)}>
                 {n.label}
               </NavLink>
             ))}
