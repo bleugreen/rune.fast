@@ -61,16 +61,6 @@ export function pacificZone(t: number): string {
   return pacZone.formatToParts(t).find((p) => p.type === 'timeZoneName')?.value ?? '';
 }
 
-/** '23–26 October 2026' for a span within one month, else both dates in full. */
-export function fmtUtcDateRange(a: number, b: number): string {
-  const da = new Date(a);
-  const db = new Date(b);
-  if (da.getUTCMonth() === db.getUTCMonth() && da.getUTCFullYear() === db.getUTCFullYear()) {
-    return `${da.getUTCDate()}–${fmtUtcDate(b)}`;
-  }
-  return `${fmtUtcDate(a)} – ${fmtUtcDate(b)}`;
-}
-
 /** The Pacific dates a span covers: '26 October 2026', '23–26 October 2026', or both dates in full across months. */
 export function fmtPacificDateRange(a: number, b: number): string {
   const [ka, kb] = [pacificDayKey(a), pacificDayKey(b)];
