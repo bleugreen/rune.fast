@@ -94,6 +94,8 @@
   line-height: 1.62;
   hanging-punctuation: first;
   text-wrap: pretty;
+  /* Quoted agent messages can arrive with their spaces stripped; break them rather than overflow a phone. */
+  overflow-wrap: break-word;
 }
 
 /* A message the prose quotes whole: the serif, indented, a hairline on the left. */
