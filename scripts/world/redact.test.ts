@@ -66,6 +66,13 @@ describe('redaction', () => {
     expect(hits).toEqual([{ where: 'x:1', what: 'home directory path' }]);
   });
 
+  test('a slot alias is not a hit on an all-digit account name; other text with that number is', () => {
+    const names = new Set(['1104']);
+    expect(scanEmitted('x', JSON.stringify({ p: [[1104, 'slot_1104', 0, 0, 0, 3]] }), names, 'alpha_one')).toEqual([]);
+    expect(scanEmitted('x', JSON.stringify({ appearance: { name: 'Slot 1104' } }), names, 'alpha_one')).toEqual([]);
+    expect(scanEmitted('x', JSON.stringify({ chatMessage: 'Hello 1104!' }), names, 'alpha_one')).toHaveLength(1);
+  });
+
   test('fails closed without the scored account', () => {
     expect(() => new Redactor(undefined)).toThrow(RedactionError);
     expect(() => new Redactor('  ')).toThrow(RedactionError);

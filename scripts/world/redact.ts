@@ -173,7 +173,10 @@ export function scanEmitted(
       if (key === 'ap') {
         const account = appearanceAccount(value);
         if (account !== scored && !SLOT_ALIAS.test(account)) hits.push({ where: `${where} ${path}`, what: 'appearance name' });
-      } else if (key !== 't' && mentionsAny(value, names)) {
+      } else if (key !== 't' && !SLOT_ALIAS.test(canonicalAccountName(value)) && mentionsAny(value, names)) {
+        // A string that is exactly a slot alias ("slot_1104", or "Slot 1104" as an appearance
+        // shows it) is the redacted form itself; it can collide with an all-digit account name
+        // without revealing it. Any other string holding such a number still counts as a hit.
         hits.push({ where: `${where} ${path}`, what: 'player name' });
       }
     });
