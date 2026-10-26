@@ -2,6 +2,7 @@ import { useRef, useState, type PointerEvent } from 'react';
 import type { ClipManifest } from '@rune/world/replay/clip';
 import type { ReplaySpeed, ReplayState } from '@rune/world/replay/ReplayDriver';
 import { fmtInt } from '../lib/numbers';
+import { pacificZone } from '../lib/time';
 import type { ReplayMark } from './clips';
 import styles from './Timeline.module.css';
 
@@ -15,8 +16,9 @@ export function recvOfTick(manifest: ClipManifest, k: number): number {
   return chunk.recv0 + f * (chunk.recv1 - chunk.recv0);
 }
 
-const utcClock = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'UTC',
+/** The site shows Pacific time; UTC stays in the clip's data. */
+const pacificClock = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'America/Los_Angeles',
   hour: '2-digit',
   minute: '2-digit',
   second: '2-digit',
@@ -80,7 +82,9 @@ export function Timeline({ manifest, state, marks, onSeek, onPlay, onPause, onSp
         </span>
         <span className={styles.readout} aria-live="off">
           <span>tick {fmtInt(shown - kOffset)}</span>
-          <span className={styles.clock}>{utcClock.format(clock)} UTC</span>
+          <span className={styles.clock}>
+            {pacificClock.format(clock)} {pacificZone(clock)}
+          </span>
           {state.loading && <span className={styles.clock}>loading</span>}
         </span>
       </div>
@@ -109,7 +113,7 @@ export function Timeline({ manifest, state, marks, onSeek, onPlay, onPause, onSp
         {marks.map((m, i) => (
           <span key={m.label} className={styles.mark} style={{ left: pct(m.sessionTick + kOffset) }}>
             <span className={styles.markLabel} data-edge={i === 0 ? 'start' : i === marks.length - 1 ? 'end' : undefined}>
-              {m.label}
+              {m.label}, {pacificClock.format(recvOfTick(manifest, m.sessionTick + kOffset))}
             </span>
           </span>
         ))}
