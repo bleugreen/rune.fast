@@ -3,7 +3,7 @@ import type { ClipManifest } from '@rune/world/replay/clip';
 import type { ReplaySpeed, ReplayState } from '@rune/world/replay/ReplayDriver';
 import { fmtInt } from '../lib/numbers';
 import { pacificZone } from '../lib/time';
-import type { ReplayMark } from './clips';
+import type { ReplayMark } from './moments';
 import styles from './Timeline.module.css';
 
 const SPEEDS: ReplaySpeed[] = [1, 4, 16];
@@ -27,6 +27,8 @@ const pacificClock = new Intl.DateTimeFormat('en-GB', {
 
 export type TimelineProps = {
   manifest: ClipManifest;
+  /** The feed ticks the scrubber spans: the moment's window. */
+  range: { kStart: number; kEnd: number };
   state: ReplayState;
   marks: ReplayMark[];
   onSeek: (k: number) => void;
@@ -36,13 +38,16 @@ export type TimelineProps = {
 };
 
 /** The scrub bar: a hairline over the clip's ticks, dragged to seek, with marks and play controls. */
-export function Timeline({ manifest, state, marks, onSeek, onPlay, onPause, onSpeed }: TimelineProps) {
-  const { kStart, kEnd } = manifest.window;
+export function Timeline({ manifest, range, state, marks, onSeek, onPlay, onPause, onSpeed }: TimelineProps) {
+  const { kStart, kEnd } = range;
+  const gaps = manifest.followGaps
+    .filter(([a, b]) => b >= kStart && a <= kEnd)
+    .map(([a, b]): [number, number] => [Math.max(a, kStart), Math.min(b, kEnd)]);
   const kOffset = manifest.anchor.kOffset;
   const track = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState<number>();
 
-  const pct = (k: number) => `${((k - kStart) / (kEnd - kStart)) * 100}%`;
+  const pct = (k: number) => `${(Math.min(Math.max(k - kStart, 0), kEnd - kStart) / (kEnd - kStart)) * 100}%`;
   const kAt = (clientX: number) => {
     const box = track.current!.getBoundingClientRect();
     const f = Math.min(Math.max((clientX - box.left) / box.width, 0), 1);
@@ -107,7 +112,7 @@ export function Timeline({ manifest, state, marks, onSeek, onPlay, onPause, onSp
           <span key={a} className={styles.loaded} style={{ left: pct(a), width: `calc(${pct(b)} - ${pct(a)})` }} />
         ))}
         <span className={styles.rule} />
-        {manifest.followGaps.map(([a, b]) => (
+        {gaps.map(([a, b]) => (
           <span key={a} className={styles.gap} style={{ left: pct(a), width: `calc(${pct(b + 1)} - ${pct(a)})` }} />
         ))}
         {marks.map((m, i) => (
@@ -121,7 +126,7 @@ export function Timeline({ manifest, state, marks, onSeek, onPlay, onPause, onSp
         {preview !== undefined && <span className={styles.preview} style={{ left: pct(preview) }} />}
       </div>
 
-      {manifest.followGaps.length > 0 && (
+      {gaps.length > 0 && (
         <div className={styles.legend}>
           <span className={styles.swatch} />
           <span>outside the recorded area: the camera follows the roster until the account is back in view</span>

@@ -10,7 +10,8 @@ import {
 import { parseChunk, type ChunkData, type ClipChunk, type ClipManifest } from '@rune/world/replay/clip';
 import { ReplayDriver, type ReplaySpeed } from '@rune/world/replay/ReplayDriver';
 import { fmtInt } from '../lib/numbers';
-import type { ReplayClip } from './clips';
+import { CodePane } from './CodePane';
+import { FINISH_BASE, type Moment } from './moments';
 import { Timeline } from './Timeline';
 import { loadWorld, type LoadedWorld } from './world';
 import styles from './Replay.module.css';
@@ -37,11 +38,17 @@ async function fetchChunk(base: string, chunk: ClipChunk): Promise<ChunkData> {
 
 type Ready = LoadedWorld & { driver: ReplayDriver; controller: LiveController; manifest: ClipManifest; requested: number };
 
-function requestedTick(manifest: ClipManifest): { k: number; paused: boolean } {
+/** A moment's window as feed ticks. */
+function windowOf(manifest: ClipManifest, moment: Moment): { kFrom: number; kTo: number } {
+  return { kFrom: manifest.anchor.kOffset + moment.from, kTo: manifest.anchor.kOffset + moment.to };
+}
+
+function requestedTick(manifest: ClipManifest, moment: Moment): { k: number; paused: boolean } {
   const params = new URLSearchParams(window.location.search);
   const t = Number(params.get('t'));
-  const sessionTick = Number.isFinite(t) && params.has('t') ? Math.round(t) : 1;
-  return { k: manifest.anchor.kOffset + sessionTick, paused: params.has('paused') };
+  const sessionTick = Number.isFinite(t) && params.has('t') ? Math.round(t) : moment.from;
+  const clamped = Math.min(Math.max(sessionTick, moment.from), moment.to);
+  return { k: manifest.anchor.kOffset + clamped, paused: params.has('paused') };
 }
 
 function writeUrl(manifest: ClipManifest, k: number, paused: boolean): void {
@@ -53,10 +60,11 @@ function writeUrl(manifest: ClipManifest, k: number, paused: boolean): void {
 }
 
 /**
- * A recorded clip in the 3D world: loads the clip's manifest, the game cache and the renderer's
- * workers, plays the clip through the live layer, and follows the record account.
+ * A moment of the finish recording in the 3D world: loads the clip's manifest, the game cache and
+ * the renderer's workers, opens at the moment's first tick following the record account, and plays
+ * the window beside the code each step ran.
  */
-export function Replay({ clip }: { clip: ReplayClip }) {
+export function Replay({ moment }: { moment: Moment }) {
   const [ready, setReady] = useState<Ready>();
   const [progress, setProgress] = useState<DownloadProgress>();
   const [error, setError] = useState<string>();
@@ -65,15 +73,15 @@ export function Replay({ clip }: { clip: ReplayClip }) {
     const abort = new AbortController();
     let loaded: LoadedWorld | undefined;
     (async () => {
-      const manifest = await fetchManifest(clip.base);
+      const manifest = await fetchManifest(FINISH_BASE);
       await Promise.all(OVERLAY_FONTS.map((font) => document.fonts.load(font)));
       loaded = await loadWorld(abort.signal, setProgress);
-      const driver = new ReplayDriver(manifest, (i) => fetchChunk(clip.base, manifest.chunks[i]!));
+      const driver = new ReplayDriver(manifest, (i) => fetchChunk(FINISH_BASE, manifest.chunks[i]!));
       const controller = loaded.viewer.startLive(driver.feed);
       // Only the followed account is named; everyone else stays unlabelled.
       controller.options.showPlayerNames = false;
       driver.bind(controller);
-      const { k, paused } = requestedTick(manifest);
+      const { k, paused } = requestedTick(manifest, moment);
       await driver.seek(k);
       if (abort.signal.aborted) return;
       controller.setPendingFollow(manifest.follow.name);
@@ -88,7 +96,7 @@ export function Replay({ clip }: { clip: ReplayClip }) {
       abort.abort();
       loaded?.viewer.dispose();
     };
-  }, [clip]);
+  }, [moment]);
 
   if (error) {
     return (
@@ -112,10 +120,11 @@ export function Replay({ clip }: { clip: ReplayClip }) {
       </div>
     );
   }
-  return <ReplayStage clip={clip} {...ready} />;
+  return <ReplayStage moment={moment} {...ready} />;
 }
 
-function ReplayStage({ clip, viewer, pool, driver, controller, manifest, requested }: Ready & { clip: ReplayClip }) {
+function ReplayStage({ moment, viewer, pool, driver, controller, manifest, requested }: Ready & { moment: Moment }) {
+  const { kFrom, kTo } = windowOf(manifest, moment);
   const state = useSyncExternalStore(driver.subscribe, driver.getSnapshot);
   const overlayHost = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
@@ -130,19 +139,33 @@ function ReplayStage({ clip, viewer, pool, driver, controller, manifest, request
   const seek = useCallback(
     (k: number) => {
       driver.pause();
-      void driver.seek(k).then((done) => done && writeUrl(manifest, driver.getSnapshot().k, true));
+      const target = Math.min(Math.max(k, kFrom), kTo);
+      void driver.seek(target).then((done) => done && writeUrl(manifest, driver.getSnapshot().k, true));
     },
-    [driver, manifest],
+    [driver, manifest, kFrom, kTo],
   );
+  // Play from the moment's start once its end is reached.
   const play = useCallback(() => {
-    driver.play();
-    writeUrl(manifest, driver.getSnapshot().k, false);
-  }, [driver, manifest]);
+    const start = () => {
+      driver.play();
+      writeUrl(manifest, driver.getSnapshot().k, false);
+    };
+    if (driver.getSnapshot().k >= kTo) void driver.seek(kFrom).then((done) => done && start());
+    else start();
+  }, [driver, manifest, kFrom, kTo]);
   const pause = useCallback(() => {
     driver.pause();
     writeUrl(manifest, driver.getSnapshot().k, true);
   }, [driver, manifest]);
   const speed = useCallback((s: ReplaySpeed) => driver.setSpeed(s), [driver]);
+
+  // A moment stops at its end.
+  useEffect(() => {
+    if (!state.paused && state.k >= kTo) {
+      driver.pause();
+      writeUrl(manifest, state.k, true);
+    }
+  }, [state, driver, manifest, kTo]);
 
   // Space plays and pauses; arrows step a tick, or 50 with Shift. The canvas keeps its own
   // arrow keys, which orbit the camera.
@@ -189,15 +212,25 @@ function ReplayStage({ clip, viewer, pool, driver, controller, manifest, request
   }, [driver, controller, renderer, pool, requested]);
 
   return (
-    <div className={styles.replay} ref={host} data-replay={clip.id}>
+    <div className={styles.replay} ref={host} data-replay={moment.id}>
       <div className={styles.stage}>
         <div className={styles.pane}>
           <RendererCanvas renderer={viewer.renderer} />
           <div ref={overlayHost} className={styles.overlay} />
         </div>
-        <Timeline manifest={manifest} state={state} marks={clip.marks} onSeek={seek} onPlay={play} onPause={pause} onSpeed={speed} />
+        <Timeline
+          manifest={manifest}
+          range={{ kStart: kFrom, kEnd: kTo }}
+          state={state}
+          marks={moment.marks}
+          onSeek={seek}
+          onPlay={play}
+          onPause={pause}
+          onSpeed={speed}
+        />
+        <RecordFollow viewer={viewer} controller={controller} recordName={manifest.follow.name} />
       </div>
-      <RecordFollow viewer={viewer} controller={controller} recordName={manifest.follow.name} />
+      <CodePane moment={moment} sessionTick={state.sessionTick} />
       {import.meta.env.DEV && <DevStatus controller={controller} viewer={viewer} />}
     </div>
   );
