@@ -46,19 +46,30 @@ const decode = (s: string) =>
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&');
 
+/* Layout effects (chart width, router links) do not run in a server render, which is all this test needs. */
+const consoleError = console.error;
+console.error = (...args: unknown[]) => {
+  if (typeof args[0] === 'string' && args[0].includes('useLayoutEffect does nothing on the server')) return;
+  consoleError(...args);
+};
 const html = renderToStaticMarkup(
   <MemoryRouter>
     <StoryPage />
   </MemoryRouter>,
 );
+console.error = consoleError;
 const text = decode(html);
 const surface = decode(html.replace(/<details[\s\S]*?<\/details>/g, ''));
 
 describe('the draft, placed verbatim', () => {
   const paragraphs = draftParagraphs(draft);
 
-  test('the split finds the byline and every paragraph of the six sections', () => {
-    expect(paragraphs.length).toBeGreaterThanOrEqual(30);
+  test('the plain split and the page’s parser find the same paragraphs', () => {
+    const parsed = [
+      story.byline,
+      ...story.sections.flatMap((s) => s.blocks.flatMap((b) => (b.kind === 'p' ? [b.text] : b.paragraphs))),
+    ];
+    expect(parsed).toEqual(paragraphs);
   });
 
   test.each(paragraphs.map((p) => [p.slice(0, 60), p] as const))('the page carries "%s…" byte for byte', (_, p) => {
