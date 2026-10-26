@@ -157,12 +157,17 @@ describe('the page claims', () => {
 /* Every number in the page's text comes from the data                       */
 /* ------------------------------------------------------------------------- */
 
-/** The ways the page writes a number the model holds. */
+/**
+ * The ways the page writes a number the model holds. The concurrency curve's
+ * buckets are drawn, never written, so they are left out: their 1,604 values
+ * would otherwise admit nearly every small integer.
+ */
 function renderings(model: unknown): Set<string> {
   const out = new Set<string>();
   const walk = (v: unknown) => {
     if (typeof v === 'number') {
-      for (const s of [fmtUsd(v), fmtUsdCents(v), fmtInt(Math.round(v)), fmtPercent(v)]) out.add(s);
+      for (const s of [fmtUsd(v), fmtUsdCents(v), fmtInt(Math.round(v))]) out.add(s);
+      if (v > 0 && v < 1) out.add(fmtPercent(v));
       if (v > 1e12) {
         const d = new Date(v);
         out.add(String(d.getUTCDate()));
@@ -171,7 +176,7 @@ function renderings(model: unknown): Set<string> {
         out.add(fmtUtcHm(v));
       }
     } else if (Array.isArray(v)) v.forEach(walk);
-    else if (v && typeof v === 'object') Object.values(v).forEach(walk);
+    else if (v && typeof v === 'object') Object.entries(v).forEach(([k, x]) => k !== 'points' && walk(x));
   };
   walk(model);
   return out;
