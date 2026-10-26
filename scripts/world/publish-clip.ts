@@ -16,10 +16,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { join, relative } from 'node:path';
 import { parseArgs } from 'node:util';
 import { brotliCompressSync, brotliDecompressSync, constants } from 'node:zlib';
-import { INITIAL_GATE, gateFrame, type FeedGateState } from '@rune/world/live/FeedGate';
+import { canonicalAccountName } from '@rune/world/live/accountName';
 import type { FeedHandlers } from '@rune/world/live/FeedSource';
-import { LiveController } from '@rune/world/live/LiveController';
-import { parseFeedFrame, type FeedMessage } from '@rune/world/live/protocol';
 import {
   CLIP_VERSION,
   formatCheckpointLine,
@@ -29,8 +27,8 @@ import {
   type ReplayFrame,
 } from '@rune/world/replay/clip';
 import { cutChunks } from '@rune/world/replay/cut';
-import { Playhead, type FrameSource } from '@rune/world/replay/Playhead';
-import { loadCacheFromDir } from '@rune/world/node/cacheFromDir';
+import { Playhead } from '@rune/world/replay/Playhead';
+import { RecordingError, StreamSource, headlessController, openChain, recordedFrames, type StreamStats } from './recordings';
 import { RedactionError, Redactor, scanEmitted } from './redact';
 
 /** Per clip: how session ticks are numbered, how long chunks are, and marks the tick numbering must hit. */
@@ -44,7 +42,6 @@ const CLIPS: Record<string, { kOffset: number; ticksPerChunk: number; marks: { k
   },
 };
 const MARK_TOLERANCE_MS = 100;
-const REVISION = 289;
 
 function fail(message: string): never {
   console.error(`publish-clip: ${message}`);
@@ -78,139 +75,40 @@ try {
   fail(e instanceof RedactionError ? e.message : 'could not start redaction');
 }
 
-// --- The chain: hourly files from the one holding the last hello before --from ---
+// --- Frames: the hourly chain from the last hello before --from, gated, then redacted ---
 
-const FILE = /^feed-(\d{4})(\d{2})(\d{2})(\d{2})Z\.jsonl$/;
-const hourly = readdirSync(recordings)
-  .map((name) => {
-    const m = FILE.exec(name);
-    return m ? { name, hour: Date.UTC(+m[1]!, +m[2]! - 1, +m[3]!, +m[4]!) } : undefined;
-  })
-  .filter((f): f is { name: string; hour: number } => !!f)
-  .sort((a, b) => a.hour - b.hour);
-
-function lastHelloBefore(t: number): { file: number; line: number; recv: number } | undefined {
-  for (let i = hourly.findLastIndex((f) => f.hour <= t); i >= 0; i--) {
-    const lines = readFileSync(join(recordings, hourly[i]!.name), 'utf8').split('\n');
-    for (let l = lines.length - 1; l >= 0; l--) {
-      const line = lines[l]!;
-      if (!line.includes('"t":"hello"')) continue;
-      const recv = (JSON.parse(line) as { recv: number }).recv;
-      if (recv < t) return { file: i, line: l, recv };
-    }
-  }
-  return undefined;
+let chain;
+try {
+  chain = openChain(recordings, fromMs, toMs);
+} catch (e) {
+  fail(e instanceof RecordingError ? e.message : 'could not open the recordings');
 }
-
-const start = lastHelloBefore(fromMs) ?? fail('no hello precedes --from in the recordings');
-const lastFile = hourly.findLastIndex((f) => f.hour <= toMs);
-const chain = hourly.slice(start.file, lastFile + 1);
-console.log(
-  `chain: ${chain.length} hourly files from ${new Date(hourly[start.file]!.hour).toISOString()}, ` +
-    `hello at ${new Date(start.recv).toISOString()}`,
-);
-
-// --- Frames: parsed, gated and redacted, streamed one file at a time ---
+console.log(`chain: ${chain.files.length} hourly files from ${chain.files[0]}, hello at ${new Date(chain.helloRecv).toISOString()}`);
 
 const subs: ClipManifest['subs'] = [];
-let gate: FeedGateState = INITIAL_GATE;
-let lastRecv = -Infinity;
-let linesRead = 0;
-let dropped = 0;
-
+const stats: StreamStats = { lines: 0, dropped: 0 };
 function* frames(): Generator<ReplayFrame> {
-  for (const [i, file] of chain.entries()) {
-    const path = join(recordings, file.name);
-    const text = readFileSync(path, 'utf8');
-    if (!text.endsWith('\n')) fail(`${file.name} does not end in a newline (truncated?)`);
-    let pos = i === 0 ? nthLineStart(text, start.line) : 0;
-    while (pos < text.length) {
-      const end = text.indexOf('\n', pos);
-      const line = text.slice(pos, end);
-      pos = end + 1;
-      if (!line) continue;
-      linesRead++;
-      const recv = Number(/^\{"recv":(\d+),/.exec(line)?.[1] ?? fail(`${file.name}: a line has no leading recv`));
-      if (recv < lastRecv) fail(`${file.name}: recv goes backwards at line ${linesRead}`);
-      lastRecv = recv;
-      if (recv > toMs) return;
-      const frameAt = line.indexOf(',"frame":');
-      if (frameAt === -1) {
-        const sent = (JSON.parse(line) as { sent?: { t?: string; x?: number; z?: number; w?: number; h?: number } }).sent;
-        if (sent?.t === 'sub' && recv >= fromMs) subs.push({ recv, x: sent.x!, z: sent.z!, w: sent.w!, h: sent.h! });
-        continue;
-      }
-      let msg: FeedMessage;
-      try {
-        msg = parseFeedFrame(line.slice(frameAt + 9, -1), REVISION);
-      } catch (e) {
-        fail(`${file.name}: invalid frame at line ${linesRead}: ${(e as Error).message}`);
-      }
-      const r = gateFrame(gate, msg);
-      gate = r.state;
-      if (r.verdict === 'drop') {
-        dropped++;
-        continue;
-      }
-      yield { recv, msg: redactor.redact(msg) };
+  try {
+    for (const frame of recordedFrames(chain!, toMs, (sub) => sub.recv >= fromMs && subs.push(sub), stats)) {
+      yield { recv: frame.recv, msg: redactor.redact(frame.msg) };
     }
+  } catch (e) {
+    fail(e instanceof RecordingError ? e.message : 'could not read the recordings');
   }
 }
 
-function nthLineStart(text: string, n: number): number {
-  let pos = 0;
-  for (let i = 0; i < n; i++) pos = text.indexOf('\n', pos) + 1;
-  return pos;
-}
+const { controller, handlers, cacheName, revision } = headlessController(args.cache);
 
-class StreamSource implements FrameSource {
-  position = 0;
-  private head: ReplayFrame | undefined;
-  private fetched = false;
-  constructor(private readonly it: Iterator<ReplayFrame>) {}
-  peek(): ReplayFrame | undefined {
-    if (!this.fetched) {
-      const n = this.it.next();
-      this.head = n.done ? undefined : n.value;
-      this.fetched = true;
-    }
-    return this.head;
-  }
-  advance(): void {
-    this.fetched = false;
-    this.position++;
-  }
-  seek(): void {
-    throw new Error('a stream cannot seek');
-  }
-}
-
-// --- Simulate with the real loaders: checkpoints must carry real animation state ---
-
-const { info, loaderFactory } = loadCacheFromDir(args.cache);
-let handlers: FeedHandlers | undefined;
-const controller = new LiveController(
-  (h) => {
-    handlers = h;
-    return { connect() {}, close() {}, reconnect() {}, setRoster() {}, setArea() {} };
-  },
-  loaderFactory.getNpcTypeLoader(),
-  loaderFactory.getSeqTypeLoader(),
-  loaderFactory.getSeqFrameLoader(),
-  loaderFactory.getSpotAnimTypeLoader?.(),
-  info.revision,
-);
 // Ticks in the window where the scored account is not among the streamed players.
 const followGaps: [number, number][] = [];
-const { canonicalAccountName } = await import('@rune/world/live/accountName');
 const observed: FeedHandlers = {
-  ...handlers!,
+  ...handlers,
   onTick(tick) {
-    handlers!.onTick(tick);
-    if (tick.k < CLIPS[clipId]!.kOffset) return;
+    handlers.onTick(tick);
+    if (tick.k < clip.kOffset) return;
     const inView = [...controller.world.players.values()].some((p) => canonicalAccountName(p.name) === redactor.scored);
-    const last = followGaps[followGaps.length - 1];
     if (inView) return;
+    const last = followGaps[followGaps.length - 1];
     if (last && last[1] === tick.k - 1) last[1] = tick.k;
     else followGaps.push([tick.k, tick.k]);
   },
@@ -285,8 +183,8 @@ const followName = process.env.RUNE_SCORED_ACCOUNT!.trim();
 const manifest: ClipManifest = {
   v: CLIP_VERSION,
   clip: clipId,
-  revision: info.revision,
-  cacheId: info.name,
+  revision,
+  cacheId: cacheName,
   follow: { name: followName, slot: slots[0]! },
   anchor: { kOffset: clip.kOffset },
   window: { kStart, kEnd, recvStart: chunks[0]!.recv0, recvEnd: chunks[chunks.length - 1]!.recv1 },
@@ -317,7 +215,7 @@ const hits = scanOut();
 console.log(
   `redaction: ${redactor.counts.rosterNamesReplaced} roster names and ${redactor.counts.appearanceNamesReplaced} appearance names ` +
     `replaced, ${redactor.counts.playerTextDropped} player texts and ${redactor.counts.npcTextDropped} NPC texts dropped, ` +
-    `${redactor.names.size} names scanned for, ${hits} hits; scored account on slot ${slots[0]}; ${dropped} frames dropped by the gate`,
+    `${redactor.names.size} names scanned for, ${hits} hits; scored account on slot ${slots[0]}; ${stats.dropped} frames dropped by the gate`,
 );
 if (hits > 0) {
   rmSync(outDir, { recursive: true, force: true });
@@ -346,7 +244,7 @@ if (args.upload || args['upload-cache']) {
       await s3.write(`world/cache/${rel}`, Bun.file(join(cacheDir, rel)), { type });
       console.log(`uploaded world/cache/${rel} (${statSync(join(cacheDir, rel)).size} bytes)`);
     };
-    for (const name of readdirSync(join(cacheDir, info.name))) await put(`${info.name}/${name}`, name.endsWith('.json') ? 'application/json' : 'application/octet-stream');
+    for (const name of readdirSync(join(cacheDir, cacheName))) await put(`${cacheName}/${name}`, name.endsWith('.json') ? 'application/json' : 'application/octet-stream');
     await put('caches.json', 'application/json');
   }
   if (args.upload) {
