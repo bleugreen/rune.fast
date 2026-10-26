@@ -38,7 +38,6 @@ export function SavingChart({ saving: s }: { saving: Saving }) {
       <figcaption className={styles.title}>{s.label}</figcaption>
       <div ref={ref}>
         <svg className={styles.svg} width={width} height={height} role="img" aria-label={said}>
-          <line className={styles.zero} x1={0.5} x2={0.5} y1={BAR_Y - 3} y2={height - 3} />
           {rows.map((r, i) => {
             const top = i * ROW;
             const y = top + BAR_Y;
@@ -48,6 +47,7 @@ export function SavingChart({ saving: s }: { saving: Saving }) {
                 <text className={styles.rowLabel} x={0} y={top + 11}>
                   {r.label}
                 </text>
+                <line className={styles.zero} x1={0.5} x2={0.5} y1={y - 2} y2={y + BAR_H + 2} />
                 <rect className={r.after ? styles.after : styles.before} x={0} y={y} width={x(lo(r.v))} height={BAR_H} />
                 {typeof r.v !== 'number' && (
                   <>

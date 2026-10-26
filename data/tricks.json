@@ -121,7 +121,7 @@
     "group": "game",
     "what_normally": "Protect from Melee is a prayer that blocks close-combat hits, and it drains prayer points for every tick it stays on.",
     "what_instead": "Flicked on and off, it drained nothing in the lab, and the Grand Tree fights cost 5 prayer points in all.",
-    "why_allowed": "This version of the game charges no drain for a quick flick.",
+    "why_allowed": "Switching a prayer is an ordinary click.",
     "saving": null,
     "steps_plain": ["the Grand Tree quests", "the cannon step", "the fights in the other quests"],
     "failed_live": "In the last attempt the prayer never switched on at the cannon step, and the account's one death came on the next login.",
@@ -231,7 +231,7 @@
     "kind": "client and packet technique",
     "group": "client",
     "what_normally": "The swarm's bots relogged by reloading the browser tab, and the account stood in the world for about 20 ticks before the bot could act.",
-    "what_instead": "The rebuilt relog logs in again inside the same page, so the bot acts on the first tick. Logging out with the game's own button also leaves the world in the same tick, where a dropped connection leaves the player standing there for hundreds of ticks.",
+    "what_instead": "The rebuilt relog logs in again inside the same page, so the bot acts on the first tick, and the game's own logout button leaves the world at once where a dropped connection can leave the player standing for hundreds of ticks.",
     "why_allowed": "Both are ordinary logins and logouts.",
     "saving": {
       "label": "Tick at which the bot can first act after a relog",
@@ -262,7 +262,7 @@
     "kind": "client and packet technique",
     "group": "client",
     "what_normally": "Prayer is trained by burying bones, one click each, usually beside a bank, and Prayer 1 to 99 takes 555 dragon bones.",
-    "what_instead": "The knife reset left a free moment in every woodcutting cycle, and the run buried a bone in it while helpers traded fresh bones at the tree.",
+    "what_instead": "The knife reset left a free moment in every woodcutting cycle, and the run buried a bone in it while helpers traded fresh bones at the tree. Most of Prayer was trained this way.",
     "why_allowed": "A burial is one item click, and five clicks fit in a tick.",
     "saving": {
       "label": "Ticks spent per bone buried",
@@ -275,7 +275,7 @@
       "n": 357,
       "note": "Lab, two 600-tick sessions on oak, 357 bones."
     },
-    "steps_plain": ["the willow woodcutting band, which trained most of Prayer", "the iron mining band"],
+    "steps_plain": ["the willow woodcutting band", "the iron mining band"],
     "failed_live": "Attempt 2 stalled in the willow band when no helper delivered its bones.",
     "sources": [
       "rs-sdk docs/speedrun/research/bones-placement.md lines 10-19 (0.23 against 2.07 per bone, 2 x 600 ticks, 357 bones)",
