@@ -21,4 +21,13 @@ export default defineConfig({
   define: {
     __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
   },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // react-router marks its modules "use client"; meaningless in a client-only bundle.
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
+        warn(warning);
+      },
+    },
+  },
 });

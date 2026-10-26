@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useMemo, useRef, useState, type KeyboardEvent, type ReactElement } from 'react';
 import { scaleUtc } from 'd3-scale';
 import { utcDay, utcHour } from 'd3-time';
 import { useWidth } from '../lib/useWidth';
@@ -148,7 +148,7 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
   const last = model.last;
   const lastRow = model.rows.findIndex((r) => r.includes(last));
 
-  const locate = (e: PointerEvent<SVGSVGElement>) => {
+  const locate = (e: { clientX: number; clientY: number }) => {
     const r = svgRef.current?.getBoundingClientRect();
     if (!r) return null;
     const px = e.clientX - r.left;
@@ -359,7 +359,7 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
 
 /** The chart's key, drawn with the chart's own glyphs. */
 export function Legend() {
-  const item = (label: string, glyph: JSX.Element, w = 22) => (
+  const item = (label: string, glyph: ReactElement, w = 22) => (
     <span className={styles.legendItem}>
       <svg width={w} height={18} aria-hidden="true">
         {glyph}
