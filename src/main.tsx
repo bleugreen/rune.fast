@@ -13,12 +13,15 @@ import { NotFound } from './pages/NotFound';
 /* The tokens screen exists only in development; the production build drops it. */
 const Tokens = import.meta.env.DEV ? lazy(() => import('./dev/Tokens')) : null;
 const World = import.meta.env.DEV ? lazy(() => import('./dev/World')) : null;
+/* The 3D replay carries the whole engine; it loads only when its route does. */
+const ReplayPage = lazy(() => import('./replay/ReplayPage'));
 
 const pages: RouteObject[] = [
   { index: true, element: <StoryPage /> },
   { path: 'attempts', element: <AttemptsPage /> },
   { path: 'tricks', element: <TricksPage /> },
   { path: 'cost', element: <CostPage /> },
+  { path: 'replay/finish', element: <Suspense><ReplayPage /></Suspense> },
   ...(Tokens ? [{ path: 'tokens', element: <Suspense><Tokens /></Suspense> }] : []),
   ...(World ? [{ path: 'world', element: <Suspense><World /></Suspense> }] : []),
   { path: '*', element: <NotFound /> },
