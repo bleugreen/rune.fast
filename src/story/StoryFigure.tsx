@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import type { ChartAnchors, ChartModel, RecordFacts } from '../attempts/model';
 import { Legend, TimelineChart } from '../attempts/TimelineChart';
+import { Clip } from '../clips/Clip';
+import { clipById } from '../clips/registry';
 import { fmtPacificDateRange, parseUtc } from '../lib/time';
 import { TicksLadder } from './TicksLadder';
 import type { StoryFigure as Figure } from './sections';
@@ -30,6 +32,7 @@ export function StoryFigure({ figure, model, anchors, record, className }: Props
         </figure>
       );
     case 'clip':
+      if (figure.id) return <Clip clip={clipById(figure.id)} className={cls(styles.figure, className)} />;
       return (
         <figure className={cls(styles.slot, className)}>
           <Link to="/tricks" className={styles.slotLink}>

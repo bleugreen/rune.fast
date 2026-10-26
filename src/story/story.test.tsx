@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
+import { clipById } from '../clips/registry';
 import { StoryPage } from '../pages/StoryPage';
 import { sourceTable } from './draft';
 import { SECTION_META, quotes, storySections } from './sections';
@@ -168,7 +169,18 @@ describe('what the page adds to the draft', () => {
     expect(html.match(/<blockquote class="quotation">/g)?.length).toBe(quotes.length);
   });
 
-  test('one figure per section', () => {
-    expect(html.match(/<figure/g)?.length).toBe(SECTION_META.length);
+  test('every figure the page places, and no other', () => {
+    const placed = SECTION_META.reduce((n, s) => n + s.figures.length, 0);
+    expect(html.match(/<figure/g)?.length).toBe(placed);
+  });
+
+  test('each clip in the story renders with its caption, time and step', () => {
+    const ids = SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' && f.figure.id ? [f.figure.id] : [])));
+    expect(ids.length).toBeGreaterThan(0);
+    for (const id of ids) {
+      const c = clipById(id);
+      expect(html).toContain(`src="${c.src}"`);
+      for (const s of [c.caption, c.time, c.step]) expect(surface).toContain(s);
+    }
   });
 });
