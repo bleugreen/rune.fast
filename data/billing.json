@@ -14,11 +14,10 @@
     }
   },
   "subscriptions": {
-    "source": "The operator: the plans the swarm ran on, shared with other projects.",
-    "monthly_usd": 1220,
+    "source": "The operator, 26 Oct 2026: the swarm ran on six Claude Max (20x) plans by the end of the run and one ChatGPT Pro plan, $200 a month each, $1,400 a month in all, shared with other projects. The page prorates all seven over the whole window by the average month (365.25 / 12 days); fewer Max plans ran early in the window, so the figure is at most what the window cost.",
     "plans": [
-      { "name": "Claude Max", "count": 5 },
-      { "name": "ChatGPT Pro", "count": 1 }
+      { "name": "Claude Max", "count": 6, "monthly_usd": 200 },
+      { "name": "ChatGPT Pro", "count": 1, "monthly_usd": 200 }
     ]
   }
 }
