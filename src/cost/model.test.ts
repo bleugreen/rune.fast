@@ -6,12 +6,12 @@ import costRaw from '../../data/cost-data.json';
 import rolesRaw from '../../data/roles.json';
 import timelineRaw from '../../data/attempts-timeline.json';
 import type { CostInputs, RawCostData, RawRoles } from '../data/costTypes';
-import type { Timeline } from '../data/types';
+import type { ArchivalTimeline } from '../data/types';
 import { projectCostData, projectRoles } from '../../scripts/public-cost';
 import { projectTimeline } from '../../scripts/public-timeline';
 import { costInputs } from '../data/cost';
 import { fmtInt, fmtPercent, fmtUsd, fmtUsdCents } from '../lib/numbers';
-import { fmtPacificHm, fmtUtcHm, pacificDayKey, pacificZone } from '../lib/time';
+import { fmtPacificHm, pacificDayKey } from '../lib/time';
 import { CostPage } from '../pages/CostPage';
 import { buildCostModel, listValue } from './model';
 
@@ -19,7 +19,7 @@ const rawCost = costRaw as unknown as RawCostData;
 const rawRoles = rolesRaw as unknown as RawRoles;
 /** What the build ships: the same inputs with the archival files replaced by their projections. */
 const inputs: CostInputs = { ...costInputs, cost: projectCostData(rawCost), roles: projectRoles(rawRoles) };
-const timeline = projectTimeline(timelineRaw as unknown as Timeline);
+const timeline = projectTimeline(timelineRaw as unknown as ArchivalTimeline);
 const m = buildCostModel(inputs, timeline);
 const { summary } = inputs;
 
@@ -41,8 +41,8 @@ describe('public projection', () => {
     expect(Object.keys(inputs.cost)).not.toContain('top');
     expect(Object.keys(inputs.roles)).toEqual(['hourly']);
   });
-  test('keeps every concurrency bucket', () => {
-    expect(inputs.cost.conc).toEqual(rawCost.conc);
+  test('ships no turn-concurrency curve', () => {
+    expect(Object.keys(inputs.cost)).not.toContain('conc');
   });
 });
 
@@ -70,17 +70,29 @@ describe('the exports agree with each other', () => {
     expect(xs.length).toBe(summary.merged_n);
     expect((xs[xs.length / 2 - 1]! + xs[xs.length / 2]!) / 2).toBeCloseTo(m.status.median, 6);
   });
-  test('the concurrency peak is the bucket the summary names', () => {
-    expect(m.concurrency.peak.t / 1000).toBe(summary.peak_t);
-    expect(Math.round(m.concurrency.peak.v)).toBe(Math.round(summary.peak_conc));
+  test('the activity series covers the cost window', () => {
+    expect(m.activity.from).toBe(m.window.from);
+    expect(m.activity.to).toBeGreaterThanOrEqual(m.window.to);
+    expect(m.activity.to - m.window.to).toBeLessThan(m.activity.step);
+  });
+  test('the Pacific day counts keep the event graph totals', () => {
+    const sum = (k: 'spawns' | 'merges' | 'messages') => m.swarm.days.reduce((s, d) => s + d[k], 0);
+    expect([sum('spawns'), sum('merges'), sum('messages')]).toEqual([891, 571, 26898]);
+    for (const d of m.swarm.days) expect(pacificDayKey(d.t)).toBe(d.key);
   });
 });
 
 describe('the page claims', () => {
   test('list value against subscriptions', () => {
     expect(usd(m.total)).toBe(17679);
-    expect(usd(m.subscription.prorated)).toBe(223);
-    expect(Math.round(m.subscription.ratio)).toBe(79);
+    expect(m.subscription.monthly).toBe(1400);
+    expect(m.subscription.plans.map((p) => [p.name, p.count])).toEqual([
+      ['Claude Max', 6],
+      ['ChatGPT Pro', 1],
+    ]);
+    expect(m.window.days).toBeCloseTo(5.57, 2);
+    expect(usd(m.subscription.prorated)).toBe(256);
+    expect(Math.round(m.subscription.ratio)).toBe(69);
     expect(Math.round(m.window.days * 2) / 2).toBe(5.5);
   });
   test('Thursday cost the most, and workers led it', () => {
@@ -130,24 +142,29 @@ describe('the page claims', () => {
     expect(usd(m.status.unattributed)).toBe(68);
     expect(fmtUsdCents(m.status.median)).toBe('$5.38');
   });
-  test('the concurrency peak: 479 turns at 17:47 PDT on the costliest day', () => {
-    const { peak } = m.concurrency;
-    expect(Math.round(peak.v)).toBe(479);
-    expect(`${fmtPacificHm(peak.t)} ${pacificZone(peak.t)}`).toBe('17:47 PDT');
-    expect(pacificDayKey(peak.t)).toBe(m.peakDay.key);
+  test('agents producing output: 87 at 15:07 on Friday; 61 at most on Thursday, the costliest day', () => {
+    const { peak, peakOnCostliest } = m.activity;
+    expect(peak.v).toBe(87);
+    expect([pacificDayKey(peak.t), fmtPacificHm(peak.t)]).toEqual(['2026-10-23', '15:07']);
+    expect(peakOnCostliest.v).toBe(61);
+    expect(pacificDayKey(peakOnCostliest.t)).toBe(m.peakDay.key);
+    const dayPeaks = new Map<string, number>();
+    for (const p of m.activity.points) dayPeaks.set(pacificDayKey(p.t), Math.max(dayPeaks.get(pacificDayKey(p.t)) ?? 0, p.v));
+    expect([...dayPeaks.values()]).toEqual([26, 29, 61, 87, 24, 16, 8]);
   });
-  test('the five scored attempts lie inside the concurrency curve', () => {
+  test('the five scored attempts lie inside the activity series', () => {
     expect(m.attempts.map((a) => a.n)).toEqual([1, 2, 3, 4, 5]);
     for (const a of m.attempts) {
-      expect(a.from).toBeGreaterThanOrEqual(m.concurrency.from);
-      expect(a.to).toBeLessThanOrEqual(m.concurrency.to);
+      expect(a.from).toBeGreaterThanOrEqual(m.activity.from);
+      expect(a.to).toBeLessThanOrEqual(m.activity.to);
       expect(a.to).toBeGreaterThan(a.from);
     }
   });
-  test('the swarm: growth on 21 and 22 October, and the peaks all on the 22nd', () => {
+  test('the swarm: growth on 21 and 22 October, and the peaks all on the 22nd, Pacific days', () => {
     const s = m.swarm;
     expect([s.units, s.messages, s.swaps]).toEqual([906, 26898, 36]);
     expect(s.growth.map((d) => d.key)).toEqual(['2026-10-21', '2026-10-22']);
+    expect([s.growthSpawns, s.growthMerges, s.messagePeak.messages]).toEqual([522, 341, 8840]);
     expect([s.spawnPeak.key, s.mergePeak.key, s.messagePeak.key]).toEqual(['2026-10-22', '2026-10-22', '2026-10-22']);
     expect(s.laterSpawnsMax).toBeLessThan(Math.min(...s.growth.map((d) => d.spawns)));
   });
@@ -158,7 +175,7 @@ describe('the page claims', () => {
 /* ------------------------------------------------------------------------- */
 
 /**
- * The ways the page writes a number the model holds. The concurrency curve's
+ * The ways the page writes a number the model holds. The activity series'
  * buckets are drawn, never written, so they are left out: their 1,604 values
  * would otherwise admit nearly every small integer.
  */
@@ -170,10 +187,8 @@ function renderings(model: unknown): Set<string> {
       if (v > 0 && v < 1) out.add(fmtPercent(v));
       if (v > 1e12) {
         const d = new Date(v);
-        out.add(String(d.getUTCDate()));
         out.add(new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Los_Angeles', day: 'numeric' }).format(d));
         out.add(fmtPacificHm(v));
-        out.add(fmtUtcHm(v));
       }
     } else if (Array.isArray(v)) v.forEach(walk);
     else if (v && typeof v === 'object') Object.entries(v).forEach(([k, x]) => k !== 'points' && walk(x));
@@ -207,6 +222,18 @@ describe('every number on the page comes from the data', () => {
   });
   test('every number in the text is one the model derived from the data', () => {
     expect(tokens.filter((t) => !allowed.has(t))).toEqual([]);
+  });
+  test('the operator’s cuts and corrections hold', () => {
+    for (const gone of ['closed unmerged', 'Every other dollar figure', 'The small number is', 'concurrent', 'turns were running', '479', 'UTC', '$223', '$1,220']) {
+      expect(text).not.toContain(gone);
+    }
+    expect(text).toContain('215 closed, landed by snapshot');
+    expect(text).toContain('six Claude Max plans and one ChatGPT Pro plan, $1,400 a month');
+    expect(text).toContain('List value is 69 times what was paid.');
+    expect(text.match(/The large number is/g)).toHaveLength(1);
+  });
+  test('the zone is stated once', () => {
+    expect(text.match(/\bP[DS]T\b/g)).toEqual(['PDT']);
   });
 
   const SOURCES = ['src/pages/CostPage.tsx', 'src/cost/Charts.tsx', 'src/cost/model.ts'];
