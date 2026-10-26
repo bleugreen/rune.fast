@@ -48,7 +48,7 @@
     {
       "id": "T27-17",
       "name": "T27-17 run to the ridge gate + ridge + run to the pipe",
-      "plain": "Pick up the cannon, run north to the ridge gate, cross the ridge and run to the pipe at the Agility course.",
+      "plain": "Run north to the ridge gate, cross the ridge and run to the pipe at the start of the Agility course.",
       "from": 2028,
       "to": 2216,
       "endedAt": "2026-10-26T10:42:01.165Z",
