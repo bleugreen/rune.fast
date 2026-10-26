@@ -197,6 +197,25 @@ function ReplayStage({ clip, viewer, pool, driver, controller, manifest, request
         <Timeline manifest={manifest} state={state} marks={clip.marks} onSeek={seek} onPlay={play} onPause={pause} onSpeed={speed} />
       </div>
       <RosterPicker viewer={viewer} controller={controller} recordName={manifest.follow.name} />
+      {import.meta.env.DEV && <DevStatus controller={controller} viewer={viewer} />}
     </div>
   );
+}
+
+/** Dev only: the live controller's state, readable as page text. */
+function DevStatus({ controller, viewer }: Pick<Ready, 'controller' | 'viewer'>) {
+  const [text, setText] = useState('');
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const w = controller.world;
+      const c = viewer.camera;
+      setText(
+        `dev: tick ${w.tick} cycle ${w.loopCycle} players ${w.players.size} npcs ${w.npcs.size} roster ${w.rosterPlayers.length}@${w.rosterTick} ` +
+          `follow ${controller.followName ?? '-'}/${controller.followSlot} pending ${controller.pendingFollow ?? '-'} status ${controller.status} ` +
+          `camera ${c.getPosX().toFixed(1)},${c.getPosZ().toFixed(1)} frames ${viewer.renderer.stats.frameCount}`,
+      );
+    }, 500);
+    return () => clearInterval(timer);
+  }, [controller, viewer]);
+  return <p data-dev-status>{text}</p>;
 }
