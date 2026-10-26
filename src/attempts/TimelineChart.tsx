@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type KeyboardEvent, type ReactElement } from
 import { scaleUtc } from 'd3-scale';
 import { utcDay, utcHour } from 'd3-time';
 import { useWidth } from '../lib/useWidth';
-import { fmtDuration, fmtPacificHm, fmtUtcDayLong, fmtUtcDayShort, fmtUtcHm, fmtUtcHms, pacificZone } from '../lib/time';
+import { fmtDuration, fmtPacificHm, fmtUtcDayLong, fmtUtcDayShort, fmtUtcHm, pacificZone } from '../lib/time';
 import { fmtInt } from '../lib/numbers';
 import { findMark, type AttemptModel, type ChartModel, type Mark } from './model';
 import { PULLED } from './pulled';
@@ -10,53 +10,48 @@ import { EventCard } from './EventCard';
 import styles from './TimelineChart.module.css';
 
 /* Layout constants, in CSS pixels. */
-const MIN_WIDTH = 1120;
-const MARGIN = { top: 44, right: 104, left: 20 };
-const ROW_PITCH = 52;
-const AXIS_GAP = 40;
-const AXIS_HEIGHT = 60;
-const HIT = 16;
+const MIN_WIDTH = 960;
+const MARGIN = { top: 26, right: 84, left: 92 };
+const ROW_PITCH = 38;
+const AXIS_GAP = 30;
+const AXIS_HEIGHT = 58;
+const HIT = 14;
 const TOOLTIP_W = 340;
 const ONE_OFF_W = 1.5;
 const AXIS_STEP_HOURS = 6;
 
+/** Short row labels where the attempt's own name will not fit the label column. */
+const ROW_LABEL: Readonly<Record<string, string>> = { L2: 'Lab run 2' };
+
 type Scale = (t: number) => number;
 
-/** Vertical position of a mark's glyph relative to its row line. */
-function glyphDy(m: Mark): number {
-  if (m.kind === 'operator') return -12;
-  if (m.kind === 'stop' || m.kind === 'death' || m.kind === 'recovery') return 0;
-  return 9;
+/**
+ * The chart draws three things: logged-in time, stops while the account was in
+ * the world, and deaths, plus a numbered tick for each pulled quote. Every other
+ * event stays reachable from the keyboard and the reading pane.
+ */
+function drawn(m: Mark, quoted: ReadonlyMap<string, number>): boolean {
+  return m.kind === 'death' || (m.kind === 'stop' && m.inWorld !== false) || quoted.has(m.key);
 }
 
-function Glyph({ m, x, y }: { m: Mark; x: number; y: number }) {
-  switch (m.kind) {
-    case 'stop':
-      return m.inWorld === false ? (
-        <line className={styles.stopOut} x1={x} x2={x} y1={y - 3.5} y2={y + 3.5} />
-      ) : (
-        <line className={styles.stop} x1={x} x2={x} y1={y - 6} y2={y + 6} />
-      );
-    case 'death':
-      return <circle className={styles.death} cx={x} cy={y} r={4.5} />;
-    case 'recovery':
-      return <circle className={styles.recovery} cx={x} cy={y} r={3.2} />;
-    case 'operator':
-      return <line className={styles.operator} x1={x} x2={x} y1={y - 7} y2={y - 17} />;
-    case 'ruling':
-      return <line className={styles.ruling} x1={x} x2={x} y1={y + 5} y2={y + 12} />;
-    default:
-      return <circle className={styles.dot} cx={x} cy={y + 9} r={1.4} />;
+function Glyph({ m, x, y, n }: { m: Mark; x: number; y: number; n?: number }) {
+  if (n !== undefined) {
+    return (
+      <g>
+        <line className={styles.quoteTick} x1={x} x2={x} y1={y - 5} y2={y - 12} />
+        <text className={styles.quoteNum} x={x} y={y - 15} textAnchor="middle">
+          {n}
+        </text>
+      </g>
+    );
   }
+  if (m.kind === 'death') return <circle className={styles.death} cx={x} cy={y} r={4.5} />;
+  return <line className={styles.stop} x1={x} x2={x} y1={y - 5} y2={y + 5} />;
 }
 
-const GLYPH_ORDER: Record<Mark['kind'], number> = {
-  note: 0, start: 0, logout: 0, result: 0, ruling: 1, operator: 1, stop: 2, recovery: 3, death: 4,
-};
-
-function AttemptLine({ am, x, y, first }: { am: AttemptModel; x: Scale; y: number; first: boolean }) {
+function AttemptLine({ am, x, y, quoted }: { am: AttemptModel; x: Scale; y: number; quoted: ReadonlyMap<string, number> }) {
   const [l0, l1] = am.line;
-  const marks = [...am.marks].sort((a, b) => GLYPH_ORDER[a.kind] - GLYPH_ORDER[b.kind]);
+  const marks = am.marks.filter((m) => drawn(m, quoted)).sort((a, b) => Number(a.kind === 'death') - Number(b.kind === 'death'));
   return (
     <g className={am.scored ? undefined : styles.faint}>
       {am.spans ? (
@@ -77,20 +72,12 @@ function AttemptLine({ am, x, y, first }: { am: AttemptModel; x: Scale; y: numbe
         <line className={styles.extent} x1={x(am.start)} x2={x(am.end)} y1={y} y2={y} />
       )}
       {am.holds.map((g, i) => (
-        <text key={i} className={styles.hold} x={(x(g.from) + x(g.to)) / 2} y={y + 25} textAnchor="middle">
-          {i === 0 ? `logged out ${fmtDuration(g.to - g.from)}` : fmtDuration(g.to - g.from)}
+        <text key={i} className={styles.hold} x={(x(g.from) + x(g.to)) / 2} y={y + 16} textAnchor="middle">
+          {fmtDuration(g.to - g.from)}
         </text>
       ))}
-      <text
-        className={styles.name}
-        x={first ? x(l0) : x(am.end)}
-        y={y - 24}
-        textAnchor={first ? 'start' : 'end'}
-      >
-        {am.shortName}
-      </text>
       {marks.map((m) => (
-        <Glyph key={m.key} m={m} x={x(m.t)} y={y} />
+        <Glyph key={m.key} m={m} x={x(m.t)} y={y} n={quoted.get(m.key)} />
       ))}
     </g>
   );
@@ -120,33 +107,27 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
   );
   const x: Scale = (t) => scale(t);
 
+  const quotes = useMemo(() => PULLED.map((q) => findMark(model, q.attempt, q.utc)), [model]);
+  const quoted = useMemo(() => new Map(quotes.map((m, i) => [m.key, i + 1])), [quotes]);
+
+  /** Every event per row, for the keyboard; the drawn ones, for the pointer. */
   const rowMarks = useMemo(
     () => model.rows.map((row) => row.flatMap((am) => am.marks).sort((a, b) => a.t - b.t)),
     [model.rows],
   );
+  const rowTargets = useMemo(() => rowMarks.map((list) => list.filter((m) => drawn(m, quoted))), [rowMarks, quoted]);
   const rowOf = useMemo(() => {
     const m = new Map<string, number>();
     rowMarks.forEach((list, i) => list.forEach((mk) => m.set(mk.key, i)));
     return m;
   }, [rowMarks]);
 
-  const quotes = useMemo(
-    () =>
-      PULLED.map((q) => ({
-        ...q,
-        mark: findMark(model, q.attempt, q.utc),
-        row: model.rows.findIndex((r) => r.some((am) => am.attempt.id === q.attempt)),
-      })),
-    [model],
-  );
-
   const ticks = scale.ticks(utcHour.every(AXIS_STEP_HOURS) ?? utcHour).map((d) => +d);
   const [d0, d1] = model.domain;
   const midnights = utcDay.range(new Date(d0), new Date(d1), 1).map((d) => +d).filter((t) => t > d0);
   const dayBands = [d0, ...midnights].map((from, i, all) => ({ from, to: all[i + 1] ?? d1 }));
 
-  const last = model.last;
-  const lastRow = model.rows.findIndex((r) => r.includes(last));
+  const lastRow = model.rows.findIndex((r) => r.includes(model.last));
 
   const locate = (e: { clientX: number; clientY: number }) => {
     const r = svgRef.current?.getBoundingClientRect();
@@ -154,7 +135,7 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
     const px = e.clientX - r.left;
     const py = e.clientY - r.top;
     const ri = Math.round((py - MARGIN.top) / ROW_PITCH);
-    const list = rowMarks[ri];
+    const list = rowTargets[ri];
     if (!list || Math.abs(py - rowY(ri)) > ROW_PITCH / 2) return null;
     let best: Mark | null = null;
     let bestD = HIT;
@@ -215,7 +196,7 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
 
   const ringAt = (m: Mark) => {
     const ri = rowOf.get(m.key) ?? 0;
-    return { cx: x(m.t), cy: rowY(ri) + glyphDy(m), row: ri };
+    return { cx: x(m.t), cy: rowY(ri) - (quoted.has(m.key) ? 9 : 0) };
   };
   const sel = selected ? ringAt(selected) : null;
   const hov = hover && hover.mark.key !== selected?.key ? ringAt(hover.mark) : null;
@@ -224,9 +205,8 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
   const tooltipStyle = (() => {
     if (!hover) return undefined;
     const el = scrollRef.current;
-    const scrollLeft = el?.scrollLeft ?? 0;
+    const px = hover.px - (el?.scrollLeft ?? 0);
     const viewW = el?.clientWidth ?? width;
-    const px = hover.px - scrollLeft;
     const left = px + 14 + TOOLTIP_W > viewW ? Math.max(0, px - 14 - TOOLTIP_W) : px + 14;
     const below = hover.py < height * 0.4;
     return { left, top: below ? hover.py + 14 : hover.py - 14, transform: below ? undefined : 'translateY(-100%)', width: TOOLTIP_W };
@@ -242,113 +222,105 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
         aria-label="Attempts timeline. Arrow keys move between events; the reading pane below shows the selected one."
         onKeyDown={onKeyDown}
       >
-        <div className={styles.inner} style={{ width, height }}>
-          <svg
-            ref={svgRef}
-            className={styles.svg}
-            width={width}
-            height={height}
-            onPointerMove={(e) => setHover(locate(e))}
-            onPointerLeave={() => setHover(null)}
-            onClick={(e) => {
-              const hit = locate(e);
-              if (hit) onSelect(hit.mark);
-            }}
-            style={{ cursor: hover ? 'pointer' : 'default' }}
-            aria-hidden="true"
-          >
-            {midnights.map((t) => (
-              <line key={t} className={styles.midnight} x1={x(t)} x2={x(t)} y1={MARGIN.top - 36} y2={axisY} />
-            ))}
+        <svg
+          ref={svgRef}
+          className={styles.svg}
+          width={width}
+          height={height}
+          onPointerMove={(e) => setHover(locate(e))}
+          onPointerLeave={() => setHover(null)}
+          onClick={(e) => {
+            const hit = locate(e);
+            if (hit) onSelect(hit.mark);
+          }}
+          style={{ cursor: hover ? 'pointer' : 'default' }}
+          aria-hidden="true"
+        >
+          {midnights.map((t) => (
+            <line key={t} className={styles.midnight} x1={x(t)} x2={x(t)} y1={MARGIN.top - 18} y2={axisY} />
+          ))}
 
-            {sel && <line className={styles.guide} x1={sel.cx} x2={sel.cx} y1={sel.cy + 7} y2={axisY} />}
+          {sel && <line className={styles.guide} x1={sel.cx} x2={sel.cx} y1={sel.cy + 7} y2={axisY} />}
 
-            {quotes.map((q) => {
-              const qx = x(q.mark.t);
-              const ry = rowY(q.row);
-              return <line key={q.utc} className={styles.leader} x1={qx} x2={qx} y1={ry - q.lift} y2={ry - 18} />;
-            })}
-
-            {model.rows.map((row, ri) => (
-              <g key={ri}>
-                {row.map((am, j) => (
-                  <AttemptLine key={am.attempt.id} am={am} x={x} y={rowY(ri)} first={j === 0} />
-                ))}
-              </g>
-            ))}
-
-            <g>
-              <text className={styles.finish} x={width - MARGIN.right + 12} y={rowY(lastRow) + 8}>
-                {fmtInt(finishTicks)}
+          {model.rows.map((row, ri) => (
+            <g key={ri}>
+              <text className={styles.rowLabel} x={MARGIN.left - 14} y={rowY(ri) + 4} textAnchor="end">
+                {ROW_LABEL[row[0]!.attempt.id] ?? row[0]!.shortName}
               </text>
-              <text className={styles.finishUnit} x={width - MARGIN.right + 13} y={rowY(lastRow) + 22}>
-                ticks at {fmtUtcHms(last.end)}
+              {row.slice(1).map((am) => (
+                <text key={am.attempt.id} className={styles.inlineLabel} x={x(am.end) + 6} y={rowY(ri) + 4}>
+                  {(ROW_LABEL[am.attempt.id] ?? am.shortName).toLowerCase()}
+                </text>
+              ))}
+              {row.map((am) => (
+                <AttemptLine key={am.attempt.id} am={am} x={x} y={rowY(ri)} quoted={quoted} />
+              ))}
+            </g>
+          ))}
+
+          <text className={styles.finish} x={width - MARGIN.right + 10} y={rowY(lastRow) + 8}>
+            {fmtInt(finishTicks)}
+          </text>
+          <text className={styles.finishUnit} x={width - MARGIN.right + 11} y={rowY(lastRow) + 21}>
+            ticks
+          </text>
+
+          {hov && <circle className={styles.ringHover} cx={hov.cx} cy={hov.cy} r={7.5} />}
+          {sel && <circle className={styles.ring} cx={sel.cx} cy={sel.cy} r={7.5} />}
+
+          <line className={styles.axis} x1={MARGIN.left} x2={width - MARGIN.right} y1={axisY} y2={axisY} />
+          {ticks.map((t, i) => (
+            <g key={t}>
+              <line className={styles.axis} x1={x(t)} x2={x(t)} y1={axisY} y2={axisY + 4} />
+              <text className={styles.tickUtc} x={x(t)} y={axisY + 16} textAnchor="middle">
+                {fmtUtcHm(t)}
+                {i === 0 && ' UTC'}
+              </text>
+              <text className={styles.tickPacific} x={x(t)} y={axisY + 28} textAnchor="middle">
+                {fmtPacificHm(t)}
+                {i === 0 && ` ${pacificZone(t)}`}
               </text>
             </g>
-
-            {hov && <circle className={styles.ringHover} cx={hov.cx} cy={hov.cy} r={7.5} />}
-            {sel && <circle className={styles.ring} cx={sel.cx} cy={sel.cy} r={7.5} />}
-
-            <line className={styles.axis} x1={MARGIN.left} x2={width - MARGIN.right} y1={axisY} y2={axisY} />
-            {ticks.map((t, i) => (
-              <g key={t}>
-                <line className={styles.axis} x1={x(t)} x2={x(t)} y1={axisY} y2={axisY + 4} />
-                <text className={styles.tickUtc} x={x(t)} y={axisY + 16} textAnchor="middle">
-                  {fmtUtcHm(t)}
-                  {i === 0 && ' UTC'}
-                </text>
-                <text className={styles.tickPacific} x={x(t)} y={axisY + 28} textAnchor="middle">
-                  {fmtPacificHm(t)}
-                  {i === 0 && ` ${pacificZone(t)}`}
-                </text>
-              </g>
-            ))}
-            {dayBands.map((b) => (
-              <text key={b.from} className={styles.day} x={(x(b.from) + x(b.to)) / 2} y={axisY + 50} textAnchor="middle">
-                {x(b.to) - x(b.from) > 220 ? fmtUtcDayLong(b.from) : fmtUtcDayShort(b.from)}
-              </text>
-            ))}
-          </svg>
-
-          {quotes.map((q) => {
-            const qx = x(q.mark.t);
-            const lines = q.mark.event.quote!.split(' / ');
-            return (
-              <button
-                key={q.utc}
-                type="button"
-                tabIndex={-1}
-                className={styles.quote}
-                data-align={q.align}
-                data-selected={selected?.key === q.mark.key || undefined}
-                style={{
-                  left: q.align === 'start' ? qx + 6 : qx - 6,
-                  top: rowY(q.row) - q.lift,
-                  maxWidth: q.maxWidth,
-                }}
-                onClick={() => onSelect(q.mark)}
-              >
-                <span className={styles.quoteText}>
-                  “
-                  {lines.map((l, i) => (
-                    <span key={i}>
-                      {i > 0 && <br />}
-                      {l}
-                    </span>
-                  ))}
-                  ”
-                </span>
-                <span className={styles.quoteTime}>{fmtUtcHms(q.mark.t)} UTC</span>
-              </button>
-            );
-          })}
-        </div>
+          ))}
+          {dayBands.map((b) => (
+            <text key={b.from} className={styles.day} x={(x(b.from) + x(b.to)) / 2} y={axisY + 50} textAnchor="middle">
+              {x(b.to) - x(b.from) > 220 ? fmtUtcDayLong(b.from) : fmtUtcDayShort(b.from)}
+            </text>
+          ))}
+        </svg>
       </div>
+
       {hover && (
         <div className={styles.tooltip} style={tooltipStyle} role="presentation">
           <EventCard mark={hover.mark} attemptName={model.byId.get(hover.mark.attemptId)?.attempt.name ?? ''} compact />
         </div>
       )}
+
+      <ol className={styles.quotes}>
+        {quotes.map((m, i) => (
+          <li key={m.key}>
+            <button
+              type="button"
+              className={styles.quote}
+              data-selected={selected?.key === m.key || undefined}
+              onClick={() => onSelect(m)}
+            >
+              <span className={styles.quoteNum}>{i + 1}</span>
+              <span className={styles.quoteText}>
+                {m.event.quote!.split(' / ').map((l, j) => (
+                  <span key={j}>
+                    {j > 0 && <br />}
+                    {l}
+                  </span>
+                ))}
+              </span>
+              <span className={styles.quoteTime}>
+                {fmtUtcDayShort(m.t)}, {fmtUtcHm(m.t)} UTC
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
@@ -367,13 +339,9 @@ export function Legend() {
     <div className={styles.legend}>
       {item('logged in', <line className={styles.bar} x1={1} x2={21} y1={9} y2={9} />)}
       {item('logged out', <line className={styles.offline} x1={1} x2={21} y1={9} y2={9} />)}
-      {item('stop', <line className={styles.stop} x1={8} x2={8} y1={3} y2={15} />, 16)}
-      {item('recovery', <circle className={styles.recovery} cx={8} cy={9} r={3.2} />, 16)}
+      {item('stop', <line className={styles.stop} x1={8} x2={8} y1={4} y2={14} />, 16)}
       {item('death', <circle className={styles.death} cx={8} cy={9} r={4.5} />, 16)}
-      {item('operator message', <line className={styles.operator} x1={8} x2={8} y1={2} y2={12} />, 16)}
-      {item('ruling', <line className={styles.ruling} x1={8} x2={8} y1={5} y2={12} />, 16)}
-      {item('note', <circle className={styles.dot} cx={8} cy={9} r={1.6} />, 16)}
-      {item('rehearsal and lab run, start to end', <line className={styles.extent} x1={1} x2={21} y1={9} y2={9} />)}
+      {item('rehearsal and lab run', <line className={styles.extent} x1={1} x2={21} y1={9} y2={9} />)}
     </div>
   );
 }
