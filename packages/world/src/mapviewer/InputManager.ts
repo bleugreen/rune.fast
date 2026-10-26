@@ -1,5 +1,4 @@
 import { vec2 } from "gl-matrix";
-import { IJoystickUpdateEvent } from "react-joystick-component/build/lib/Joystick";
 
 export function getMousePos(container: HTMLElement, event: MouseEvent | Touch): vec2 {
     const rect = container.getBoundingClientRect();
@@ -53,8 +52,6 @@ export class InputManager {
     pickX: number = -1;
     pickY: number = -1;
 
-    positionJoystickEvent?: IJoystickUpdateEvent;
-    cameraJoystickEvent?: IJoystickUpdateEvent;
 
     gamepadIndex?: number;
 
@@ -322,21 +319,6 @@ export class InputManager {
         event.preventDefault();
     };
 
-    onPositionJoystickMove = (event: IJoystickUpdateEvent) => {
-        this.positionJoystickEvent = event;
-    };
-
-    onPositionJoystickStop = (event: IJoystickUpdateEvent) => {
-        this.positionJoystickEvent = undefined;
-    };
-
-    onCameraJoystickMove = (event: IJoystickUpdateEvent) => {
-        this.cameraJoystickEvent = event;
-    };
-
-    onCameraJoystickStop = (event: IJoystickUpdateEvent) => {
-        this.cameraJoystickEvent = undefined;
-    };
 
     private onFocusOut = () => {
         console.log("Focus lost");
