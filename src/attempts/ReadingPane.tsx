@@ -1,35 +1,47 @@
-import type { ChartModel, Mark } from './model';
-import { EventCard } from './EventCard';
+import type { ChartAnchors, ChartModel, Mark } from './model';
+import { EventCard, EventList } from './EventCard';
 import styles from './ReadingPane.module.css';
 
 interface Props {
   model: ChartModel;
-  mark: Mark | null;
+  anchors: ChartAnchors;
+  /** The mark shown: the previewed one while scrubbing, else the pinned one. */
+  shown: Mark | null;
+  /** The pinned mark, which Earlier and Later step from. */
+  pinned: Mark | null;
   onSelect: (m: Mark) => void;
 }
 
-/** The selected event in full, with its neighbours in the same attempt one step away. */
-export function ReadingPane({ model, mark, onSelect }: Props) {
-  if (!mark) return null;
-  const am = model.byId.get(mark.attemptId);
-  if (!am) return null;
-  const i = am.marks.findIndex((m) => m.key === mark.key);
-  const prev = am.marks[i - 1];
-  const next = am.marks[i + 1];
+/** The shown mark in full, with the undrawn events that led up to it and followed it. */
+export function ReadingPane({ model, anchors, shown, pinned, onSelect }: Props) {
+  const list = anchors.list;
+  const i = pinned ? list.findIndex((m) => m.key === pinned.key) : -1;
+  const prev = list[i - 1];
+  const next = list[i + 1];
+  const am = shown ? model.byId.get(shown.attemptId) : undefined;
+  const group = shown ? anchors.groups.get(shown.key) : undefined;
   return (
-    <section className={styles.pane} aria-live="polite" aria-label="Selected event">
-      <EventCard mark={mark} attemptName={am.attempt.name} />
-      <nav className={styles.nav} aria-label="Events in this attempt">
+    <section className={styles.pane} aria-label="Selected event">
+      <nav className={styles.nav} aria-label="Marked events">
         <button type="button" disabled={!prev} onClick={() => prev && onSelect(prev)}>
           ← Earlier
         </button>
         <span className={styles.position}>
-          {i + 1} of {am.marks.length} in {am.shortName}
+          {i + 1} of {list.length}
         </span>
         <button type="button" disabled={!next} onClick={() => next && onSelect(next)}>
           Later →
         </button>
       </nav>
+      <div className={styles.body} aria-live="polite">
+        {shown && am && (
+          <>
+            <EventList marks={group?.before ?? []} />
+            <EventCard mark={shown} attemptName={am.attempt.name} />
+            <EventList marks={group?.after ?? []} />
+          </>
+        )}
+      </div>
     </section>
   );
 }

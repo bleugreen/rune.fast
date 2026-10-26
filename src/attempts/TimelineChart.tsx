@@ -250,7 +250,7 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
             ticks
           </text>
 
-          {ring && <circle className={styles.ring} cx={ring.key === undefined ? ring.cx : ring.cx} cy={ring.cy} r={7.5} />}
+          {ring && <circle className={styles.ring} cx={ring.cx} cy={ring.cy} r={7.5} />}
 
           <line className={styles.axis} x1={MARGIN.left} x2={width - MARGIN.right} y1={axisY} y2={axisY} />
           {ticks.map((t, i) => (

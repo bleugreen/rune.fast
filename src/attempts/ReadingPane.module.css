@@ -1,10 +1,17 @@
 .pane {
   border-top: var(--stroke-rule) solid var(--ink);
-  padding-top: var(--space-4);
+  padding-top: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  min-height: 16rem;
+  gap: var(--space-4);
+}
+
+/* Reserves room for a typical mark and its neighbours, so scrubbing does not shove the page. */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 20rem;
 }
 
 .nav {
@@ -35,6 +42,6 @@
   cursor: default;
 }
 .position {
-  min-width: 10rem;
+  min-width: 5rem;
   text-align: center;
 }

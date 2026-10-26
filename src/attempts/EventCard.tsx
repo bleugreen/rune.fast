@@ -16,23 +16,23 @@ export const TYPE_LABEL: Record<EventType, string> = {
   result: 'Result',
 };
 
-interface Props {
-  mark: Mark;
-  attemptName: string;
-  compact?: boolean;
+/** What a mark says in plain words: the plain line, or for an operator message, the message itself. */
+export function plainLine(m: Mark): string {
+  const said = m.event.type === 'operator' ? m.event.quote : undefined;
+  return plainFor(m.attemptId, m.event.utc) ?? said ?? m.event.title;
 }
 
 /**
- * One timeline event: what kind, when, what happened in plain words, and (in the
- * full card) the swarm's own words as the receipt.
+ * A drawn mark in full: what kind, when, what happened in plain words, and the
+ * swarm's own words beneath as the receipt.
  */
-export function EventCard({ mark, attemptName, compact = false }: Props) {
+export function EventCard({ mark, attemptName }: { mark: Mark; attemptName: string }) {
   const e = mark.event;
   const t = parseUtc(e.utc);
-  const plain = plainFor(mark.attemptId, e.utc);
-  const said = e.type === 'operator' && e.quote;
+  const said = e.type === 'operator' ? e.quote : undefined;
+  const receipt = said ? undefined : (e.quote ?? e.cause_verbatim);
   return (
-    <div className={compact ? styles.compact : styles.card}>
+    <div className={styles.card}>
       <p className={styles.meta}>
         <span className={styles.type} data-type={e.type}>
           {TYPE_LABEL[e.type]}
@@ -42,11 +42,25 @@ export function EventCard({ mark, attemptName, compact = false }: Props) {
           {fmtUtcDayShort(t)}, {fmtUtcHm(t)} UTC
         </time>
       </p>
-      {plain && <p className={styles.title}>{plain}</p>}
-      {said && <blockquote className={styles.said}>{e.quote}</blockquote>}
-      {!compact && !said && (e.quote ?? e.cause_verbatim) && (
-        <blockquote className={styles.verbatim}>{e.quote ?? e.cause_verbatim}</blockquote>
-      )}
+      {said ? <blockquote className={styles.said}>{said}</blockquote> : <p className={styles.title}>{plainLine(mark)}</p>}
+      {receipt && <blockquote className={styles.verbatim}>{receipt}</blockquote>}
     </div>
+  );
+}
+
+/** The undrawn events around a mark, one dated line each. */
+export function EventList({ marks }: { marks: Mark[] }) {
+  if (!marks.length) return null;
+  return (
+    <ol className={styles.list}>
+      {marks.map((m) => (
+        <li key={m.key}>
+          <time className={styles.listTime} dateTime={m.event.utc}>
+            {fmtUtcHm(m.t)}
+          </time>
+          <span className={m.event.type === 'operator' ? styles.listSaid : undefined}>{plainLine(m)}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
