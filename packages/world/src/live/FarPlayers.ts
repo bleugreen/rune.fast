@@ -39,6 +39,14 @@ export const FAR_PLAYER_APPEARANCE: PlayerAppearance = {
 };
 export const FAR_PLAYER_MODEL_KEY = getAppearanceModelKey(FAR_PLAYER_APPEARANCE);
 
+// FarPlayers' state, players in Map order.
+export type FarPlayersSnapshot = {
+    players: FarPlayer[];
+    glideStartCycle: number;
+    lastRosterCycle: number;
+    intervalCycles: number;
+};
+
 // Every online player from the roster (sent every few ticks), so players outside the streamed
 // area can still be drawn. Each roster update glides them from where they were drawn to the new
 // tile over one roster interval, so they move instead of jumping.
@@ -90,6 +98,22 @@ export class FarPlayers {
                 this.players.delete(slot);
             }
         }
+    }
+
+    snapshot(): FarPlayersSnapshot {
+        return {
+            players: [...this.players.values()].map((p) => ({ ...p })),
+            glideStartCycle: this.glideStartCycle,
+            lastRosterCycle: this.lastRosterCycle,
+            intervalCycles: this.intervalCycles,
+        };
+    }
+
+    restore(snapshot: FarPlayersSnapshot): void {
+        this.players = new Map(snapshot.players.map((p) => [p.slot, { ...p }]));
+        this.glideStartCycle = snapshot.glideStartCycle;
+        this.lastRosterCycle = snapshot.lastRosterCycle;
+        this.intervalCycles = snapshot.intervalCycles;
     }
 
     clear(tickMs = 600): void {
