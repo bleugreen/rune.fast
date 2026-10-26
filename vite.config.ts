@@ -1,23 +1,33 @@
 import { defineConfig, type Plugin } from 'vite';
 import { projectTimeline } from './scripts/public-timeline';
+import { projectCostData, projectRoles } from './scripts/public-cost';
+
+/** Archival exports in data/, by path suffix, and the public projection that replaces each in the build. */
+const PROJECTIONS: ReadonlyArray<readonly [string, (raw: never) => unknown]> = [
+  ['/data/attempts-timeline.json', projectTimeline],
+  ['/data/cost-data.json', projectCostData],
+  ['/data/roles.json', projectRoles],
+];
 
 /**
- * data/attempts-timeline.json is kept verbatim as exported; what reaches the
- * browser is its public projection (see scripts/public-timeline.ts).
+ * The files in data/ are kept verbatim as exported; what reaches the browser is
+ * their public projection (see scripts/public-timeline.ts and scripts/public-cost.ts).
  */
-function publicTimeline(): Plugin {
+function publicData(): Plugin {
   return {
-    name: 'rune:public-timeline',
+    name: 'rune:public-data',
     enforce: 'pre',
     transform(code, id) {
-      if (!id.split('?')[0]!.endsWith('/data/attempts-timeline.json')) return null;
-      return { code: JSON.stringify(projectTimeline(JSON.parse(code))), map: null };
+      const path = id.split('?')[0]!;
+      const projection = PROJECTIONS.find(([suffix]) => path.endsWith(suffix));
+      if (!projection) return null;
+      return { code: JSON.stringify(projection[1](JSON.parse(code) as never)), map: null };
     },
   };
 }
 
 export default defineConfig({
-  plugins: [publicTimeline()],
+  plugins: [publicData()],
   define: {
     __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
   },

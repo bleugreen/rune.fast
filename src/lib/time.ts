@@ -29,7 +29,26 @@ const utcHm = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', hour: '2-digit
 const pacHm = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const pacZone = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, timeZoneName: 'short' });
 
+const utcWeekdayDay = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric' });
+const utcDayMonth = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'long' });
+const pacDayKey = new Intl.DateTimeFormat('en-CA', { timeZone: PACIFIC, year: 'numeric', month: '2-digit', day: '2-digit' });
+const pacWeekdayDay = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric' });
+const pacDayLong = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long', day: 'numeric', month: 'long' });
+const pacWeekday = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long' });
+
 export const fmtUtcDayShort = (t: number) => utcDayShort.format(t);
+/** 'Thu 22' */
+export const fmtUtcWeekdayDay = (t: number) => utcWeekdayDay.format(t);
+/** '22 October' */
+export const fmtUtcDayMonth = (t: number) => utcDayMonth.format(t);
+/** The Pacific calendar day of t, 'YYYY-MM-DD'. */
+export const pacificDayKey = (t: number) => pacDayKey.format(t);
+/** 'Thu 22', Pacific */
+export const fmtPacificWeekdayDay = (t: number) => pacWeekdayDay.format(t);
+/** 'Thursday 22 October', Pacific */
+export const fmtPacificDayLong = (t: number) => pacDayLong.format(t);
+/** 'Thursday', Pacific */
+export const fmtPacificWeekday = (t: number) => pacWeekday.format(t);
 export const fmtUtcDayLong = (t: number) => utcDayLong.format(t);
 export const fmtUtcDate = (t: number) => utcDayMonthYear.format(t);
 export const fmtUtcHm = (t: number) => utcHm.format(t);
@@ -61,4 +80,11 @@ export function fmtDuration(ms: number, withSeconds = false): string {
   parts.push(`${h ? String(m).padStart(2, '0') : m} min`);
   if (withSeconds) parts.push(`${s} s`);
   return parts.join(' ');
+}
+
+/** The Pacific midnights in [a, b]. Pacific offsets are whole hours, so midnight falls on a UTC hour. */
+export function pacificMidnights(a: number, b: number): number[] {
+  const out: number[] = [];
+  for (let t = Math.ceil(a / HOUR) * HOUR; t <= b; t += HOUR) if (pacHm.format(t) === '00:00') out.push(t);
+  return out;
 }
