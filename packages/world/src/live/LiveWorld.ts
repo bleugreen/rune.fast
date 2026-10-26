@@ -99,14 +99,14 @@ export class LiveWorld {
     // (which set derived fields such as turnspeed) and then its mutable fields.
     restore(s: LiveWorldSnapshot): void {
         this.setCadence(s.tickMs);
-        this.players = new Map();
+        this.players.clear();
         for (const p of s.players) {
             const player = new LivePlayer(p.id);
             if (p.appearance) player.setAppearance(copyAppearance(p.appearance));
             restoreEntity(player, p);
             this.players.set(p.id, player);
         }
-        this.npcs = new Map();
+        this.npcs.clear();
         for (const n of s.npcs) {
             const npc = new LiveNpc(n.id);
             npc.setType(this.npcTypeLoader.load(n.npcTypeId));
