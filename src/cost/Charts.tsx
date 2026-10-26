@@ -2,7 +2,7 @@ import { scaleBand, scaleLinear, scalePoint, scaleUtc } from 'd3-scale';
 import { max } from 'd3-array';
 import { useWidth } from '../lib/useWidth';
 import { fmtInt, fmtUsd } from '../lib/numbers';
-import { fmtPacificHm, fmtPacificWeekdayDay, fmtUtcWeekdayDay, pacificMidnights, pacificZone } from '../lib/time';
+import { fmtPacificHm, fmtPacificWeekdayDay, pacificMidnights } from '../lib/time';
 import { STACKS, type CostModel, type DayCost } from './model';
 import styles from './Charts.module.css';
 
@@ -90,11 +90,11 @@ export function DayLegend() {
 }
 
 /* ------------------------------------------------------------------------- */
-/* Turn concurrency over the window, with the scored attempts beneath        */
+/* Agents producing output over the window, with the scored attempts beneath */
 /* ------------------------------------------------------------------------- */
 
-const CONC_H = 270;
-const CONC_M = { top: 40, right: 6, bottom: 26, left: 30 };
+const ACT_H = 270;
+const ACT_M = { top: 40, right: 6, bottom: 26, left: 30 };
 
 /** Numerals over bands that nearly coincide are drawn as one label ('1 2 3'). */
 function groupLabels(items: { x: number; n: number }[]) {
@@ -109,12 +109,12 @@ function groupLabels(items: { x: number; n: number }[]) {
   return groups;
 }
 
-export function ConcurrencyChart({ model, label }: { model: CostModel; label: string }) {
+export function ActivityChart({ model, label }: { model: CostModel; label: string }) {
   const [ref, width] = useChartWidth();
-  const { points, from, to, peak } = model.concurrency;
-  const base = CONC_H - CONC_M.bottom;
-  const x = scaleUtc().domain([from, to]).range([CONC_M.left, width - CONC_M.right]);
-  const y = scaleLinear().domain([0, peak.v]).nice().range([base, CONC_M.top]);
+  const { points, from, to, peak } = model.activity;
+  const base = ACT_H - ACT_M.bottom;
+  const x = scaleUtc().domain([from, to]).range([ACT_M.left, width - ACT_M.right]);
+  const y = scaleLinear().domain([0, peak.v]).nice().range([base, ACT_M.top]);
   const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
 
   const midnights = pacificMidnights(from, to);
@@ -125,20 +125,20 @@ export function ConcurrencyChart({ model, label }: { model: CostModel; label: st
 
   return (
     <div ref={ref} className={styles.root}>
-      <svg className={styles.svg} width={width} height={CONC_H} role="img" aria-label={label}>
+      <svg className={styles.svg} width={width} height={ACT_H} role="img" aria-label={label}>
         {y.ticks(5).map((v) => (
           <g key={v}>
-            <line className={v ? styles.grid : styles.baseline} x1={CONC_M.left} x2={width - CONC_M.right} y1={y(v)} y2={y(v)} />
-            <text className={styles.tick} x={CONC_M.left - 6} y={y(v) + 3.5} textAnchor="end">
+            <line className={v ? styles.grid : styles.baseline} x1={ACT_M.left} x2={width - ACT_M.right} y1={y(v)} y2={y(v)} />
+            <text className={styles.tick} x={ACT_M.left - 6} y={y(v) + 3.5} textAnchor="end">
               {fmtInt(v)}
             </text>
           </g>
         ))}
         {bands.map((b) => (
-          <rect key={b.n} className={styles.attempt} x={b.x0} width={b.x1 - b.x0} y={CONC_M.top} height={base - CONC_M.top} />
+          <rect key={b.n} className={styles.attempt} x={b.x0} width={b.x1 - b.x0} y={ACT_M.top} height={base - ACT_M.top} />
         ))}
         {groupLabels(bands.map((b) => ({ x: (b.x0 + b.x1) / 2, n: b.n }))).map((g) => (
-          <text key={g.ns[0]} className={styles.attemptLabel} x={(g.xs[0]! + g.xs.at(-1)!) / 2} y={CONC_M.top - 8} textAnchor="middle">
+          <text key={g.ns[0]} className={styles.attemptLabel} x={(g.xs[0]! + g.xs.at(-1)!) / 2} y={ACT_M.top - 8} textAnchor="middle">
             {g.ns.join(' ')}
           </text>
         ))}
@@ -156,10 +156,10 @@ export function ConcurrencyChart({ model, label }: { model: CostModel; label: st
         <circle className={styles.peakDot} cx={px} cy={py} r={3} />
         {/* Above the peak, nothing on the curve can reach the label. */}
         <text className={styles.peakValue} x={px + 3} y={py - 21} textAnchor="end">
-          {fmtInt(Math.round(peak.v))} turns
+          {fmtInt(peak.v)} agents
         </text>
         <text className={styles.peakWhen} x={px + 3} y={py - 8} textAnchor="end">
-          {fmtPacificWeekdayDay(peak.t)}, {fmtPacificHm(peak.t)} {pacificZone(peak.t)}
+          {fmtPacificWeekdayDay(peak.t)}, {fmtPacificHm(peak.t)}
         </text>
       </svg>
     </div>
@@ -167,7 +167,7 @@ export function ConcurrencyChart({ model, label }: { model: CostModel; label: st
 }
 
 /* ------------------------------------------------------------------------- */
-/* Spawns and merges per UTC day                                             */
+/* Spawns and merges per Pacific day                                         */
 /* ------------------------------------------------------------------------- */
 
 const SWARM_H = 230;
@@ -220,7 +220,7 @@ export function SwarmChart({ model, label }: { model: CostModel; label: string }
         ))}
         {days.map((d) => (
           <text key={d.key} className={styles.day} x={x(d.key)} y={base + 17} textAnchor="middle">
-            {fmtUtcWeekdayDay(d.t)}
+            {fmtPacificWeekdayDay(d.t)}
           </text>
         ))}
       </svg>
