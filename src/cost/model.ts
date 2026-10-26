@@ -131,7 +131,8 @@ export interface CostModel {
   managerDays: DayCost[];
   swing: LeadSwing;
   gptDay: { day: DayCost; model: string; usd: number; share: number; opus: number };
-  models: { key: string; name: string; usd: number }[];
+  /** Largest first; share is of the whole list value. */
+  models: { key: string; name: string; usd: number; share: number }[];
   status: { segments: StatusSegment[]; unattributed: number; median: number };
   concurrency: { points: { t: number; v: number }[]; from: number; to: number; peak: { t: number; v: number } };
   attempts: { n: number; from: number; to: number }[];
@@ -197,7 +198,7 @@ export function buildCostModel(inputs: CostInputs, timeline: Timeline): CostMode
     managerDays: days.filter(managersLed),
     swing: leadSwing(days, peakDay),
     gptDay: { day: gptDay, model: gptModel, usd: gptUsd, share: gptUsd / gptDay.total, opus: gptDay.byModel.opus ?? 0 },
-    models: cost.models.map(([key, usd]) => ({ key, name: MODEL_NAMES[key] ?? key, usd })),
+    models: cost.models.map(([key, usd]) => ({ key, name: MODEL_NAMES[key] ?? key, usd, share: usd / cost.total })),
     status: {
       segments: groups,
       unattributed: cost.total - groups.reduce((s, g) => s + g.usd, 0),

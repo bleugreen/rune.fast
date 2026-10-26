@@ -5,7 +5,7 @@ import { timeline } from '../data/timeline';
 import { buildCostModel, type DayCost, type StatusSegment } from '../cost/model';
 import { ConcurrencyChart, DayChart, DayLegend, SwarmChart } from '../cost/Charts';
 import { capitalize, countWord, fmtInt, fmtPercent, fmtUsd, fmtUsdCents, listWords } from '../lib/numbers';
-import { fmtPacificDayLong, fmtPacificHm, fmtPacificWeekday, fmtUtcDayLong, fmtUtcDayMonth, MINUTE, pacificZone, SECOND } from '../lib/time';
+import { fmtPacificDayLong, fmtPacificHm, fmtPacificWeekday, fmtUtcDayLong, fmtUtcDayMonth, MINUTE, pacificZone } from '../lib/time';
 import styles from './CostPage.module.css';
 
 const STATUS_LABEL: Readonly<Record<StatusGroup, (n: number) => string>> = {
@@ -63,7 +63,7 @@ export function CostPage() {
 
   const dayTitle = `${weekday(m.peakDay)} cost the most; managers outspent workers on ${listWords(m.managerDays.map(weekday))}`;
   const statusTitle = `${fmtInt(seg.standing.count)} standing issues cost more than the ${fmtInt(seg.merged.count)} that merged`;
-  const modelTitle = `${lead.name} carried ${fmtPercent(lead.usd / m.total)} percent of the list value`;
+  const modelTitle = `${lead.name} carried ${fmtPercent(lead.share)} percent of the list value`;
   const concTitle = `At the peak, ${fmtInt(Math.round(peak.v))} agent turns were running at once`;
   const swarmTitle = `Spawning and merging both peaked on ${fmtUtcDayLong(swarm.spawnPeak.t)}`;
 
@@ -205,6 +205,3 @@ export function CostPage() {
     </article>
   );
 }
-
-/** Seconds in a minute, re-exported so the test can check bucket arithmetic without its own literal. */
-export const BUCKET_UNIT = MINUTE / SECOND;
