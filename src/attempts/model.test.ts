@@ -15,6 +15,7 @@ import {
   stopsInWorld,
 } from './model';
 import { PULLED } from './pulled';
+import { plainFor, plainKey, plainKeys } from '../data/plain';
 
 const archival = raw as unknown as Timeline;
 const timeline = projectTimeline(archival);
@@ -109,6 +110,22 @@ describe('the record', () => {
     const entries = model.scored.map((am) => ladderEntry(am.attempt));
     expect(entries.map((e) => e?.label)).toEqual(['~1,127–1,130', '~1,727', '2,290', '14,097', '35,787']);
     expect(entries[3]?.tail?.ticks).toBe(604);
+  });
+});
+
+describe('plain-language lines', () => {
+  const events = timeline.attempts.flatMap((a) => a.events.map((e) => ({ id: a.id, e })));
+  test('every event is keyed uniquely by attempt and time', () => {
+    const keys = events.map(({ id, e }) => plainKey(id, e.utc));
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+  test('every event that is not an operator message has one', () => {
+    const missing = events.filter(({ id, e }) => e.type !== 'operator' && !plainFor(id, e.utc)).map(({ id, e }) => plainKey(id, e.utc));
+    expect(missing).toEqual([]);
+  });
+  test('no line points at an event the timeline lacks', () => {
+    const known = new Set(events.map(({ id, e }) => plainKey(id, e.utc)));
+    expect(plainKeys().filter((k) => !known.has(k))).toEqual([]);
   });
 });
 
