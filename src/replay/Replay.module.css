@@ -1,10 +1,18 @@
 .replay {
   display: grid;
-  justify-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: var(--space-5) var(--space-6);
+  align-items: start;
 }
 
 .stage {
-  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 64rem) {
+  .replay {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .pane {

@@ -115,13 +115,16 @@ export function Timeline({ manifest, range, state, marks, onSeek, onPlay, onPaus
         {gaps.map(([a, b]) => (
           <span key={a} className={styles.gap} style={{ left: pct(a), width: `calc(${pct(b + 1)} - ${pct(a)})` }} />
         ))}
-        {marks.map((m, i) => (
+        {marks.map((m) => {
+          const at = (m.sessionTick + kOffset - kStart) / (kEnd - kStart);
+          return (
           <span key={m.label} className={styles.mark} style={{ left: pct(m.sessionTick + kOffset) }}>
-            <span className={styles.markLabel} data-edge={i === 0 ? 'start' : i === marks.length - 1 ? 'end' : undefined}>
+            <span className={styles.markLabel} data-edge={at < 0.15 ? 'start' : at > 0.85 ? 'end' : undefined}>
               {m.label}, {pacificClock.format(recvOfTick(manifest, m.sessionTick + kOffset))}
             </span>
           </span>
-        ))}
+          );
+        })}
         <span className={styles.playhead} style={{ left: pct(state.k) }} />
         {preview !== undefined && <span className={styles.preview} style={{ left: pct(preview) }} />}
       </div>
