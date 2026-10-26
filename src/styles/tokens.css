@@ -1,0 +1,56 @@
+/*
+ * The design tokens. Every colour, face, size and space on the site comes from here.
+ * Printed data journalism: warm paper, near-black ink, one accent (a deep vermilion)
+ * reserved for the thing the reader must see first.
+ */
+:root {
+  /* Colour */
+  --paper: #f7f3ea;
+  --paper-shade: #efe9dc;
+  --ink: #1c1a16;
+  --ink-muted: #6b665c;
+  --ink-faint: #aaa497;
+  --accent: #ad2f1d;
+  --hairline: rgb(28 26 22 / 0.16);
+  --rule: rgb(28 26 22 / 0.55);
+
+  /* Strokes (charts and rules) */
+  --stroke-hair: 0.5px;
+  --stroke-thin: 0.75px;
+  --stroke-rule: 1px;
+
+  /* Faces */
+  --font-serif: 'Rune Serif', 'Source Serif 4', 'Iowan Old Style', Charter, Georgia, serif;
+  --font-sans: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Type scale (serif text sizes, then sans label sizes) */
+  --text-title: clamp(2.125rem, 1.4rem + 2.6vw, 3rem);
+  --text-section: clamp(1.5rem, 1.25rem + 0.9vw, 1.875rem);
+  --text-dek: clamp(1.1875rem, 1.05rem + 0.5vw, 1.4375rem);
+  --text-body: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-small: 0.9375rem;
+  --label-lg: 0.8125rem;
+  --label: 0.75rem;
+  --label-sm: 0.6875rem;
+  --leading-tight: 1.12;
+  --leading-snug: 1.3;
+  --leading-body: 1.55;
+  --tracking-caps: 0.08em;
+
+  /* Space */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+  --space-9: 7rem;
+
+  /* Measure and page widths */
+  --measure: 66ch;
+  --wide: 75rem;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+}
