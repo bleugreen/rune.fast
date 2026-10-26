@@ -26,6 +26,8 @@ export class Playhead {
     epochRecv0: number | null = null;
     // recv of the last frame applied.
     lastRecv: number | null = null;
+    // Sees every frame as it is taken from the source, before gating.
+    onFrame?: (frame: ReplayFrame) => void;
 
     constructor(
         readonly world: LiveWorld,
@@ -47,6 +49,7 @@ export class Playhead {
                 return "ok";
             }
             this.source.advance();
+            this.onFrame?.(frame);
             this.apply(frame);
         }
     }

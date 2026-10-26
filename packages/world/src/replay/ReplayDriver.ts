@@ -132,6 +132,8 @@ export class ReplayDriver implements FeedSource, WorldStepper {
     private ended = false;
     private seeking = 0;
     private stalled = false;
+    // False until a seek has put the world at a real point of the clip.
+    private positioned = false;
 
     private handlers?: FeedHandlers;
     private controller?: LiveController;
@@ -186,7 +188,7 @@ export class ReplayDriver implements FeedSource, WorldStepper {
 
     // WorldStepper: called by the renderer every frame with the wall-clock cycles that elapsed.
     step(wallCycles: number): void {
-        if (this.paused || this.seeking > 0 || !this.playhead) return;
+        if (this.paused || this.seeking > 0 || !this.playhead || !this.positioned) return;
         const cycles = Math.min(MAX_CYCLES_PER_FRAME, wallCycles * this.speed);
         this.run(cycles);
         this.notify(false);
@@ -234,7 +236,7 @@ export class ReplayDriver implements FeedSource, WorldStepper {
     }
 
     play(): void {
-        if (this.ended) return;
+        if (this.ended || !this.positioned) return;
         this.paused = false;
         this.notify(true);
     }
@@ -275,11 +277,13 @@ export class ReplayDriver implements FeedSource, WorldStepper {
                 if (c.frameIndex <= targetIndex && c.frameIndex >= floor && c.frameIndex > base.frameIndex) base = c;
             }
             const here = this.source.position;
-            if (!(here <= targetIndex && here >= base.frameIndex)) {
+            if (!this.positioned || !(here <= targetIndex && here >= base.frameIndex)) {
                 playhead.restore(base);
+                this.positioned = true;
             }
             this.ended = false;
-            this.nextCheckpointTick = playhead.world.tick + 1;
+            this.nextCheckpointTick =
+                (Math.floor(playhead.world.tick / CHECKPOINT_EVERY_TICKS) + 1) * CHECKPOINT_EVERY_TICKS;
             while (this.source.position <= targetIndex) {
                 const result = playhead.step();
                 if (result === "end") break;
