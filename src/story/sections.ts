@@ -72,6 +72,8 @@ export const SECTION_META: readonly SectionMeta[] = [
     dates: '25–26 Oct',
     figures: [
       { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'incredible work couldn’t have done it without you' },
+      // The death gap and the recovery, after the quotation the death beat ends on (its paragraph ends in a colon).
+      { figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] }, after: 'I WANT A #1' },
       // The kit the paragraph says was rebuilt overnight, arriving in the trade after the recovery login.
       { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt the lost kit' },
     ],
