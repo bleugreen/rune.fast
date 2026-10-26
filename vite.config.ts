@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import { projectTimeline } from './scripts/public-timeline';
 import { projectCostData, projectRoles } from './scripts/public-cost';
+import { isStoryMd, storyModule } from './scripts/story-module';
 
 /** Archival exports in data/, by path suffix, and the public projection that replaces each in the build. */
 const PROJECTIONS: ReadonlyArray<readonly [string, (raw: never) => unknown]> = [
@@ -26,8 +27,22 @@ function publicData(): Plugin {
   };
 }
 
+/** data/story.md is the narrator's draft verbatim; what reaches the browser is its page copy. */
+function story(): Plugin {
+  return {
+    name: 'rune:story',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!isStoryMd(id)) return null;
+      const { code: js, files } = storyModule(code, id.split('?')[0]!);
+      files.forEach((f) => this.addWatchFile(f));
+      return { code: js, map: null };
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [publicData()],
+  plugins: [publicData(), story()],
   define: {
     __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
   },

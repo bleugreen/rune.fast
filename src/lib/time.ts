@@ -59,10 +59,11 @@ export function pacificZone(t: number): string {
   return pacZone.formatToParts(t).find((p) => p.type === 'timeZoneName')?.value ?? '';
 }
 
-/** '23–26 October 2026' for a span within one month, else both dates in full. */
+/** '26 October 2026' within one day, '23–26 October 2026' within one month, else both dates in full. */
 export function fmtUtcDateRange(a: number, b: number): string {
   const da = new Date(a);
   const db = new Date(b);
+  if (da.toISOString().slice(0, 10) === db.toISOString().slice(0, 10)) return fmtUtcDate(a);
   if (da.getUTCMonth() === db.getUTCMonth() && da.getUTCFullYear() === db.getUTCFullYear()) {
     return `${da.getUTCDate()}–${fmtUtcDate(b)}`;
   }
