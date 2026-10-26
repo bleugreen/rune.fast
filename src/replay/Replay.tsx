@@ -27,13 +27,17 @@ async function fetchManifest(base: string): Promise<ClipManifest> {
 }
 
 async function fetchChunk(base: string, chunk: ClipChunk): Promise<ChunkData> {
+  performance.mark(`replay:chunk-requested ${chunk.file}`);
   const resp = await fetch(base + chunk.file);
   if (!resp.ok) throw new Error(`Replay chunk ${chunk.file}: HTTP ${resp.status}`);
   const text = await resp.text();
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   const hex = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
   if (hex !== chunk.sha256) throw new Error(`Replay chunk ${chunk.file} failed its checksum`);
-  return parseChunk(text, REVISION);
+  performance.mark(`replay:chunk-fetched ${chunk.file}`);
+  const data = parseChunk(text, REVISION);
+  performance.mark(`replay:chunk-parsed ${chunk.file}`);
+  return data;
 }
 
 type Ready = LoadedWorld & { driver: ReplayDriver; controller: LiveController; manifest: ClipManifest; requested: number };
@@ -73,8 +77,12 @@ export function Replay({ moment }: { moment: Moment }) {
     const abort = new AbortController();
     let loaded: LoadedWorld | undefined;
     (async () => {
+      // Stage marks (User Timing) for scripts/world/shoot.ts --timings.
+      performance.mark('replay:start');
       const manifest = await fetchManifest(FINISH_BASE);
+      performance.mark('replay:manifest');
       await Promise.all(OVERLAY_FONTS.map((font) => document.fonts.load(font)));
+      performance.mark('replay:fonts');
       loaded = await loadWorld(abort.signal, setProgress);
       const driver = new ReplayDriver(manifest, (i) => fetchChunk(FINISH_BASE, manifest.chunks[i]!));
       const controller = loaded.viewer.startLive(driver.feed);
@@ -83,6 +91,7 @@ export function Replay({ moment }: { moment: Moment }) {
       driver.bind(controller);
       const { k, paused } = requestedTick(manifest, moment);
       await driver.seek(k);
+      performance.mark('replay:seeked');
       if (abort.signal.aborted) return;
       controller.setPendingFollow(manifest.follow.name);
       if (!paused) driver.play();
@@ -192,10 +201,21 @@ function ReplayStage({ moment, viewer, pool, driver, controller, manifest, reque
   // squares or entity bakes outstanding, for three checks in a row.
   useEffect(() => {
     let streak = 0;
+    const once = new Set<string>();
+    const mark = (name: string, reached: boolean) => {
+      if (reached && !once.has(name)) {
+        once.add(name);
+        performance.mark(`replay:${name}`);
+      }
+    };
     const timer = setInterval(() => {
       const s = driver.getSnapshot();
       const followed = controller.getFollowed();
       const live = renderer.liveRenderer;
+      mark('renderer-ready', !!renderer.mainProgram);
+      mark('first-frame', renderer.stats.frameCount > 0 && !!renderer.mainProgram);
+      mark('maps-loaded', renderer.mapManager.mapSquares.size > 0 && renderer.mapManager.loadingMapIds.size === 0 && pool.pendingTasks === 0);
+      mark('followed-drawn', !!followed && !!live && live.lastDrawn.has(followed));
       const settled =
         !s.loading &&
         (!s.paused || s.k >= requested) &&
@@ -206,7 +226,11 @@ function ReplayStage({ moment, viewer, pool, driver, controller, manifest, reque
         renderer.mapManager.loadingMapIds.size === 0 &&
         pool.pendingTasks === 0;
       streak = settled ? streak + 1 : 0;
-      if (streak >= 3) host.current?.setAttribute('data-replay-ready', '');
+      mark('settled', streak === 1);
+      if (streak >= 3) {
+        mark('ready', true);
+        host.current?.setAttribute('data-replay-ready', '');
+      }
     }, 250);
     return () => clearInterval(timer);
   }, [driver, controller, renderer, pool, requested]);

@@ -202,8 +202,11 @@ async function getWorkerState(): Promise<WorkerState> {
 
 const api = {
     initCache(cache: LoadedCache): void {
-        console.log("init worker", cache.info);
+        const started = performance.now();
         workerStatePromise = initWorker(cache);
+        void workerStatePromise.then(() =>
+            console.info(`[world] worker ready in ${Math.round(performance.now() - started)} ms`),
+        );
     },
     initDataLoader(name: RenderDataLoaderName): void {
         getRenderDataLoader(name).init();

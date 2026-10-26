@@ -24,8 +24,11 @@ export async function loadWorld(
   const list = await fetchCacheList(WORLD_ASSET_BASE);
   if (!list) throw new WorldLoadError('The game cache is unavailable');
   const cache = await loadCacheFiles(WORLD_ASSET_BASE, list.latest, signal, onProgress);
+  performance.mark('replay:cache-fetched');
   signal.throwIfAborted();
   const pool = RenderDataWorkerPool.create(isSharedMemorySupported ? 4 : 1);
   console.info(`[world] crossOriginIsolated=${String(crossOriginIsolated)} workers=${pool.size}`);
-  return { viewer: new MapViewer(pool, cache), pool };
+  const viewer = new MapViewer(pool, cache);
+  performance.mark('replay:cache-indexed');
+  return { viewer, pool };
 }
