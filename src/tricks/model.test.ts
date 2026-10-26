@@ -132,6 +132,9 @@ describe('sources in the build', () => {
 
   test('UTC moments become Pacific, carrying the date across midnight', () => {
     const lines = shipped.flatMap((t) => t.sources);
+    expect(lines).toContain(
+      'the run host’s screen recording of attempt 5, 26 Oct 03:28:39-03:28:53 PDT, cropped to the game canvas (the clip)',
+    );
     expect(lines).toContain('the attempts timeline, attempt 5, 25 Oct 13:35 PDT');
     expect(lines).toContain('the attempts timeline, attempt 5, 25 Oct 20:25 PDT to 25 Oct 20:40 PDT');
     expect(lines).toContain(

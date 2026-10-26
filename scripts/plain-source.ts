@@ -16,20 +16,25 @@ const FORMS: ReadonlyArray<readonly [RegExp, string]> = [
 
 /**
  * Free-text sources date a moment by day and month with a UTC clock time
- * ('25 Oct 09:33Z', or a bare '06:28Z' after a dated one); every such moment
- * falls in October 2026.
+ * ('25 Oct 09:33Z', a bare '06:28Z' after a dated one, or a span to the second
+ * sharing one Z, '26 Oct 10:28:39-10:28:53Z'); every such moment falls in October 2026.
  */
-const UTC_MOMENT = /(?:(\d{1,2}) Oct )?(\d{2}):(\d{2})Z\b/g;
+const UTC_MOMENT = /(?:(\d{1,2}) Oct )?(\d{2}:\d{2}(?::\d{2})?)(?:-(\d{2}:\d{2}(?::\d{2})?))?Z\b/g;
 const MONTH = '2026-10';
 
+const pacificClock = (t: number, seconds: boolean) =>
+  seconds ? `${fmtPacificHm(t)}:${String(new Date(t).getUTCSeconds()).padStart(2, '0')}` : fmtPacificHm(t);
 const pacific = (t: number) => `${fmtPacificDayMon(t)} ${fmtPacificHm(t)} ${pacificZone(t)}`;
 
 function toPacific(text: string): string {
   let day: string | undefined;
-  return text.replace(UTC_MOMENT, (_, d: string | undefined, h: string, m: string) => {
+  return text.replace(UTC_MOMENT, (_, d: string | undefined, from: string, to: string | undefined) => {
     day = d ?? day;
     if (!day) throw new Error(`A UTC time with no day to anchor it: ${text}`);
-    return pacific(parseUtc(`${MONTH}-${day.padStart(2, '0')}T${h}:${m}Z`));
+    const at = (clock: string) => parseUtc(`${MONTH}-${day!.padStart(2, '0')}T${clock}Z`);
+    const a = at(from);
+    const span = to ? `-${pacificClock(at(to), to.length > 5)}` : '';
+    return `${fmtPacificDayMon(a)} ${pacificClock(a, from.length > 5)}${span} ${pacificZone(a)}`;
   });
 }
 
