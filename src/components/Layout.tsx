@@ -5,9 +5,10 @@ import styles from './Layout.module.css';
 const LIVE = [
   { to: '/', label: 'Story' },
   { to: '/attempts', label: 'Attempts' },
+  { to: '/tricks', label: 'Tricks' },
 ] as const;
 
-const SOON = ['Tricks', 'Swarm', 'Cost', 'Routes', 'Replays'] as const;
+const SOON = ['Swarm', 'Cost', 'Routes', 'Replays'] as const;
 
 export function Layout() {
   return (

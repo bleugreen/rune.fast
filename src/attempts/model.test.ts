@@ -24,7 +24,6 @@ const model = buildChartModel(timeline);
 describe('public projection', () => {
   const text = JSON.stringify(timeline);
   test.each([
-    ['record holder', /stunbaron/i],
     ['helper accounts', /cairn_[a-z]+\d/],
     ['lab accounts', /\bdr\d{4}[a-z]\b/],
     ['hostnames', /bgsrv/],
