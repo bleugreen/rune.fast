@@ -6,8 +6,8 @@ import type { CostData, RawCostData, RawRoles, Roles } from '../src/data/costTyp
  * projection keeps only the numeric fields the page draws.
  */
 export function projectCostData(raw: RawCostData): CostData {
-  const { total, models, conc, t0, step, peak, peak_t, groups, cnt, median } = raw;
-  return { total, models, conc, t0, step, peak, peak_t, groups, cnt, median };
+  const { total, models, t0, groups, cnt, median } = raw;
+  return { total, models, t0, groups, cnt, median };
 }
 
 /** Cost by role per hour; the per-unit rows (issue numbers and thread names) stay archival. */

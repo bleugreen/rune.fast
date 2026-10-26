@@ -6,22 +6,7 @@
  * where in plain terms, and when.
  */
 
-/** Thread and issue addresses in the rs project, in plain words. Longest forms first. */
-const PLACES: ReadonlyArray<readonly [RegExp, string]> = [
-  [/(?:cairn:\/\/p\/)?rs\/(main|host)\/chat(?:\/raw)?(?:\/turn\/\d+)?/g, "$1's thread"],
-  [/(?:cairn:\/\/p\/)?rs\/(main|host)\/messages/g, "$1's messages"],
-  [/(?:cairn:\/\/p\/)?rs\/main\/db(?: journal)?/g, "main's journal"],
-  [/(?:cairn:\/\/p\/)?rs\/document(?:\/db| chat)?/g, "the documenting thread's notes"],
-  [/(?:cairn:\/\/p\/)?rs\/tenets\/(\d+)/g, 'rs tenet $1'],
-  [/(?:cairn:\/\/p\/)?rs\/(\d+)\/\d+\/builder\/create-pr/g, "issue rs/$1, the builder's pull request"],
-  [/(?:cairn:\/\/p\/)?rs\/(\d+)\/\d+\/(\w+)\/chat(?:\/raw)?/g, "issue rs/$1, the $2's thread"],
-  [/(?:cairn:\/\/p\/)?rs\/(\d+)\/\d+\/(\w+)\/messages/g, "issue rs/$1, the $2's messages"],
-  [/cairn:\/\/p\/rs\/(\d+)/g, 'issue rs/$1'],
-  [/cairn:\/\/p\/rune\/main(?:\/\S*)?/g, "this site's documenting thread"],
-  [/cairn:\/\/p\//g, ''],
-  [/\b(main|host)\/chat(?:\/raw)?|\b(main|host) chat\b/g, "$1$2's thread"],
-  [/\?format=\w+/g, ''],
-];
+import { plainPlaces } from '../lib/places';
 
 /** Positions inside a transcript and raw store numbers: traceability, not something a reader can follow. */
 /** A number in a list of turns or lines, but not the hour of a time ('15:30') or a date ('20 Oct'). */
@@ -42,8 +27,7 @@ const NOISE: ReadonlyArray<readonly [RegExp, string]> = [
 ];
 
 export function plainWords(s: string): string {
-  let out = s.replace(/\*\*/g, '').replace(/`/g, '');
-  for (const [re, to] of PLACES) out = out.replace(re, to);
+  let out = plainPlaces(s.replace(/\*\*/g, '').replace(/`/g, ''));
   for (const [re, to] of NOISE) out = out.replace(re, to);
   return out
     .replace(/\(\s*\)/g, '')

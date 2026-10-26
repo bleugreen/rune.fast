@@ -1,4 +1,8 @@
 import { describe, expect, test } from 'bun:test';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { TricksPage } from '../pages/TricksPage';
+import { projectTricks } from '../../scripts/public-tricks';
 import { clipById } from '../clips/registry';
 import { GROUPS, TRICKS, cardText, headlineFacts, hi, inGroup, lo, rejected, savedShare } from './model';
 
@@ -92,6 +96,49 @@ describe('order and headline', () => {
   });
 
   test('the page claim', () => {
-    expect(headlineFacts(TRICKS)).toEqual({ used: 20, measured: 12, unmeasured: 1, halved: 9 });
+    expect(headlineFacts(TRICKS)).toEqual({ used: 20, halved: 9 });
+  });
+
+  test('the headline is the title and the subtitle, with nothing between them and the first group', () => {
+    const html = renderToStaticMarkup(createElement(TricksPage));
+    const header = html.match(/<header[^>]*>([\s\S]*?)<\/header>/)![1]!;
+    const text = (s: string) => s.replace(/<[^>]+>/g, '\n').split('\n').map((x) => x.trim()).filter(Boolean);
+    expect(text(header)).toEqual(['Twenty techniques that made the run', 'Nine of them cut a cost in half or more']);
+    const between = html.slice(html.indexOf('</header>') + '</header>'.length, html.indexOf('<h2'));
+    expect(text(between)).toEqual([]);
+  });
+});
+
+describe('sources in the build', () => {
+  const shipped = projectTricks(TRICKS);
+  const byId = new Map(shipped.map((t) => [t.id, t]));
+
+  test('keeps every line, and prints no address or UTC time', () => {
+    expect(shipped.map((t) => t.sources.length)).toEqual(TRICKS.map((t) => t.sources.length));
+    const lines = shipped.flatMap((t) => t.sources);
+    expect(lines.filter((s) => /cairn:|\d{2}:\d{2}Z\b/.test(s))).toEqual([]);
+  });
+
+  test('says who, where and when in plain words', () => {
+    expect(byId.get('wine-fermentation')!.sources).toContain(
+      'rs-sdk fork, docs/speedrun/skills/cooking.md lines 33-49 (45-51 active ticks, three runs; kebabs 131; the 450-wine model)',
+    );
+    expect(byId.get('wine-fermentation')!.sources).toContain('issue rs/47 (the wine route, merged)');
+    expect(byId.get('charge')!.sources).toContain(
+      "main's thread, correction, 26 Oct 14:08 PDT (publish the rate, not a per-tick count)",
+    );
+    expect(byId.get('buyouts')!.sources).toContain('swarm post 369');
+  });
+
+  test('UTC moments become Pacific, carrying the date across midnight', () => {
+    const lines = shipped.flatMap((t) => t.sources);
+    expect(lines).toContain(
+      'the run host’s screen recording of attempt 5, 26 Oct 03:28:39-03:28:53 PDT, cropped to the game canvas (the clip)',
+    );
+    expect(lines).toContain('the attempts timeline, attempt 5, 25 Oct 13:35 PDT');
+    expect(lines).toContain('the attempts timeline, attempt 5, 25 Oct 20:25 PDT to 25 Oct 20:40 PDT');
+    expect(lines).toContain(
+      'the attempts timeline, rehearsal 23 Oct 21:38 PDT and 23 Oct 23:28 PDT; attempt 5, 25 Oct 20:40 PDT',
+    );
   });
 });

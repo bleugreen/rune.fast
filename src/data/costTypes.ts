@@ -1,7 +1,8 @@
 /**
  * The shapes of the cost exports in data/: cost-data.json and roles.json after
- * scripts/public-cost.ts, and summary.json, hourly.json, billing.json and
- * swarm-events.json as checked in. Times in the exports are epoch seconds.
+ * scripts/public-cost.ts, and summary.json, hourly.json, billing.json,
+ * swarm-events.json and swarm-activity.json as checked in. Times in the exports
+ * are epoch seconds.
  */
 
 export type StatusGroup = 'merged' | 'closed' | 'standing' | 'threads';
@@ -11,12 +12,8 @@ export interface CostData {
   total: number;
   /** [model key, USD], largest first. */
   models: [string, number][];
-  /** Agent turns in progress, averaged over each `step`-second bucket from `t0`. */
-  conc: number[];
+  /** The start of the window. */
   t0: number;
-  step: number;
-  peak: number;
-  peak_t: number;
   /** USD by issue status at the cut; threads are runs on no issue. */
   groups: Record<StatusGroup, number>;
   cnt: Record<Exclude<StatusGroup, 'threads'>, number>;
@@ -24,8 +21,16 @@ export interface CostData {
   median: number;
 }
 
-/** The archival cost-data.json: the public fields plus per-issue rows with titles. */
+/**
+ * The archival cost-data.json: the public fields, per-issue rows with titles, and
+ * a turn-concurrency curve the page no longer draws (warm idle sessions hold
+ * turns open, so it overstates how many agents were working).
+ */
 export interface RawCostData extends CostData {
+  conc: number[];
+  step: number;
+  peak: number;
+  peak_t: number;
   merged: [number, number, string][];
   top: [number, number, string, string][];
   agentdays: number;
@@ -75,17 +80,32 @@ export interface Billing {
   };
   subscriptions: {
     source: string;
-    monthly_usd: number;
-    plans: { name: string; count: number }[];
+    plans: Plan[];
   };
+}
+
+export interface Plan {
+  name: string;
+  count: number;
+  /** USD a month for one plan. */
+  monthly_usd: number;
 }
 
 export interface SwarmEvents {
   source: string;
-  days: { utc_day: string; spawns: number; merges: number; messages: number }[];
+  /** Counts per Pacific calendar day, 'YYYY-MM-DD'. */
+  days: { pacific_day: string; spawns: number; merges: number; messages: number }[];
   issues: number;
   threads: number;
   backend_swaps: number;
+}
+
+/** Agents producing output: distinct runs with a model-output event in each `step`-second bucket from `t0`. */
+export interface SwarmActivity {
+  t0: number;
+  step: number;
+  basis: string;
+  runs_generating: number[];
 }
 
 export interface CostInputs {
@@ -95,4 +115,5 @@ export interface CostInputs {
   hourly: HourlyRow[];
   billing: Billing;
   events: SwarmEvents;
+  activity: SwarmActivity;
 }

@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import { projectTimeline } from './scripts/public-timeline';
 import { projectCostData, projectRoles } from './scripts/public-cost';
+import { projectTricks } from './scripts/public-tricks';
 import { isStoryMd, storyModule } from './scripts/story-module';
 
 /** Archival exports in data/, by path suffix, and the public projection that replaces each in the build. */
@@ -8,11 +9,13 @@ const PROJECTIONS: ReadonlyArray<readonly [string, (raw: never) => unknown]> = [
   ['/data/attempts-timeline.json', projectTimeline],
   ['/data/cost-data.json', projectCostData],
   ['/data/roles.json', projectRoles],
+  ['/data/tricks.json', projectTricks],
 ];
 
 /**
  * The files in data/ are kept verbatim as exported; what reaches the browser is
- * their public projection (see scripts/public-timeline.ts and scripts/public-cost.ts).
+ * their public projection (see scripts/public-timeline.ts, scripts/public-cost.ts
+ * and scripts/public-tricks.ts).
  */
 function publicData(): Plugin {
   return {

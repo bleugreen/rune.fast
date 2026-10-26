@@ -3,14 +3,14 @@ import { costInputs } from '../data/cost';
 import type { StatusGroup } from '../data/costTypes';
 import { timeline } from '../data/timeline';
 import { buildCostModel, type DayCost, type StatusSegment } from '../cost/model';
-import { ConcurrencyChart, DayChart, DayLegend, SwarmChart } from '../cost/Charts';
+import { ActivityChart, DayChart, DayLegend, SwarmChart } from '../cost/Charts';
 import { capitalize, countWord, fmtInt, fmtPercent, fmtUsd, fmtUsdCents, listWords } from '../lib/numbers';
-import { fmtPacificDayLong, fmtPacificHm, fmtPacificWeekday, fmtUtcDayLong, fmtUtcDayMonth, MINUTE, pacificZone } from '../lib/time';
+import { fmtPacificDayLong, fmtPacificDayMonth, fmtPacificHm, fmtPacificWeekday, MINUTE, pacificZone } from '../lib/time';
 import styles from './CostPage.module.css';
 
 const STATUS_LABEL: Readonly<Record<StatusGroup, (n: number) => string>> = {
   merged: (n) => `${fmtInt(n)} merged issues`,
-  closed: (n) => `${fmtInt(n)} closed unmerged`,
+  closed: (n) => `${fmtInt(n)} closed, landed by snapshot`,
   standing: (n) => `${fmtInt(n)} standing: coordinators and long-lived missions`,
   threads: (n) => `${countWord(n)} threads`,
 };
@@ -25,6 +25,8 @@ const planList = (plans: readonly { name: string; count: number }[]) =>
   listWords(plans.map((p) => `${countWord(p.count)} ${p.name} plan${p.count === 1 ? '' : 's'}`));
 
 const weekday = (d: DayCost) => fmtPacificWeekday(d.t);
+/** The day of the month alone, Pacific: the '21' of '21 and 22 October'. */
+const pacificDate = (t: number) => fmtPacificDayMonth(t).split(' ')[0];
 
 function StatusBar({ segments }: { segments: readonly StatusSegment[] }) {
   const columns = segments.map((s) => `${s.usd}fr`).join(' ');
@@ -57,15 +59,15 @@ export function CostPage() {
   const span = halfDays(w.days);
   const seg = Object.fromEntries(m.status.segments.map((s) => [s.key, s])) as Record<StatusGroup, StatusSegment>;
   const lead = m.models[0]!;
-  const peak = m.concurrency.peak;
-  const bucketMinutes = (m.concurrency.points[1]!.t - m.concurrency.points[0]!.t) / MINUTE;
+  const { peak, peakOnCostliest } = m.activity;
+  const bucketMinutes = m.activity.step / MINUTE;
   const [g0, g1] = swarm.growth;
 
   const dayTitle = `${weekday(m.peakDay)} cost the most; managers outspent workers on ${listWords(m.managerDays.map(weekday))}`;
   const statusTitle = `${fmtInt(seg.standing.count)} standing issues cost more than the ${fmtInt(seg.merged.count)} that merged`;
   const modelTitle = `${lead.name} carried ${fmtPercent(lead.share)} percent of the list value`;
-  const concTitle = `At the peak, ${fmtInt(Math.round(peak.v))} agent turns were running at once`;
-  const swarmTitle = `Spawning and merging both peaked on ${fmtUtcDayLong(swarm.spawnPeak.t)}`;
+  const activityTitle = `At the peak, ${fmtInt(peak.v)} agents produced output in the same ${countWord(bucketMinutes)} minutes`;
+  const swarmTitle = `Spawning and merging both peaked on ${fmtPacificDayLong(swarm.spawnPeak.t)}`;
 
   return (
     <article className={styles.page}>
@@ -75,8 +77,8 @@ export function CostPage() {
           subscriptions
         </h1>
         <p className={styles.dek}>
-          {capitalize(span)} of an agent swarm, from {fmtPacificHm(w.from)} {pacificZone(w.from)} on{' '}
-          {fmtPacificDayLong(w.from)} to {fmtPacificHm(w.to)} {pacificZone(w.to)} on {fmtPacificDayLong(w.to)}.
+          {capitalize(span)} of an agent swarm, from {fmtPacificHm(w.from)} on {fmtPacificDayLong(w.from)} to{' '}
+          {fmtPacificHm(w.to)} on {fmtPacificDayLong(w.to)}. Times and days on this page are Pacific ({pacificZone(w.from)}).
         </p>
       </header>
 
@@ -84,15 +86,15 @@ export function CostPage() {
         <h2 className={styles.sectionTitle}>What it cost</h2>
         <p className={styles.prose}>
           The large number is list-price value: what the model providers’ APIs would have charged for the tokens the
-          swarm used. The small number is what was paid. The swarm ran on {planList(sub.plans)}, {fmtUsd(sub.monthly)} a
-          month and shared with other projects; these {span} are {fmtUsd(sub.prorated)} of that. List value is{' '}
-          {fmtInt(Math.round(sub.ratio))} times what was paid. Every other dollar figure on this page is list value.
+          swarm used. The swarm ran on {planList(sub.plans)}, {fmtUsd(sub.monthly)} a month and shared with other
+          projects; these {span} are {fmtUsd(sub.prorated)} of that. List value is {fmtInt(Math.round(sub.ratio))} times
+          what was paid.
         </p>
 
         <figure className={styles.figure}>
           <figcaption className={styles.caption}>
             <span className={styles.chartTitle}>{dayTitle}</span>
-            <span className={styles.chartSub}>List value per day, Pacific time</span>
+            <span className={styles.chartSub}>List value per day</span>
             <DayLegend />
           </figcaption>
           <DayChart days={m.days} firstLead={swing.first} label={dayTitle} />
@@ -175,30 +177,31 @@ export function CostPage() {
 
         <figure className={styles.figure}>
           <figcaption className={styles.caption}>
-            <span className={styles.chartTitle}>{concTitle}</span>
+            <span className={styles.chartTitle}>{activityTitle}</span>
             <span className={styles.chartSub}>
-              Agent turns in progress, averaged over {countWord(bucketMinutes)}-minute buckets, Pacific time. Shaded and
-              numbered: the {countWord(m.attempts.length)} scored attempts.
+              Agents producing output, per {countWord(bucketMinutes)} minutes, counted as runs that wrote at least one
+              model response in the bucket, so idle sessions do not count. Shaded and numbered: the{' '}
+              {countWord(m.attempts.length)} scored attempts.
             </span>
           </figcaption>
-          <ConcurrencyChart model={m} label={concTitle} />
+          <ActivityChart model={m} label={activityTitle} />
         </figure>
         <p className={styles.prose}>
-          The peak came at {fmtPacificHm(peak.t)} {pacificZone(peak.t)} on {fmtPacificDayLong(peak.t)}, the costliest
-          day.
+          The peak came at {fmtPacificHm(peak.t)} on {fmtPacificDayLong(peak.t)}. On {weekday(m.peakDay)}, the costliest
+          day, the busiest {countWord(bucketMinutes)} minutes had {fmtInt(peakOnCostliest.v)}.
         </p>
 
         <figure className={styles.figure}>
           <figcaption className={styles.caption}>
             <span className={styles.chartTitle}>{swarmTitle}</span>
-            <span className={styles.chartSub}>Issues spawned and merged per day, UTC</span>
+            <span className={styles.chartSub}>Issues spawned and merged per day</span>
           </figcaption>
           <SwarmChart model={m} label={swarmTitle} />
         </figure>
         <p className={styles.prose}>
-          The swarm spawned {fmtInt(swarm.growthSpawns)} issues on {new Date(g0.t).getUTCDate()} and{' '}
-          {fmtUtcDayMonth(g1.t)} and merged {fmtInt(swarm.growthMerges)}; every later day spawned fewer than either.
-          Messages between units peaked on {fmtUtcDayMonth(swarm.messagePeak.t)} too, at{' '}
+          The swarm spawned {fmtInt(swarm.growthSpawns)} issues on {pacificDate(g0.t)} and {fmtPacificDayMonth(g1.t)}{' '}
+          and merged {fmtInt(swarm.growthMerges)}; every later day spawned fewer than either. Messages between units
+          peaked on {fmtPacificDayMonth(swarm.messagePeak.t)} too, at{' '}
           {fmtInt(swarm.messagePeak.messages)}.
         </p>
       </section>

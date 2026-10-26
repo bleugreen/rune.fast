@@ -22,15 +22,12 @@ export function parseUtc(s: string): number {
 
 const PACIFIC = 'America/Los_Angeles';
 
-const utcDayShort = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' });
-const utcDayLong = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' });
 const utcDayMonthYear = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' });
-const utcHm = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const pacHm = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const pacZone = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, timeZoneName: 'short' });
 
-const utcWeekdayDay = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric' });
-const utcDayMonth = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'long' });
+const pacDayMonth = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'long' });
+const pacDayMon = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'short' });
 const pacDayKey = new Intl.DateTimeFormat('en-CA', { timeZone: PACIFIC, year: 'numeric', month: '2-digit', day: '2-digit' });
 const pacWeekdayDay = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric' });
 const pacDayLong = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long', day: 'numeric', month: 'long' });
@@ -38,11 +35,10 @@ const pacWeekday = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday
 const pacDayShort = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric', month: 'short' });
 const pacDayMonthYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'long', year: 'numeric' });
 
-export const fmtUtcDayShort = (t: number) => utcDayShort.format(t);
-/** 'Thu 22' */
-export const fmtUtcWeekdayDay = (t: number) => utcWeekdayDay.format(t);
-/** '22 October' */
-export const fmtUtcDayMonth = (t: number) => utcDayMonth.format(t);
+/** '22 October', Pacific */
+export const fmtPacificDayMonth = (t: number) => pacDayMonth.format(t);
+/** '22 Oct', Pacific */
+export const fmtPacificDayMon = (t: number) => pacDayMon.format(t);
 /** The Pacific calendar day of t, 'YYYY-MM-DD'. */
 export const pacificDayKey = (t: number) => pacDayKey.format(t);
 /** 'Thu 22', Pacific */
@@ -57,24 +53,12 @@ export const fmtPacificDayShort = (t: number) => pacDayShort.format(t);
 export const fmtPacificDate = (t: number) => pacDayMonthYear.format(t);
 /** The Pacific hour of t, 0-23. */
 export const pacificHour = (t: number) => Number(pacHm.format(t).slice(0, 2));
-export const fmtUtcDayLong = (t: number) => utcDayLong.format(t);
 export const fmtUtcDate = (t: number) => utcDayMonthYear.format(t);
-export const fmtUtcHm = (t: number) => utcHm.format(t);
 export const fmtPacificHm = (t: number) => pacHm.format(t);
 
 /** Pacific zone abbreviation in force at t (PDT or PST). */
 export function pacificZone(t: number): string {
   return pacZone.formatToParts(t).find((p) => p.type === 'timeZoneName')?.value ?? '';
-}
-
-/** '23–26 October 2026' for a span within one month, else both dates in full. */
-export function fmtUtcDateRange(a: number, b: number): string {
-  const da = new Date(a);
-  const db = new Date(b);
-  if (da.getUTCMonth() === db.getUTCMonth() && da.getUTCFullYear() === db.getUTCFullYear()) {
-    return `${da.getUTCDate()}–${fmtUtcDate(b)}`;
-  }
-  return `${fmtUtcDate(a)} – ${fmtUtcDate(b)}`;
 }
 
 /** The Pacific dates a span covers: '26 October 2026', '23–26 October 2026', or both dates in full across months. */

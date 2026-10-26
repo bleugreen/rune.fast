@@ -1,4 +1,5 @@
-import type { Attempt, Bound, Source, Timeline, TimelineEvent } from '../src/data/types';
+import type { ArchivalSource, ArchivalTimeline, Attempt, Bound, Timeline, TimelineEvent } from '../src/data/types';
+import { plainArchivalSource } from './plain-source';
 
 /**
  * Identifiers that stay in the archival export but never reach the public site:
@@ -14,21 +15,19 @@ export const REDACTIONS: ReadonlyArray<readonly [RegExp, string]> = [
 
 const EVENT_OPTIONAL = ['cause_verbatim', 'quote', 'detail', 'by', 'offline_note', 'note', 'uncertain', 'uncertain_why'] as const;
 
-function source(s: Source): Source {
-  return { uri: s.uri, ...(s.ts ? { ts: s.ts } : {}), ...(s.comment !== undefined ? { comment: s.comment } : {}) };
+const sources = (xs: ArchivalSource[] | undefined) => (xs ?? []).map(plainArchivalSource);
+
+function bound(b: Bound<ArchivalSource>): Bound {
+  return { utc: b.utc, evidence: b.evidence, sources: sources(b.sources) };
 }
 
-function bound(b: Bound): Bound {
-  return { utc: b.utc, evidence: b.evidence, sources: (b.sources ?? []).map(source) };
-}
-
-function event(e: TimelineEvent): TimelineEvent {
-  const out: TimelineEvent = { utc: e.utc, type: e.type, title: e.title, sources: (e.sources ?? []).map(source) };
+function event(e: TimelineEvent<ArchivalSource>): TimelineEvent {
+  const out: TimelineEvent = { utc: e.utc, type: e.type, title: e.title, sources: sources(e.sources) };
   for (const k of EVENT_OPTIONAL) if (e[k] !== undefined) (out as unknown as Record<string, unknown>)[k] = e[k];
   return out;
 }
 
-function attempt(a: Attempt): Attempt {
+function attempt(a: Attempt<ArchivalSource>): Attempt {
   const { value, basis, uncertain, why } = a.final_ticks;
   return {
     id: a.id,
@@ -53,9 +52,10 @@ function scrub<T>(v: T): T {
 
 /**
  * The fields the site renders, and nothing else: no message ids, no account
- * column, no record holder's name, no archival paths or fact-check tables.
+ * column, no record holder's name, no archival paths or fact-check tables, and
+ * sources in plain words rather than the swarm's addresses.
  */
-export function projectTimeline(raw: Timeline): Timeline {
+export function projectTimeline(raw: ArchivalTimeline): Timeline {
   const { previous_record_ticks, final_ticks, exact_margin } = raw.meta.record;
   return scrub({
     meta: {
