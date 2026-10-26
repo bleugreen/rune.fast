@@ -78,7 +78,7 @@ function AttemptLine({ am, x, y, first }: { am: AttemptModel; x: Scale; y: numbe
       )}
       {am.holds.map((g, i) => (
         <text key={i} className={styles.hold} x={(x(g.from) + x(g.to)) / 2} y={y + 25} textAnchor="middle">
-          logged out {fmtDuration(g.to - g.from)}
+          {i === 0 ? `logged out ${fmtDuration(g.to - g.from)}` : fmtDuration(g.to - g.from)}
         </text>
       ))}
       <text
@@ -220,12 +220,15 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
   const sel = selected ? ringAt(selected) : null;
   const hov = hover && hover.mark.key !== selected?.key ? ringAt(hover.mark) : null;
 
+  // The tooltip lives outside the scroller so it is never clipped; place it in the visible frame.
   const tooltipStyle = (() => {
     if (!hover) return undefined;
     const el = scrollRef.current;
-    const viewRight = el ? el.scrollLeft + el.clientWidth : width;
-    const left = hover.px + 14 + TOOLTIP_W > viewRight ? hover.px - 14 - TOOLTIP_W : hover.px + 14;
-    const below = hover.py < height / 2;
+    const scrollLeft = el?.scrollLeft ?? 0;
+    const viewW = el?.clientWidth ?? width;
+    const px = hover.px - scrollLeft;
+    const left = px + 14 + TOOLTIP_W > viewW ? Math.max(0, px - 14 - TOOLTIP_W) : px + 14;
+    const below = hover.py < height * 0.4;
     return { left, top: below ? hover.py + 14 : hover.py - 14, transform: below ? undefined : 'translateY(-100%)', width: TOOLTIP_W };
   })();
 
@@ -335,24 +338,17 @@ export function TimelineChart({ model, finishTicks, selected, onSelect }: Props)
                   ))}
                   ”
                 </span>
-                <span className={styles.quoteTime}>
-                  {fmtUtcDayShort(q.mark.t)} {fmtUtcHms(q.mark.t)} UTC
-                </span>
+                <span className={styles.quoteTime}>{fmtUtcHms(q.mark.t)} UTC</span>
               </button>
             );
           })}
-
-          {hover && (
-            <div className={styles.tooltip} style={tooltipStyle} role="presentation">
-              <EventCard
-                mark={hover.mark}
-                attemptName={model.byId.get(hover.mark.attemptId)?.attempt.name ?? ''}
-                compact
-              />
-            </div>
-          )}
         </div>
       </div>
+      {hover && (
+        <div className={styles.tooltip} style={tooltipStyle} role="presentation">
+          <EventCard mark={hover.mark} attemptName={model.byId.get(hover.mark.attemptId)?.attempt.name ?? ''} compact />
+        </div>
+      )}
     </div>
   );
 }

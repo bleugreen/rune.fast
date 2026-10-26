@@ -102,15 +102,14 @@
   text-wrap: pretty;
 }
 
+/* A reserved space for the section's figure: hairlines only, so the skeleton reads as a page, not a wireframe. */
 .slot {
-  aspect-ratio: 16 / 7;
+  height: 7rem;
   display: flex;
   align-items: flex-end;
-  padding: var(--space-3);
-  border-top: var(--stroke-thin) solid var(--rule);
+  padding-bottom: var(--space-2);
+  border-top: var(--stroke-hair) solid var(--hairline);
   border-bottom: var(--stroke-hair) solid var(--hairline);
-  background: linear-gradient(var(--paper-shade), var(--paper-shade)) no-repeat left top / 100% 100%;
-  background-color: var(--paper);
 }
 
 .slotLabel,
@@ -138,20 +137,22 @@
 .pinned[data-visible] {
   transform: none;
 }
+/* Sized in the body face so its measure matches the prose column beneath it. */
 .pinnedInner {
-  max-width: var(--measure);
+  max-width: calc(var(--measure) + 2 * var(--gutter));
   margin: 0 auto;
   padding: var(--space-2) var(--gutter);
   display: flex;
   align-items: baseline;
   gap: var(--space-3);
+  font-size: var(--text-body);
   font-family: var(--font-sans);
-  font-size: var(--label);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
 }
 .pinnedNum {
+  font-size: var(--label);
   font-weight: 600;
   color: var(--ink-muted);
 }
@@ -163,6 +164,7 @@
   text-overflow: ellipsis;
 }
 .pinnedDate {
+  font-size: var(--label);
   margin-left: auto;
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;

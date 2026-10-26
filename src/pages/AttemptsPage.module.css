@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: var(--space-7);
   padding: var(--space-7) var(--gutter) var(--space-9);
-  max-width: var(--wide);
+  max-width: calc(var(--wide) + 2 * var(--gutter));
   margin: 0 auto;
 }
 
