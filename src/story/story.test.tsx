@@ -1,41 +1,36 @@
 import { describe, expect, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { StoryPage } from '../pages/StoryPage';
+import { sourceTable } from './draft';
 import { SECTION_META, storySections } from './sections';
 import { story } from './story';
 
-const draft = readFileSync(new URL('../../data/story.md', import.meta.url), 'utf8');
+const data = new URL('../../data/', import.meta.url);
+const draft = readFileSync(new URL('story.md', data), 'utf8');
+const lines = draft.split('\n');
+const rule = lines.indexOf('---');
+const receiptsAt = lines.findIndex((l) => l.startsWith('## Receipts'));
+
+const blocksOf = (ls: string[]) =>
+  ls
+    .join('\n')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter((p) => p && p !== '---' && !p.startsWith('#'));
 
 /**
  * The draft's page copy split the plainest way, independently of the page's parser:
- * every blank-line-separated block between the two rules that is not a heading,
- * with block quotes unwrapped into their paragraphs.
+ * every blank-line-separated block between the rule and the Receipts that is not a
+ * heading, with block quotes unwrapped into their paragraphs.
  */
-function draftParagraphs(md: string): string[] {
-  const lines = md.split('\n');
-  const a = lines.indexOf('---');
-  const b = lines.indexOf('---', a + 1);
-  return lines
-    .slice(a + 1, b)
-    .join('\n')
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter((p) => p && !p.startsWith('#'))
-    .flatMap((p) => (p.startsWith('>') ? p.replace(/^> ?/gm, '').split(/\n\s*\n/) : [p]));
-}
+const paragraphs = blocksOf(lines.slice(rule + 1, receiptsAt)).flatMap((p) =>
+  p.startsWith('>') ? p.replace(/^> ?/gm, '').split(/\n\s*\n/) : [p],
+);
 
-function receiptParagraphs(md: string): string[] {
-  const lines = md.split('\n');
-  const b = lines.indexOf('---', lines.indexOf('---') + 1);
-  return lines
-    .slice(b + 1)
-    .join('\n')
-    .split(/\n\s*\n/)
-    .map((p) => p.trim())
-    .filter((p) => p && !p.startsWith('#'));
-}
+/** What a reader sees of a paragraph: its characters, less the `code` and *emphasis* delimiters. */
+const readerText = (p: string) => p.replace(/`([^`\n]+)`/g, '$1').replace(/\*([^*\s](?:[^*\n]*[^*\s])?)\*/g, '$1');
 
 const decode = (s: string) =>
   s
@@ -62,8 +57,6 @@ const text = decode(html);
 const surface = decode(html.replace(/<details[\s\S]*?<\/details>/g, ''));
 
 describe('the draft, placed verbatim', () => {
-  const paragraphs = draftParagraphs(draft);
-
   test('the plain split and the page’s parser find the same paragraphs', () => {
     const parsed = [
       story.byline,
@@ -73,22 +66,32 @@ describe('the draft, placed verbatim', () => {
   });
 
   test.each(paragraphs.map((p) => [p.slice(0, 60), p] as const))('the page carries "%s…" byte for byte', (_, p) => {
-    expect(surface.includes(p)).toBe(true);
+    expect(surface.includes(readerText(p))).toBe(true);
+  });
+
+  test('code spans and emphasis are set, not shown as backticks and asterisks', () => {
+    for (const [, code] of draft.slice(0, draft.indexOf('## Receipts')).matchAll(/`([^`\n]+)`/g)) {
+      expect(html).toContain(`<code>${code!.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}</code>`);
+    }
+    expect(html).toContain('<em>more</em>');
+    expect(surface).not.toContain('`');
   });
 
   test('the title and every section title', () => {
-    const headings = draft.split('\n').filter((l) => /^#( |# \d+\. )/.test(l));
+    const headings = lines.slice(0, receiptsAt).filter((l) => /^#( |# \d+\. )/.test(l));
     expect(headings.length).toBe(1 + SECTION_META.length);
     for (const h of headings) expect(surface.includes(h.replace(/^#+ (\d+\. )?/, ''))).toBe(true);
   });
 
-  test('the reader line above the first rule is not page copy', () => {
-    const readerLine = draft.split('\n').find((l) => l.startsWith('Draft v'))!;
+  test('the reader line above the rule is not page copy', () => {
+    const readerLine = lines.slice(0, rule).find((l) => l.startsWith('Draft v'))!;
     expect(text.includes(readerLine.slice(0, 40))).toBe(false);
   });
 });
 
 describe('sources', () => {
+  const receipts = blocksOf(lines.slice(receiptsAt + 1));
+
   test('every section closes with one closed Sources disclosure', () => {
     const details = html.match(/<details[^>]*>/g) ?? [];
     expect(details.length).toBe(SECTION_META.length);
@@ -96,9 +99,24 @@ describe('sources', () => {
     expect(html.match(/<summary>Sources<\/summary>/g)?.length).toBe(SECTION_META.length);
   });
 
-  test('every receipt reaches a section, and nothing else does', () => {
-    const placed = [...new Set(story.sections.flatMap((s) => s.sources))];
-    expect(placed.join(' ')).toBe(receiptParagraphs(draft).join(' '));
+  test('each section’s key anchors reach it, and the introduction to the receipts does not', () => {
+    const intro = receipts[0]!.slice(0, receipts[0]!.search(/(?:^| )S1[: ]/)).trim();
+    expect(intro.length).toBeGreaterThan(0);
+    expect(text).not.toContain(intro.slice(0, 40));
+    story.sections.forEach((s, i) => {
+      expect(s.sources[0]).toMatch(new RegExp(`^S${i + 1}[: ]`));
+      expect(receipts[0]).toContain(s.sources[0]!);
+    });
+    for (const later of receipts.slice(1)) expect(story.sections.at(-1)!.sources).toContain(later);
+  });
+
+  test('each section’s dig table, where it has one, is in its disclosure', () => {
+    story.sections.forEach((s) => {
+      const file = new URL(`receipts/section-${s.number}.md`, data);
+      const table = existsSync(file) ? sourceTable(readFileSync(file, 'utf8')) : null;
+      if (table) expect(s.sources.at(-1)).toBe(table);
+      else expect(s.sources.some((x) => x.includes('\n|'))).toBe(false);
+    });
   });
 
   test('nothing from the receipts is on the open surface', () => {
@@ -126,10 +144,9 @@ describe('what the page adds to the draft', () => {
     expect(story.sections[0]!.sources.some((s) => s.includes(hrefs[0]!))).toBe(true);
   });
 
-  test('quoted messages render as quotations', () => {
+  test('quoted messages render as quotations, never as margin quotes', () => {
     const quotes = story.sections.flatMap((s) => s.blocks.filter((b) => b.kind === 'quote'));
-    expect(quotes.length).toBe(2);
-    expect(html.match(/<blockquote class="quotation">/g)?.length).toBe(2);
+    expect(html.match(/<blockquote class="quotation">/g)?.length).toBe(quotes.length);
   });
 
   test('one figure per section', () => {
