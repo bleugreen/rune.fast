@@ -39,7 +39,7 @@ function Glyph({ m, x, y, n }: { m: Mark; x: number; y: number; n?: number }) {
     return (
       <g>
         <line className={styles.quoteTick} x1={x} x2={x} y1={y - 5} y2={y - 12} />
-        <text className={styles.quoteNum} x={x} y={y - 15} textAnchor="middle">
+        <text className={styles.tickNum} x={x} y={y - 15} textAnchor="middle">
           {n}
         </text>
       </g>

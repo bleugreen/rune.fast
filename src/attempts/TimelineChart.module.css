@@ -15,10 +15,6 @@
   outline-offset: 6px;
 }
 
-.inner {
-  position: relative;
-}
-
 .svg {
   display: block;
   font-family: var(--font-sans);
@@ -42,71 +38,51 @@
   stroke-width: 2.5;
 }
 
-/* Event glyphs */
+/* Marks */
 .stop {
   stroke: var(--ink);
   stroke-width: 1.1;
 }
-.stopOut {
-  stroke: var(--ink-muted);
-  stroke-width: 0.9;
-}
-.recovery {
-  fill: var(--paper);
-  stroke: var(--ink);
-  stroke-width: 1;
-}
 .death {
   fill: var(--accent);
 }
-.operator {
+.quoteTick {
   stroke: var(--ink);
-  stroke-width: 0.9;
+  stroke-width: var(--stroke-thin);
 }
-.ruling {
-  stroke: var(--ink-muted);
-  stroke-width: 0.9;
+.tickNum {
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
-.dot {
-  fill: var(--ink-muted);
-}
-
-.faint .stop,
-.faint .stopOut,
-.faint .operator,
-.faint .ruling {
+.faint .stop {
   stroke: var(--ink-faint);
-}
-.faint .recovery {
-  stroke: var(--ink-faint);
-}
-.faint .dot {
-  fill: var(--ink-faint);
 }
 .faint .death {
   opacity: 0.5;
 }
 
 /* Labels */
-.name {
+.rowLabel {
   font-size: 11.5px;
   font-weight: 500;
   fill: var(--ink);
 }
-.faint .name {
-  font-weight: 400;
+.inlineLabel {
+  font-size: 11px;
   fill: var(--ink-muted);
 }
 .hold {
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 12.5px;
+  font-size: 12px;
   fill: var(--ink-muted);
   font-variant-numeric: lining-nums tabular-nums;
 }
 .finish {
   font-family: var(--font-serif);
-  font-size: 27px;
+  font-size: 24px;
   font-weight: 600;
   fill: var(--accent);
   font-variant-numeric: lining-nums tabular-nums;
@@ -115,7 +91,6 @@
 .finishUnit {
   font-size: 10.5px;
   fill: var(--accent);
-  font-variant-numeric: tabular-nums;
 }
 
 /* Axis */
@@ -162,39 +137,41 @@
   stroke-width: var(--stroke-hair);
   stroke-dasharray: 2 3;
 }
-.leader {
-  stroke: var(--ink);
-  stroke-width: var(--stroke-hair);
-}
 
-/* Pulled quotes */
+/* Pulled quotes, keyed to the numbered ticks */
+.quotes {
+  list-style: none;
+  margin: var(--space-5) 0 0;
+  padding: var(--space-4) 0 0;
+  border-top: var(--stroke-hair) solid var(--hairline);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-4) var(--space-5);
+}
 .quote {
-  position: absolute;
-  display: block;
-  width: max-content;
-  max-width: 15rem;
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  column-gap: var(--space-1);
+  width: 100%;
   padding: 0;
   border: 0;
   background: none;
   text-align: left;
   cursor: pointer;
-  transform: translateY(-100%);
 }
-.quote[data-align='end'] {
-  text-align: right;
-  transform: translate(-100%, -100%);
+.quoteNum {
+  grid-row: span 2;
+  font-family: var(--font-sans);
+  font-size: var(--label-sm);
+  font-weight: 600;
+  line-height: 1.9;
+  font-variant-numeric: tabular-nums;
 }
 .quoteText {
-  display: block;
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 15px;
-  line-height: 1.25;
-  color: var(--ink);
-  text-indent: -0.4em;
-}
-.quote[data-align='end'] .quoteText {
-  text-indent: 0;
+  font-size: 1.0625rem;
+  line-height: 1.3;
 }
 .quote:hover .quoteText,
 .quote[data-selected] .quoteText {
@@ -203,13 +180,11 @@
   text-underline-offset: 0.18em;
 }
 .quoteTime {
-  display: block;
-  margin-top: 3px;
+  margin-top: var(--space-1);
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: var(--label-sm);
   color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
 }
 
 /* Tooltip */
