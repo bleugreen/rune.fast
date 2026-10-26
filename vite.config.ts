@@ -1,4 +1,5 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, mergeConfig, type Plugin, type UserConfig } from 'vite';
+import { worldAssets, worldViteConfig } from '@rune/world/vite';
 import { projectTimeline } from './scripts/public-timeline';
 import { projectCostData, projectRoles } from './scripts/public-cost';
 import { projectTricks } from './scripts/public-tricks';
@@ -44,18 +45,22 @@ function story(): Plugin {
   };
 }
 
-export default defineConfig({
-  plugins: [publicData(), story()],
-  define: {
-    __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
-  },
-  build: {
-    rollupOptions: {
-      onwarn(warning, warn) {
-        // react-router marks its modules "use client"; meaningless in a client-only bundle.
-        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
-        warn(warning);
+const site: UserConfig = {
+    // .world/ holds the local cache copy and clip output; never under public/, so never in dist/.
+    plugins: [publicData(), story(), worldAssets('.world')],
+    resolve: { dedupe: ['react', 'react-dom'] },
+    define: {
+      __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+    },
+    build: {
+      rollupOptions: {
+        onwarn(warning, warn) {
+          // react-router marks its modules "use client"; meaningless in a client-only bundle.
+          if (warning.code === 'MODULE_LEVEL_DIRECTIVE') return;
+          warn(warning);
+        },
       },
     },
-  },
-});
+};
+
+export default defineConfig(mergeConfig(worldViteConfig(), site));

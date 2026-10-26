@@ -12,6 +12,7 @@ import { NotFound } from './pages/NotFound';
 
 /* The tokens screen exists only in development; the production build drops it. */
 const Tokens = import.meta.env.DEV ? lazy(() => import('./dev/Tokens')) : null;
+const World = import.meta.env.DEV ? lazy(() => import('./dev/World')) : null;
 
 const pages: RouteObject[] = [
   { index: true, element: <StoryPage /> },
@@ -19,6 +20,7 @@ const pages: RouteObject[] = [
   { path: 'tricks', element: <TricksPage /> },
   { path: 'cost', element: <CostPage /> },
   ...(Tokens ? [{ path: 'tokens', element: <Suspense><Tokens /></Suspense> }] : []),
+  ...(World ? [{ path: 'world', element: <Suspense><World /></Suspense> }] : []),
   { path: '*', element: <NotFound /> },
 ];
 

@@ -8,6 +8,7 @@ export class Gzip {
     static async initWasm(): Promise<void> {
         await init(wasmGzipUrl);
         Gzip.wasmLoaded = true;
+        console.info("[world] gzip: wasm-gzip");
     }
 
     static decompress(compressed: Uint8Array): Int8Array {
