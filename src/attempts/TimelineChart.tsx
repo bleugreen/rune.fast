@@ -9,7 +9,7 @@ import styles from './TimelineChart.module.css';
 
 /* Layout constants, in CSS pixels. */
 const MIN_WIDTH = 960;
-const MARGIN = { top: 26, right: 84, left: 92 };
+const MARGIN = { top: 26, right: 100, left: 92 };
 const ROW_PITCH = 38;
 const AXIS_GAP = 30;
 const AXIS_HEIGHT = 58;
@@ -131,16 +131,12 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
   const dayBands = [d0, ...midnights].map((from, i, all) => ({ from, to: all[i + 1] ?? d1 }));
   const lastRow = model.rows.findIndex((r) => r.includes(model.last));
 
-  /** The anchor nearest the pointer in the row under it, however far along the row. */
-  const locate = (e: { clientX: number; clientY: number }): Mark | null => {
+  /** A time cursor: the anchor nearest the pointer in time, whichever row it is on. */
+  const locate = (e: { clientX: number }): Mark | null => {
     const r = svgRef.current?.getBoundingClientRect();
-    if (!r) return null;
+    if (!r || !anchors.list.length) return null;
     const px = e.clientX - r.left;
-    const py = e.clientY - r.top;
-    const ri = Math.round((py - MARGIN.top) / ROW_PITCH);
-    const list = rowAnchors[ri];
-    if (!list?.length || Math.abs(py - rowY(ri)) > ROW_PITCH / 2) return null;
-    return list.reduce((a, b) => (Math.abs(x(b.t) - px) < Math.abs(x(a.t) - px) ? b : a));
+    return anchors.list.reduce((a, b) => (Math.abs(x(b.t) - px) < Math.abs(x(a.t) - px) ? b : a));
   };
 
   const reveal = (m: Mark) => {
@@ -219,12 +215,10 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
             <line key={t} className={styles.midnight} x1={x(t)} x2={x(t)} y1={MARGIN.top - 18} y2={axisY} />
           ))}
 
-          {/* Row bands: the whole row is the pointer target. */}
-          {model.rows.map((_, ri) => (
-            <rect key={ri} className={styles.band} x={MARGIN.left} y={rowY(ri) - ROW_PITCH / 2} width={width - MARGIN.left} height={ROW_PITCH} />
-          ))}
+          {/* The whole plot is the pointer target. */}
+          <rect className={styles.band} x={0} y={0} width={width} height={axisY} />
 
-          {ring && <line className={styles.guide} x1={ring.cx} x2={ring.cx} y1={ring.cy + 7} y2={axisY} />}
+          {ring && <line className={styles.guide} x1={ring.cx} x2={ring.cx} y1={MARGIN.top - 18} y2={axisY} />}
 
           {model.rows.map((row, ri) => (
             <g key={ri}>
@@ -275,32 +269,33 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
         </svg>
       </div>
 
-      <ol className={styles.quotes}>
-        {anchors.quotes.map((m, i) => (
-          <li key={m.key}>
-            <button
-              type="button"
-              className={styles.quote}
-              data-selected={shown?.key === m.key || undefined}
-              onClick={() => onSelect(m)}
-            >
-              <span className={styles.quoteNum}>{i + 1}</span>
-              <span className={styles.quoteText}>
-                {m.event.quote!.split(' / ').map((l, j) => (
-                  <span key={j}>
-                    {j > 0 && <br />}
-                    {l}
-                  </span>
-                ))}
-              </span>
-              <span className={styles.quoteTime}>
-                {fmtUtcDayShort(m.t)}, {fmtUtcHm(m.t)} UTC
-              </span>
-            </button>
-          </li>
-        ))}
-      </ol>
     </div>
+  );
+}
+
+/** The pulled operator quotes, numbered as their ticks on the chart. */
+export function QuoteStrip({ anchors, shown, onSelect }: { anchors: ChartAnchors; shown: Mark | null; onSelect: (m: Mark) => void }) {
+  return (
+    <ol className={styles.quotes}>
+      {anchors.quotes.map((m, i) => (
+        <li key={m.key}>
+          <button type="button" className={styles.quote} data-selected={shown?.key === m.key || undefined} onClick={() => onSelect(m)}>
+            <span className={styles.quoteNum}>{i + 1}</span>
+            <span className={styles.quoteText}>
+              {m.event.quote!.split(' / ').map((l, j) => (
+                <span key={j}>
+                  {j > 0 && <br />}
+                  {l}
+                </span>
+              ))}
+            </span>
+            <span className={styles.quoteTime}>
+              {fmtUtcDayShort(m.t)}, {fmtUtcHm(m.t)} UTC
+            </span>
+          </button>
+        </li>
+      ))}
+    </ol>
   );
 }
 

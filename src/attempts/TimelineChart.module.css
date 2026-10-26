@@ -82,7 +82,7 @@
 }
 .finish {
   font-family: var(--font-serif);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   fill: var(--accent);
   font-variant-numeric: lining-nums tabular-nums;
@@ -137,7 +137,7 @@
 /* Pulled quotes, keyed to the numbered ticks */
 .quotes {
   list-style: none;
-  margin: var(--space-5) 0 0;
+  margin: 0;
   padding: var(--space-4) 0 0;
   border-top: var(--stroke-hair) solid var(--hairline);
   display: grid;
@@ -183,10 +183,10 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Each row is one pointer target; the nearest mark along it is the one shown. */
+/* The plot is one pointer target; the mark nearest the pointer in time is the one shown. */
 .band {
   fill: transparent;
-  cursor: crosshair;
+  cursor: col-resize;
 }
 
 /* Legend */
