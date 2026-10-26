@@ -181,6 +181,7 @@ export function TimelineChart({ model, anchors, finishTicks, shown, onPreview, o
     }
     e.preventDefault();
     if (next) {
+      onPreview(null);
       onSelect(next);
       reveal(next);
     }
