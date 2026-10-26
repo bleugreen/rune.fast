@@ -1,0 +1,138 @@
+.root {
+  width: 100%;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+  font-family: var(--font-sans);
+}
+
+/* Axes */
+.baseline {
+  stroke: var(--rule);
+  stroke-width: var(--stroke-thin);
+}
+.grid {
+  stroke: var(--hairline);
+  stroke-width: var(--stroke-thin);
+}
+.tick {
+  font-size: 10px;
+  fill: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.day {
+  font-size: 10.5px;
+  font-weight: 500;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.value {
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.note {
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--accent);
+}
+
+/* Role stacks: the managers carry the accent */
+.coord {
+  fill: var(--accent);
+}
+.work {
+  fill: var(--ink);
+}
+.thread {
+  fill: var(--ink-faint);
+}
+.other {
+  fill: var(--paper-shade);
+  stroke: var(--rule);
+  stroke-width: var(--stroke-hair);
+}
+
+/* Concurrency */
+.line {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.attempt {
+  fill: var(--ink);
+  opacity: 0.07;
+}
+.attemptLabel {
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.peakDot {
+  fill: var(--accent);
+}
+.peakValue {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.peakWhen {
+  font-size: 10.5px;
+  fill: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Spawns and merges */
+path.spawns,
+path.merges {
+  fill: none;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+path.spawns {
+  stroke: var(--ink);
+}
+path.merges {
+  stroke: var(--ink-muted);
+  stroke-dasharray: 3 2;
+}
+circle.spawns {
+  fill: var(--ink);
+}
+circle.merges {
+  fill: var(--paper);
+  stroke: var(--ink-muted);
+  stroke-width: 1;
+}
+.seriesLabel {
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.legendItem svg {
+  display: block;
+}
