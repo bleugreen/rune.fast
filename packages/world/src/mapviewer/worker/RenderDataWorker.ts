@@ -1,8 +1,3 @@
-import { transferableBuffers } from "./TransferBuffers";
-import { TransferDescriptor } from "threads";
-import { registerSerializer } from "threads";
-import { Transfer, expose } from "threads/worker";
-
 import { CacheSystem } from "../../rs/cache/CacheSystem";
 import {
     CacheLoaderFactory,
@@ -19,21 +14,16 @@ import { ObjModelLoader } from "../../rs/config/objtype/ObjModelLoader";
 import { ObjTypeLoader } from "../../rs/config/objtype/ObjTypeLoader";
 import { SeqTypeLoader } from "../../rs/config/seqtype/SeqTypeLoader";
 import { VarManager } from "../../rs/config/vartype/VarManager";
-import { getMapSquareId } from "../../rs/map/MapFileIndex";
-import { MapImageRenderer } from "../../rs/map/MapImageRenderer";
 import { SeqFrameLoader } from "../../rs/model/seq/SeqFrameLoader";
 import { SkeletalSeqLoader } from "../../rs/model/skeletal/SkeletalSeqLoader";
-import { Scene } from "../../rs/scene/Scene";
-import { LocLoadType, SceneBuilder } from "../../rs/scene/SceneBuilder";
+import { SceneBuilder } from "../../rs/scene/SceneBuilder";
 import { TextureLoader } from "../../rs/texture/TextureLoader";
 import { Hasher } from "../../util/Hasher";
 import { EntityAnimData, EntityAnimRequest, EntityModelLoader } from "../../live/EntityModelLoader";
 import { LoadedCache } from "../Caches";
-import { NpcSpawn } from "../data/npc/NpcSpawn";
-import { MinimapData, loadMinimapBlob } from "./MinimapData";
-import { RenderDataLoader, renderDataLoaderSerializer } from "./RenderDataLoader";
-
-registerSerializer(renderDataLoaderSerializer);
+import { RenderDataLoaderName, getRenderDataLoader } from "./RenderDataLoader";
+import { transferableBuffers } from "./TransferBuffers";
+import { RpcRequest, RpcResponse, Transfer } from "./WorkerRpc";
 
 const compressionPromise = Promise.all([Bzip2.initWasm(), Gzip.initWasm()]);
 const hasherPromise = Hasher.init();
@@ -62,11 +52,6 @@ export type WorkerState = {
 
     varManager: VarManager;
 
-    mapImageRenderer: MapImageRenderer;
-    mapImageCache: Cache;
-
-    npcSpawns: NpcSpawn[];
-
     // Live entities (players, npcs, spotanims); undefined for caches the live layer can't build.
     entityModelLoader: EntityModelLoader | undefined;
     textureIdIndexMap: Map<number, number>;
@@ -74,7 +59,7 @@ export type WorkerState = {
 
 let workerStatePromise: Promise<WorkerState> | undefined;
 
-async function initWorker(cache: LoadedCache, npcSpawns: NpcSpawn[]): Promise<WorkerState> {
+async function initWorker(cache: LoadedCache): Promise<WorkerState> {
     await compressionPromise;
     await hasherPromise;
 
@@ -138,15 +123,6 @@ async function initWorker(cache: LoadedCache, npcSpawns: NpcSpawn[]): Promise<Wo
         cache.xteas,
     );
 
-    const mapImageRenderer = new MapImageRenderer(
-        textureLoader,
-        locTypeLoader,
-        loaderFactory.getMapScenes(),
-        loaderFactory.getMapFunctions(),
-    );
-
-    const mapImageCache = await caches.open("map-images");
-
     let entityModelLoader: EntityModelLoader | undefined;
     if (loaderFactory.getIdkTypeLoader && loaderFactory.getSpotAnimTypeLoader) {
         entityModelLoader = new EntityModelLoader(
@@ -203,10 +179,6 @@ async function initWorker(cache: LoadedCache, npcSpawns: NpcSpawn[]): Promise<Wo
 
         varManager,
 
-        mapImageRenderer,
-        mapImageCache,
-
-        npcSpawns,
         entityModelLoader,
         textureIdIndexMap,
     };
@@ -220,42 +192,40 @@ function clearCache(workerState: WorkerState): void {
     workerState.skeletalSeqLoader?.clearCache();
 }
 
-const worker = {
-    initCache(cache: LoadedCache, npcSpawns: NpcSpawn[]) {
-        console.log("init worker", cache.info);
-        workerStatePromise = initWorker(cache, npcSpawns);
-    },
-    initDataLoader<I, D>(dataLoader: RenderDataLoader<I, D>) {
-        dataLoader.init();
-    },
-    resetDataLoader<I, D>(dataLoader: RenderDataLoader<I, D>) {
-        dataLoader.reset();
-    },
-    async load<I, D>(
-        dataLoader: RenderDataLoader<I, D>,
-        input: I,
-    ): Promise<TransferDescriptor<D> | undefined> {
-        const workerState = await workerStatePromise;
-        if (!workerState) {
-            throw new Error("Worker not initialized");
-        }
+async function getWorkerState(): Promise<WorkerState> {
+    const workerState = await workerStatePromise;
+    if (!workerState) {
+        throw new Error("Worker not initialized");
+    }
+    return workerState;
+}
 
-        const { data, transferables } = await dataLoader.load(workerState, input);
+const api = {
+    initCache(cache: LoadedCache): void {
+        console.log("init worker", cache.info);
+        workerStatePromise = initWorker(cache);
+    },
+    initDataLoader(name: RenderDataLoaderName): void {
+        getRenderDataLoader(name).init();
+    },
+    resetDataLoader(name: RenderDataLoaderName): void {
+        getRenderDataLoader(name).reset();
+    },
+    async load(name: RenderDataLoaderName, input: unknown): Promise<Transfer<unknown> | undefined> {
+        const workerState = await getWorkerState();
+        const { data, transferables } = await getRenderDataLoader(name).load(workerState, input);
 
         clearCache(workerState);
 
         if (!data) {
             return undefined;
         }
-        return Transfer<D>(data, transferables);
+        return new Transfer(data, transferables);
     },
     async loadEntityAnim(
         request: EntityAnimRequest,
-    ): Promise<TransferDescriptor<EntityAnimData> | undefined> {
-        const workerState = await workerStatePromise;
-        if (!workerState) {
-            throw new Error("Worker not initialized");
-        }
+    ): Promise<Transfer<EntityAnimData> | undefined> {
+        const workerState = await getWorkerState();
         const loader = workerState.entityModelLoader;
         if (!loader) {
             return undefined;
@@ -265,113 +235,37 @@ const worker = {
         if (loader.bodyCache.size > 512) {
             loader.clearCache();
         }
-        return Transfer(data, transferableBuffers([data.vertices.buffer, data.indices.buffer]));
-    },
-    async loadTexture(
-        id: number,
-        size: number,
-        flipH: boolean,
-        brightness: number,
-    ): Promise<TransferDescriptor<Int32Array>> {
-        const workerState = await workerStatePromise;
-        if (!workerState) {
-            throw new Error("Worker not initialized");
-        }
-
-        const pixels = workerState.textureLoader.getPixelsArgb(id, size, flipH, brightness);
-
-        return Transfer(pixels, transferableBuffers([pixels.buffer]));
-    },
-    async loadMapImage(
-        mapX: number,
-        mapY: number,
-        level: number,
-        drawMapFunctions: boolean,
-    ): Promise<MinimapData | undefined> {
-        const workerState = await workerStatePromise;
-        if (!workerState) {
-            throw new Error("Worker not initialized");
-        }
-
-        const borderSize = 6;
-
-        const baseX = mapX * Scene.MAP_SQUARE_SIZE - borderSize;
-        const baseY = mapY * Scene.MAP_SQUARE_SIZE - borderSize;
-        const mapSize = Scene.MAP_SQUARE_SIZE + borderSize * 2;
-
-        const scene = workerState.sceneBuilder.buildScene(
-            baseX,
-            baseY,
-            mapSize,
-            mapSize,
-            false,
-            LocLoadType.NO_MODELS,
-        );
-
-        const minimapBlob = await loadMinimapBlob(
-            workerState.mapImageRenderer,
-            scene,
-            level,
-            borderSize,
-            drawMapFunctions,
-        );
-
-        return {
-            mapX,
-            mapY,
-            level,
-            cacheInfo: workerState.cache.info,
-            minimapBlob,
-        };
+        return new Transfer(data, [data.vertices.buffer, data.indices.buffer]);
     },
     async setVars(values: Int32Array): Promise<void> {
-        const workerState = await workerStatePromise;
-        if (!workerState) {
-            throw new Error("Worker not initialized");
-        }
+        const workerState = await getWorkerState();
         workerState.varManager.set(values);
-    },
-    async loadCachedMapImages(): Promise<Map<number, string>> {
-        const workerState = await workerStatePromise;
-        if (!workerState) {
-            throw new Error("Worker not initialized");
-        }
-        const keys = await workerState.mapImageCache.keys();
-        const mapImageUrls = new Map<number, string>();
-        const promises: Promise<void>[] = [];
-        for (const key of keys) {
-            if (key.headers.get("RS-Cache-Name") !== workerState.cache.info.name) {
-                continue;
-            }
-            promises.push(initCachedMapImage(workerState.mapImageCache, mapImageUrls, key));
-        }
-        await Promise.all(promises);
-        return mapImageUrls;
     },
 };
 
-async function initCachedMapImage(
-    mapImageCache: Cache,
-    mapImageUrls: Map<number, string>,
-    key: Request,
-): Promise<void> {
-    const resp = await mapImageCache.match(key);
-    if (!resp) {
-        return;
+export type RenderDataWorkerApi = typeof api;
+
+// The worker global, typed by hand: the package compiles against the DOM lib only.
+const scope = self as unknown as {
+    onmessage: ((e: MessageEvent<RpcRequest>) => void) | null;
+    postMessage(message: RpcResponse, transfer?: Transferable[]): void;
+};
+
+scope.onmessage = async (e) => {
+    const { id, method, args } = e.data;
+    try {
+        const fn = api[method as keyof RenderDataWorkerApi] as (...a: unknown[]) => unknown;
+        if (typeof fn !== "function") throw new Error("Unknown worker method: " + method);
+        const result = await fn(...args);
+        if (result instanceof Transfer) {
+            scope.postMessage(
+                { id, ok: true, value: result.value },
+                transferableBuffers(result.transferables as ArrayBufferLike[]),
+            );
+        } else {
+            scope.postMessage({ id, ok: true, value: result });
+        }
+    } catch (error) {
+        scope.postMessage({ id, ok: false, error: error instanceof Error ? error.message : String(error) });
     }
-    const fileName = key.url.slice(key.url.lastIndexOf("/") + 1);
-    const split = fileName.replace(".png", "").split("_");
-    if (split.length !== 2) {
-        return;
-    }
-    const mapX = parseInt(split[0]);
-    const mapY = parseInt(split[1]);
-
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    mapImageUrls.set(getMapSquareId(mapX, mapY), url);
-}
-
-export type RenderDataWorker = typeof worker;
-
-expose(worker);
+};
