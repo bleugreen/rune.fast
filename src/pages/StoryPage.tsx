@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from '
 import { timeline } from '../data/timeline';
 import { buildChartModel, chartAnchors, recordFacts } from '../attempts/model';
 import { fmtInt } from '../lib/numbers';
+import { inlineTokens } from '../story/draft';
 import { story } from '../story/story';
 import { storySections } from '../story/sections';
 import { StoryFigure } from '../story/StoryFigure';
@@ -33,6 +34,19 @@ function mark(text: string, needles: readonly Needle[]): ReactNode[] {
     out.push(best.n.wrap(best.n.text, k));
     rest = rest.slice(best.at + best.n.text.length);
   }
+}
+
+/** A prose string with its `code` and *emphasis* set, and the needles marked in its plain runs. */
+function prose(text: string, needles: readonly Needle[] = []): ReactNode[] {
+  return inlineTokens(text).map((t, i) =>
+    t.kind === 'code' ? (
+      <code key={i}>{t.text}</code>
+    ) : t.kind === 'em' ? (
+      <em key={i}>{t.text}</em>
+    ) : (
+      <Fragment key={i}>{mark(t.text, needles)}</Fragment>
+    ),
+  );
 }
 
 export function StoryPage() {
@@ -99,8 +113,8 @@ export function StoryPage() {
       </div>
 
       <header ref={headRef} className={styles.head}>
-        <h1 className={styles.title}>{story.title}</h1>
-        <p className={styles.byline}>{story.byline}</p>
+        <h1 className={styles.title}>{prose(story.title)}</h1>
+        <p className={styles.byline}>{prose(story.byline)}</p>
       </header>
 
       {sections.map((s) => {
@@ -125,7 +139,7 @@ export function StoryPage() {
           >
             <header className={styles.sectionHead}>
               <span className={styles.sectionNum}>{s.number}</span>
-              <h2 className={styles.sectionTitle}>{mark(s.title, accents)}</h2>
+              <h2 className={styles.sectionTitle}>{prose(s.title, accents)}</h2>
               <time className={styles.sectionDate}>{s.dates}</time>
             </header>
 
@@ -134,11 +148,11 @@ export function StoryPage() {
               return (
                 <Fragment key={j}>
                   {b.kind === 'p' ? (
-                    <p className={styles.prose}>{mark(b.text, links)}</p>
+                    <p className={styles.prose}>{prose(b.text, links)}</p>
                   ) : (
                     <blockquote className={styles.quotation}>
                       {b.paragraphs.map((p, k) => (
-                        <p key={k}>{p}</p>
+                        <p key={k}>{prose(p, links)}</p>
                       ))}
                     </blockquote>
                   )}
@@ -169,7 +183,8 @@ export function StoryPage() {
               <summary>Sources</summary>
               <div className={styles.sourceText}>
                 {s.sources.map((line, k) => (
-                  <p key={k}>{line.replaceAll('; ', ';\n')}</p>
+                  // A one-line receipt breaks at its semicolons; a source table keeps its own lines.
+                  <p key={k}>{line.includes('\n') ? line : line.replaceAll('; ', ';\n')}</p>
                 ))}
               </div>
             </details>

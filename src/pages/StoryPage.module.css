@@ -96,15 +96,17 @@
   text-wrap: pretty;
 }
 
-/* A message the prose quotes whole, set as the message it was. */
+/* A message the prose quotes whole: the serif, indented, a hairline on the left. */
 .quotation {
-  margin: var(--space-1) 0 var(--space-5);
+  margin: var(--space-1) 0 var(--space-5) var(--space-4);
   padding-left: var(--space-4);
   border-left: var(--stroke-rule) solid var(--hairline);
-  font-family: var(--font-sans);
-  font-size: var(--text-small);
-  line-height: 1.6;
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.55;
   text-wrap: pretty;
+  /* Some messages arrive with their spaces stripped; let them wrap anywhere. */
+  overflow-wrap: anywhere;
 }
 .quotation p + p {
   margin-top: var(--space-3);

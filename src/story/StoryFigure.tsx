@@ -30,7 +30,13 @@ export function StoryFigure({ figure, model, anchors, record, className }: Props
         </figure>
       );
     case 'clip':
-      return <figure className={cls(styles.slot, className)} aria-hidden="true" />;
+      return (
+        <figure className={cls(styles.slot, className)}>
+          <Link to="/tricks" className={styles.slotLink}>
+            The tricks, measured →
+          </Link>
+        </figure>
+      );
     case 'cost':
       return (
         <figure className={cls(styles.slot, className)}>
