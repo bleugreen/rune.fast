@@ -1,4 +1,4 @@
-import type { Billing, CostInputs, HourlyRow, RoleName, StatusGroup } from '../data/costTypes';
+import type { Billing, CostInputs, HourlyRow, Plan, RoleName, StatusGroup } from '../data/costTypes';
 import type { Timeline } from '../data/types';
 import { isScored } from '../attempts/model';
 import { pacificDayKey, parseUtc, SECOND } from '../lib/time';
@@ -115,7 +115,9 @@ export interface StatusSegment {
 }
 
 export interface SwarmDay {
+  /** Pacific calendar day, 'YYYY-MM-DD'. */
   key: string;
+  /** Noon of the day, Pacific, for formatting it. */
   t: number;
   spawns: number;
   merges: number;
@@ -125,7 +127,7 @@ export interface SwarmDay {
 export interface CostModel {
   total: number;
   window: { from: number; to: number; days: number };
-  subscription: { monthly: number; plans: { name: string; count: number }[]; prorated: number; ratio: number };
+  subscription: { monthly: number; plans: Plan[]; prorated: number; ratio: number };
   days: DayCost[];
   peakDay: DayCost;
   managerDays: DayCost[];
@@ -134,7 +136,15 @@ export interface CostModel {
   /** Largest first; share is of the whole list value. */
   models: { key: string; name: string; usd: number; share: number }[];
   status: { segments: StatusSegment[]; unattributed: number; median: number };
-  concurrency: { points: { t: number; v: number }[]; from: number; to: number; peak: { t: number; v: number } };
+  /** Agents producing output per bucket, the busiest bucket, and the busiest on the costliest day. */
+  activity: {
+    points: { t: number; v: number }[];
+    from: number;
+    to: number;
+    step: number;
+    peak: { t: number; v: number };
+    peakOnCostliest: { t: number; v: number };
+  };
   attempts: { n: number; from: number; to: number }[];
   swarm: {
     days: SwarmDay[];
@@ -158,12 +168,13 @@ export interface CostModel {
 }
 
 export function buildCostModel(inputs: CostInputs, timeline: Timeline): CostModel {
-  const { cost, summary, billing, events } = inputs;
+  const { cost, summary, billing, events, activity } = inputs;
 
   const from = cost.t0 * SECOND;
   const to = summary.cut * SECOND;
   const windowDays = (to - from) / DAY;
-  const monthly = billing.subscriptions.monthly_usd;
+  const plans = billing.subscriptions.plans;
+  const monthly = plans.reduce((s, p) => s + p.count * p.monthly_usd, 0);
   const prorated = (monthly * (to - from)) / MONTH;
 
   const days = costDays(inputs);
@@ -175,8 +186,13 @@ export function buildCostModel(inputs: CostInputs, timeline: Timeline): CostMode
     ([, v]) => v,
   );
 
-  const conc = cost.conc.map((v, i) => ({ t: (cost.t0 + i * cost.step) * SECOND, v }));
-  const peak = argmax(conc, (p) => p.v);
+  const step = activity.step * SECOND;
+  const active = activity.runs_generating.map((v, i) => ({ t: activity.t0 * SECOND + i * step, v }));
+  const peak = argmax(active, (p) => p.v);
+  const peakOnCostliest = argmax(
+    active.filter((p) => pacificDayKey(p.t) === peakDay.key),
+    (p) => p.v,
+  );
 
   const groups = (['merged', 'closed', 'standing', 'threads'] as const).map((key) => ({
     key,
@@ -184,7 +200,8 @@ export function buildCostModel(inputs: CostInputs, timeline: Timeline): CostMode
     count: key === 'threads' ? events.threads : cost.cnt[key],
   }));
 
-  const swarmDays = events.days.map((d) => ({ key: d.utc_day, t: parseUtc(`${d.utc_day}T12:00Z`), spawns: d.spawns, merges: d.merges, messages: d.messages }));
+  // 19:00Z is noon PDT, inside the Pacific day for either offset.
+  const swarmDays = events.days.map((d) => ({ key: d.pacific_day, t: parseUtc(`${d.pacific_day}T19:00Z`), spawns: d.spawns, merges: d.merges, messages: d.messages }));
   const growthEnd = argmax(swarmDays.slice(1), (d) => {
     const i = swarmDays.indexOf(d);
     return d.spawns + swarmDays[i - 1]!.spawns;
@@ -195,7 +212,7 @@ export function buildCostModel(inputs: CostInputs, timeline: Timeline): CostMode
   return {
     total: cost.total,
     window: { from, to, days: windowDays },
-    subscription: { monthly, plans: billing.subscriptions.plans, prorated, ratio: cost.total / prorated },
+    subscription: { monthly, plans, prorated, ratio: cost.total / prorated },
     days,
     peakDay,
     managerDays: days.filter(managersLed),
@@ -207,7 +224,7 @@ export function buildCostModel(inputs: CostInputs, timeline: Timeline): CostMode
       unattributed: cost.total - groups.reduce((s, g) => s + g.usd, 0),
       median: cost.median,
     },
-    concurrency: { points: conc, from, to: conc.at(-1)!.t + cost.step * SECOND, peak },
+    activity: { points: active, from: active[0]!.t, to: active.at(-1)!.t + step, step, peak, peakOnCostliest },
     attempts: timeline.attempts
       .filter(isScored)
       .map((a) => ({ from: parseUtc(a.start.utc), to: parseUtc(a.end.utc) }))
