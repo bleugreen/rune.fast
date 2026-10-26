@@ -29,8 +29,8 @@ const utcHm = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', hour: '2-digit
 const pacHm = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const pacZone = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, timeZoneName: 'short' });
 
-const utcWeekdayDay = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric' });
-const utcDayMonth = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'long' });
+const pacDayMonth = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'long' });
+const pacDayMon = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'short' });
 const pacDayKey = new Intl.DateTimeFormat('en-CA', { timeZone: PACIFIC, year: 'numeric', month: '2-digit', day: '2-digit' });
 const pacWeekdayDay = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric' });
 const pacDayLong = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long', day: 'numeric', month: 'long' });
@@ -39,10 +39,10 @@ const pacDayShort = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekda
 const pacDayMonthYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'long', year: 'numeric' });
 
 export const fmtUtcDayShort = (t: number) => utcDayShort.format(t);
-/** 'Thu 22' */
-export const fmtUtcWeekdayDay = (t: number) => utcWeekdayDay.format(t);
-/** '22 October' */
-export const fmtUtcDayMonth = (t: number) => utcDayMonth.format(t);
+/** '22 October', Pacific */
+export const fmtPacificDayMonth = (t: number) => pacDayMonth.format(t);
+/** '22 Oct', Pacific */
+export const fmtPacificDayMon = (t: number) => pacDayMon.format(t);
 /** The Pacific calendar day of t, 'YYYY-MM-DD'. */
 export const pacificDayKey = (t: number) => pacDayKey.format(t);
 /** 'Thu 22', Pacific */
