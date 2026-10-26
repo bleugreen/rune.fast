@@ -44,7 +44,7 @@ const STEPS: StepSpec[] = [
   {
     step: 'T27-17 run to the ridge gate + ridge + run to the pipe',
     id: 'T27-17',
-    plain: 'Pick up the cannon, run north to the ridge gate, cross the ridge and run to the pipe at the Agility course.',
+    plain: 'Run north to the ridge gate, cross the ridge and run to the pipe at the start of the Agility course.',
     code: { module: 'speedrun/runner/legs.ts', symbol: "leg('T27-17')", find: /^    leg\('T27-17'/ },
   },
   {
