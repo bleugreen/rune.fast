@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import type { ChartAnchors, ChartModel, RecordFacts } from '../attempts/model';
 import { Legend, TimelineChart } from '../attempts/TimelineChart';
-import { TicksLadder } from '../attempts/TicksLadder';
-import { fmtUtcDateRange, parseUtc } from '../lib/time';
+import { fmtUtcDate, fmtUtcDateRange, parseUtc } from '../lib/time';
+import { TicksLadder } from './TicksLadder';
 import type { StoryFigure as Figure } from './sections';
 import styles from './StoryFigure.module.css';
 
@@ -25,7 +25,7 @@ export function StoryFigure({ figure, model, anchors, record, className }: Props
         <figure className={cls(styles.figure, className)}>
           <TicksLadder
             record={{ label: `Previous record, ${PREVIOUS_HOLDER}`, ticks: record.previous }}
-            finish={{ label: model.last.shortName, ticks: record.final }}
+            run={{ label: 'This run', ticks: record.final }}
           />
         </figure>
       );
@@ -41,10 +41,11 @@ export function StoryFigure({ figure, model, anchors, record, className }: Props
       );
     case 'timeline': {
       const crop = [parseUtc(figure.crop[0]), parseUtc(figure.crop[1])] as const;
+      const sameDay = figure.crop[0].slice(0, 10) === figure.crop[1].slice(0, 10);
       return (
         <figure className={cls(styles.figure, className)}>
           <figcaption className={styles.caption}>
-            <span className={styles.chartTitle}>Logged-in time, {fmtUtcDateRange(...crop)}</span>
+            <span className={styles.chartTitle}>Logged-in time, {sameDay ? fmtUtcDate(crop[0]) : fmtUtcDateRange(...crop)}</span>
             <Legend />
           </figcaption>
           <TimelineChart model={model} anchors={anchors} finishTicks={record.final} crop={crop} />

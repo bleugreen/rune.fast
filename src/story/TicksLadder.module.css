@@ -1,0 +1,47 @@
+.ladder {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  font-size: var(--label-lg);
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--ink);
+}
+
+.label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1);
+}
+.track + .label {
+  margin-top: var(--space-4);
+}
+
+.num {
+  font-weight: 600;
+}
+
+.track {
+  position: relative;
+  height: 1.5px;
+}
+.bar,
+.difference {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--ink);
+}
+.difference {
+  min-width: 2px;
+  background: var(--accent);
+}
+
+.differenceLabel {
+  align-self: flex-end;
+  margin-top: var(--space-1);
+  font-weight: 600;
+  color: var(--accent);
+}
