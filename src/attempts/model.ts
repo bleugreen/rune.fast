@@ -1,6 +1,7 @@
 import type { Attempt, EventType, Timeline, TimelineEvent } from '../data/types';
 import { HOUR, parseUtc } from '../lib/time';
 import { fmtInt, parseGrouped } from '../lib/numbers';
+import { PULLED } from './pulled';
 
 /* ------------------------------------------------------------------------- */
 /* References into the timeline                                              */
@@ -237,6 +238,60 @@ export function findMark(model: ChartModel, attemptId: string, utc: string): Mar
   const m = model.byId.get(attemptId)?.marks.find((x) => x.event.utc === utc && x.t === parseUtc(utc));
   if (!m) throw new Error(`${attemptId} has no event at ${utc}`);
   return m;
+}
+
+/* ------------------------------------------------------------------------- */
+/* What the chart draws, and what each drawn mark carries                    */
+/* ------------------------------------------------------------------------- */
+
+export interface AnchorGroup {
+  /** Undrawn events before the attempt's first drawn mark (only on that mark). */
+  before: Mark[];
+  /** Undrawn events after this mark, up to the attempt's next drawn mark. */
+  after: Mark[];
+}
+
+/**
+ * The chart draws a few marks (anchors): stops while the account was in the
+ * world, deaths, the pulled operator quotes, and the official result. Every other
+ * event rides with the anchor it follows, so the reading pane can show it in context.
+ */
+export interface ChartAnchors {
+  /** All anchors in time order, across attempts. */
+  list: Mark[];
+  keys: Set<string>;
+  quotes: Mark[];
+  quoteNumber: Map<string, number>;
+  finish: Mark | null;
+  groups: Map<string, AnchorGroup>;
+}
+
+export function chartAnchors(model: ChartModel): ChartAnchors {
+  const quotes = PULLED.map((q) => findMark(model, q.attempt, q.utc));
+  const quoteNumber = new Map(quotes.map((m, i) => [m.key, i + 1]));
+  const finish = [...model.last.marks].reverse().find((m) => m.kind === 'result') ?? null;
+  const isAnchor = (m: Mark) =>
+    m.kind === 'death' || (m.kind === 'stop' && m.inWorld !== false) || quoteNumber.has(m.key) || m.key === finish?.key;
+
+  const list: Mark[] = [];
+  const groups = new Map<string, AnchorGroup>();
+  for (const am of model.byId.values()) {
+    // A stop recorded inside another event shares that event; show it once, as the anchor.
+    const anchored = new Set(am.marks.filter(isAnchor).map((m) => m.event));
+    const lead: Mark[] = [];
+    let open: AnchorGroup | null = null;
+    for (const m of am.marks) {
+      if (isAnchor(m)) {
+        open = { before: open ? [] : lead.splice(0), after: [] };
+        groups.set(m.key, open);
+        list.push(m);
+      } else if (!anchored.has(m.event)) {
+        (open ? open.after : lead).push(m);
+      }
+    }
+  }
+  list.sort((a, b) => a.t - b.t);
+  return { list, keys: new Set(list.map((m) => m.key)), quotes, quoteNumber, finish, groups };
 }
 
 /* ------------------------------------------------------------------------- */

@@ -7,6 +7,7 @@ import {
   LOGINS,
   ROWS,
   buildChartModel,
+  chartAnchors,
   findMark,
   headlineFacts,
   isScored,
@@ -110,6 +111,22 @@ describe('the record', () => {
     const entries = model.scored.map((am) => ladderEntry(am.attempt));
     expect(entries.map((e) => e?.label)).toEqual(['~1,127–1,130', '~1,727', '2,290', '14,097', '35,787']);
     expect(entries[3]?.tail?.ticks).toBe(604);
+  });
+});
+
+describe('chart anchors', () => {
+  const anchors = chartAnchors(model);
+  test('every event reaches the page exactly once, as an anchor or in an anchor’s group', () => {
+    const shown = [
+      ...anchors.list.map((m) => m.event),
+      ...[...anchors.groups.values()].flatMap((g) => [...g.before, ...g.after].map((m) => m.event)),
+    ];
+    const all = timeline.attempts.flatMap((a) => a.events);
+    expect(shown.length).toBe(all.length);
+    expect(new Set(shown).size).toBe(all.length);
+  });
+  test('the finish is the official result', () => {
+    expect(anchors.finish?.event.title).toContain('official #1');
   });
 });
 
