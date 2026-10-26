@@ -16,6 +16,12 @@ import {
     getPostanimMove,
     getPreanimMove,
 } from "./LiveEntity";
+import {
+    LiveWorldSnapshot,
+    copyAppearance,
+    restoreEntity,
+    snapshotEntity,
+} from "./LiveWorldSnapshot";
 import { decodePlayerAppearance } from "./PlayerAppearance";
 import { FeedEntity, FeedRoster, FeedTick, RosterPlayer } from "./protocol";
 
@@ -64,6 +70,56 @@ export class LiveWorld {
         this.loopCycle = 0;
         this.setCadence(tickMs);
         this.far.clear(tickMs);
+    }
+
+    snapshot(): LiveWorldSnapshot {
+        return {
+            v: 1,
+            loopCycle: this.loopCycle,
+            tick: this.tick,
+            tickMs: this.tickMs,
+            ticksReceived: this.ticksReceived,
+            rosterTick: this.rosterTick,
+            rosterNpcCount: this.rosterNpcCount,
+            rosterPlayers: this.rosterPlayers.map((p) => [...p]),
+            far: this.far.snapshot(),
+            players: [...this.players.values()].map((p) => ({
+                ...snapshotEntity(p),
+                ...(p.appearance ? { appearance: copyAppearance(p.appearance) } : {}),
+            })),
+            npcs: [...this.npcs.values()].map((n) => ({
+                ...snapshotEntity(n),
+                npcTypeId: n.npcType.id,
+            })),
+        };
+    }
+
+    // Replaces the simulation state in place: the renderer holds this instance, so it must not be
+    // swapped. Entities are rebuilt in snapshot order, each from its appearance or type first
+    // (which set derived fields such as turnspeed) and then its mutable fields.
+    restore(s: LiveWorldSnapshot): void {
+        this.setCadence(s.tickMs);
+        this.players = new Map();
+        for (const p of s.players) {
+            const player = new LivePlayer(p.id);
+            if (p.appearance) player.setAppearance(copyAppearance(p.appearance));
+            restoreEntity(player, p);
+            this.players.set(p.id, player);
+        }
+        this.npcs = new Map();
+        for (const n of s.npcs) {
+            const npc = new LiveNpc(n.id);
+            npc.setType(this.npcTypeLoader.load(n.npcTypeId));
+            restoreEntity(npc, n);
+            this.npcs.set(n.id, npc);
+        }
+        this.loopCycle = s.loopCycle;
+        this.tick = s.tick;
+        this.ticksReceived = s.ticksReceived;
+        this.rosterTick = s.rosterTick;
+        this.rosterNpcCount = s.rosterNpcCount;
+        this.rosterPlayers = s.rosterPlayers.map((p) => [...p] as RosterPlayer);
+        this.far.restore(s.far);
     }
 
     setCadence(tickMs: number): void {
