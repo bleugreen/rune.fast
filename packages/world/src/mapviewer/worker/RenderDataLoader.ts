@@ -1,7 +1,5 @@
-import { SerializerImplementation } from "threads";
-
 import { SdMapDataLoader } from "../webgl/loader/SdMapDataLoader";
-import { WorkerState } from "./RenderDataWorker";
+import type { WorkerState } from "./RenderDataWorker";
 
 export type RenderDataResult<T> = {
     data: T;
@@ -9,8 +7,8 @@ export type RenderDataResult<T> = {
 };
 
 export interface RenderDataLoader<I, D> {
-    // Used by serializer
-    __type: keyof RenderDataLoaders;
+    // The loader's name in the worker's own table; loaders cross the worker boundary by name.
+    __type: RenderDataLoaderName;
 
     init(): void;
 
@@ -23,27 +21,10 @@ const loaders = {
     sdMapDataLoader: new SdMapDataLoader(),
 };
 
-type RenderDataLoaders = typeof loaders;
+export type RenderDataLoaderName = keyof typeof loaders;
 
-const loaderSerializerNamePrefix = "$RenderDataLoader$";
-
-export const renderDataLoaderSerializer: SerializerImplementation = {
-    serialize(value, defaultHandler) {
-        if (value && value.__type) {
-            return loaderSerializerNamePrefix + value.__type;
-        } else {
-            return defaultHandler(value);
-        }
-    },
-    deserialize(value, defaultHandler) {
-        if (value && typeof value === "string" && value.startsWith(loaderSerializerNamePrefix)) {
-            const type = value.substring(loaderSerializerNamePrefix.length);
-            if (type in loaders) {
-                return loaders[type as keyof RenderDataLoaders];
-            }
-            throw new Error("Unknown loader type: " + type);
-        } else {
-            return defaultHandler(value);
-        }
-    },
-};
+export function getRenderDataLoader(name: RenderDataLoaderName): RenderDataLoader<any, any> {
+    const loader = loaders[name];
+    if (!loader) throw new Error("Unknown render data loader: " + name);
+    return loader;
+}

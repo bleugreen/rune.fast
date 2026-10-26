@@ -1,97 +1,147 @@
-import { ModuleThread, Pool, spawn } from "threads";
-import { QueuedTask } from "threads/dist/master/pool";
-import { WorkerDescriptor } from "threads/dist/master/pool-types";
-import { ObservablePromise } from "threads/dist/observable-promise";
-
 import { EntityAnimData, EntityAnimRequest } from "../../live/EntityModelLoader";
 import { LoadedCache } from "../Caches";
-import { NpcSpawn } from "../data/npc/NpcSpawn";
-import { MinimapData } from "./MinimapData";
 import { RenderDataLoader } from "./RenderDataLoader";
-import { RenderDataWorker } from "./RenderDataWorker";
+import type { RenderDataWorkerApi } from "./RenderDataWorker";
+import { Received, RpcRequest, RpcResponse } from "./WorkerRpc";
 
-type RenderDataWorkerThread = ModuleThread<RenderDataWorker>;
+type Method = keyof RenderDataWorkerApi;
+type Args<M extends Method> = Parameters<RenderDataWorkerApi[M]>;
+type Result<M extends Method> = Received<Awaited<ReturnType<RenderDataWorkerApi[M]>>>;
 
-function spawnWorker(): Promise<RenderDataWorkerThread> {
-    const worker = new Worker(new URL("./RenderDataWorker", import.meta.url));
-    return spawn<RenderDataWorker>(worker);
-}
+type Pending = { resolve: (value: unknown) => void; reject: (error: Error) => void };
 
-export class RenderDataWorkerPool {
-    static create(size: number): RenderDataWorkerPool {
-        const pool = Pool(() => spawnWorker(), size);
-        const workers = pool["workers"] as WorkerDescriptor<RenderDataWorkerThread>[];
-        return new RenderDataWorkerPool(pool, workers, size);
+// One module worker and its in-flight calls.
+class WorkerHandle {
+    private readonly worker: Worker;
+    private readonly pending = new Map<number, Pending>();
+    private nextId = 0;
+    // Running a task from the pool queue; broadcasts do not count.
+    busy = false;
+
+    constructor() {
+        this.worker = new Worker(new URL("./RenderDataWorker.ts", import.meta.url), {
+            type: "module",
+            name: "render-data",
+        });
+        this.worker.onmessage = (e: MessageEvent<RpcResponse>) => {
+            const response = e.data;
+            const pending = this.pending.get(response.id);
+            if (!pending) return;
+            this.pending.delete(response.id);
+            if (response.ok) pending.resolve(response.value);
+            else pending.reject(new Error(response.error));
+        };
+        this.worker.onerror = (e) => {
+            this.failAll(new Error("Render worker failed: " + (e.message || "script error")));
+        };
     }
 
-    constructor(
-        readonly pool: Pool<RenderDataWorkerThread>,
-        readonly workers: WorkerDescriptor<RenderDataWorkerThread>[],
-        readonly size: number,
-    ) {}
+    call<M extends Method>(method: M, ...args: Args<M>): Promise<Result<M>> {
+        const id = this.nextId++;
+        return new Promise<Result<M>>((resolve, reject) => {
+            this.pending.set(id, { resolve: resolve as (value: unknown) => void, reject });
+            const request: RpcRequest = { id, method, args };
+            this.worker.postMessage(request);
+        });
+    }
 
-    initCache(cache: LoadedCache, npcSpawns: NpcSpawn[]): void {
+    terminate(): void {
+        this.worker.terminate();
+        this.failAll(new Error("Render worker terminated"));
+    }
+
+    private failAll(error: Error): void {
+        for (const pending of this.pending.values()) pending.reject(error);
+        this.pending.clear();
+    }
+}
+
+type Task = {
+    run: (worker: WorkerHandle) => Promise<unknown>;
+    resolve: (value: unknown) => void;
+    reject: (error: unknown) => void;
+};
+
+// A fixed set of module workers sharing one FIFO queue: an idle worker takes the next task and
+// runs one queued task at a time. Broadcasts (cache init, loader init, vars) go to every worker
+// directly, outside the queue.
+export class RenderDataWorkerPool {
+    private readonly workers: WorkerHandle[];
+    private readonly queue: Task[] = [];
+    private terminated = false;
+
+    static create(size: number): RenderDataWorkerPool {
+        return new RenderDataWorkerPool(size);
+    }
+
+    private constructor(readonly size: number) {
+        this.workers = Array.from({ length: size }, () => new WorkerHandle());
+    }
+
+    initCache(cache: LoadedCache): void {
         for (const worker of this.workers) {
-            worker.init.then((w) => w.initCache(cache, npcSpawns));
+            worker.call("initCache", cache).catch((e) => console.error("Render worker init failed", e));
         }
     }
 
-    async runAll(task: (w: RenderDataWorkerThread) => any): Promise<void> {
-        await Promise.all(this.workers.map((desc) => desc.init.then(task)));
+    private async broadcast<M extends Method>(method: M, ...args: Args<M>): Promise<void> {
+        await Promise.all(this.workers.map((worker) => worker.call(method, ...args)));
     }
 
     initLoader(loader: RenderDataLoader<any, any>): Promise<void> {
-        return this.runAll((w) => w.initDataLoader(loader));
+        return this.broadcast("initDataLoader", loader.__type);
     }
 
     resetLoader(loader: RenderDataLoader<any, any>): Promise<void> {
-        return this.runAll((w) => w.resetDataLoader(loader));
-    }
-
-    queueLoad<I, D, Loader extends RenderDataLoader<I, D>>(
-        loader: Loader,
-        input: I,
-    ): QueuedTask<RenderDataWorkerThread, D> {
-        return this.pool.queue((w) => w.load(loader, input) as ObservablePromise<D>);
-    }
-
-    queueEntityAnim(
-        request: EntityAnimRequest,
-    ): QueuedTask<RenderDataWorkerThread, EntityAnimData | undefined> {
-        return this.pool.queue(
-            (w) => w.loadEntityAnim(request) as ObservablePromise<EntityAnimData | undefined>,
-        );
-    }
-
-    queueLoadTexture(
-        id: number,
-        size: number,
-        flipH: boolean,
-        brightness: number,
-    ): QueuedTask<RenderDataWorkerThread, Int32Array> {
-        return this.pool.queue(
-            (w) => w.loadTexture(id, size, flipH, brightness) as ObservablePromise<Int32Array>,
-        );
-    }
-
-    queueMapImage(
-        mapX: number,
-        mapY: number,
-        level: number,
-        drawMapFunctions: boolean,
-    ): QueuedTask<RenderDataWorkerThread, MinimapData | undefined> {
-        return this.pool.queue((w) => w.loadMapImage(mapX, mapY, level, drawMapFunctions));
+        return this.broadcast("resetDataLoader", loader.__type);
     }
 
     setVars(vars: Int32Array): Promise<void> {
-        return this.runAll((w) => w.setVars(vars));
+        return this.broadcast("setVars", vars);
     }
 
-    loadCachedMapImages(): QueuedTask<RenderDataWorkerThread, Map<number, string>> {
-        return this.pool.queue((w) => w.loadCachedMapImages());
+    queueLoad<I, D>(loader: RenderDataLoader<I, D>, input: I): Promise<D | undefined> {
+        return this.enqueue(
+            (w) => w.call("load", loader.__type, input) as Promise<D | undefined>,
+        );
+    }
+
+    queueEntityAnim(request: EntityAnimRequest): Promise<EntityAnimData | undefined> {
+        return this.enqueue((w) => w.call("loadEntityAnim", request));
+    }
+
+    // Map-square loads queued or running, for the replay's "ready" signal.
+    get pendingTasks(): number {
+        return this.queue.length + this.workers.filter((w) => w.busy).length;
     }
 
     terminate(): Promise<void> {
-        return this.pool.terminate();
+        this.terminated = true;
+        for (const worker of this.workers) worker.terminate();
+        for (const task of this.queue.splice(0)) task.reject(new Error("Render worker pool terminated"));
+        return Promise.resolve();
+    }
+
+    private enqueue<T>(run: (worker: WorkerHandle) => Promise<T>): Promise<T> {
+        if (this.terminated) return Promise.reject(new Error("Render worker pool terminated"));
+        return new Promise<T>((resolve, reject) => {
+            this.queue.push({ run, resolve: resolve as (value: unknown) => void, reject });
+            this.drain();
+        });
+    }
+
+    private drain(): void {
+        for (const worker of this.workers) {
+            if (worker.busy) continue;
+            const task = this.queue.shift();
+            if (!task) return;
+            worker.busy = true;
+            task.run(worker)
+                .then(task.resolve, task.reject)
+                .finally(() => {
+                    worker.busy = false;
+                    if (!this.terminated) this.drain();
+                });
+        }
     }
 }
