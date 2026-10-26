@@ -1,8 +1,16 @@
 import { useId, useMemo, useRef, type KeyboardEvent, type ReactElement } from 'react';
 import { scaleUtc } from 'd3-scale';
-import { utcDay, utcHour } from 'd3-time';
 import { useWidth } from '../lib/useWidth';
-import { HOUR, fmtDuration, fmtPacificHm, fmtUtcDayLong, fmtUtcDayShort, fmtUtcHm, pacificZone } from '../lib/time';
+import {
+  HOUR,
+  fmtDuration,
+  fmtPacificDayLong,
+  fmtPacificDayShort,
+  fmtPacificHm,
+  pacificHour,
+  pacificMidnights,
+  pacificZone,
+} from '../lib/time';
 import { fmtInt } from '../lib/numbers';
 import type { AttemptModel, ChartAnchors, ChartModel, Mark } from './model';
 import styles from './TimelineChart.module.css';
@@ -14,10 +22,17 @@ const CROPPED_MIN_WIDTH = 560;
 const MARGIN = { top: 26, right: 100, left: 92 };
 const ROW_PITCH = 38;
 const AXIS_GAP = 30;
-const AXIS_HEIGHT = 58;
+const AXIS_HEIGHT = 46;
 const ONE_OFF_W = 1.5;
 
 const axisStepHours = (span: number) => (span > 36 * HOUR ? 6 : span > 12 * HOUR ? 3 : 2);
+
+/** Axis ticks on the Pacific clock: every hour in [d0, d1] whose Pacific hour is a multiple of the step. */
+function pacificTicks(d0: number, d1: number, step: number): number[] {
+  const out: number[] = [];
+  for (let t = Math.ceil(d0 / HOUR) * HOUR; t <= d1; t += HOUR) if (pacificHour(t) % step === 0) out.push(t);
+  return out;
+}
 /** Pulled-quote ticks closer than this share one numeral label. */
 const QUOTE_LABEL_GAP = 12;
 
@@ -153,8 +168,8 @@ export function TimelineChart({ model, anchors, finishTicks, crop, interaction }
     return m;
   }, [rows]);
 
-  const ticks = scale.ticks(utcHour.every(axisStepHours(d1 - d0)) ?? utcHour).map((d) => +d);
-  const midnights = utcDay.range(new Date(d0), new Date(d1), 1).map((d) => +d).filter((t) => t > d0);
+  const ticks = pacificTicks(d0, d1, axisStepHours(d1 - d0));
+  const midnights = pacificMidnights(d0, d1).filter((t) => t > d0 && t < d1);
   const dayBands = [d0, ...midnights].map((from, i, all) => ({ from, to: all[i + 1] ?? d1 }));
   const lastRow = rows.findIndex((r) => r.includes(model.last));
   const showFinish = lastRow >= 0 && model.last.line[1] <= d1;
@@ -299,19 +314,16 @@ export function TimelineChart({ model, anchors, finishTicks, crop, interaction }
           {ticks.map((t, i) => (
             <g key={t}>
               <line className={styles.axis} x1={x(t)} x2={x(t)} y1={axisY} y2={axisY + 4} />
-              <text className={styles.tickUtc} x={x(t)} y={axisY + 16} textAnchor="middle">
-                {fmtUtcHm(t)}
-                {i === 0 && ' UTC'}
-              </text>
-              <text className={styles.tickPacific} x={x(t)} y={axisY + 28} textAnchor="middle">
+              {/* The site's one clock is Pacific; the zone is named once, on the first tick. */}
+              <text className={styles.tick} x={x(t)} y={axisY + 16} textAnchor="middle">
                 {fmtPacificHm(t)}
                 {i === 0 && ` ${pacificZone(t)}`}
               </text>
             </g>
           ))}
           {dayBands.map((b) => (
-            <text key={b.from} className={styles.day} x={(x(b.from) + x(b.to)) / 2} y={axisY + 50} textAnchor="middle">
-              {x(b.to) - x(b.from) > 220 ? fmtUtcDayLong(b.from) : fmtUtcDayShort(b.from)}
+            <text key={b.from} className={styles.day} x={(x(b.from) + x(b.to)) / 2} y={axisY + 38} textAnchor="middle">
+              {x(b.to) - x(b.from) > 220 ? fmtPacificDayLong(b.from) : fmtPacificDayShort(b.from)}
             </text>
           ))}
         </svg>
@@ -337,7 +349,7 @@ export function QuoteStrip({ anchors, shown, onSelect }: { anchors: ChartAnchors
               ))}
             </span>
             <span className={styles.quoteTime}>
-              {fmtUtcDayShort(m.t)}, {fmtUtcHm(m.t)} UTC
+              {fmtPacificDayShort(m.t)}, {fmtPacificHm(m.t)}
             </span>
           </button>
         </li>

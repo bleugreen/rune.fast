@@ -8,7 +8,7 @@ export type StoryFigure =
   | { kind: 'clip' }
   /** The cost page's day chart, linked. */
   | { kind: 'cost' }
-  /** The attempts chart, cropped to the section's hours (UTC). */
+  /** The attempts chart, cropped to the section's hours (instants given in UTC; the chart reads Pacific). */
   | { kind: 'timeline'; crop: readonly [string, string] };
 
 interface SectionMeta {
