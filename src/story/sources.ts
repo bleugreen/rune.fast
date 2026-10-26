@@ -25,7 +25,7 @@ const PLACES: ReadonlyArray<readonly [RegExp, string]> = [
 
 /** Positions inside a transcript and raw store numbers: traceability, not something a reader can follow. */
 /** A number in a list of turns or lines, but not the hour of a time ('15:30') or a date ('20 Oct'). */
-const LISTED = String.raw`(?:,\s*\d+(?:-\d+)?(?![\d:])(?! (?:Oct|PDT|UTC)))*`;
+const LISTED = String.raw`(?:,\s*~?\d+(?:-\d+)?(?![\d:])(?! (?:Oct|PDT|UTC)))*`;
 
 const NOISE: ReadonlyArray<readonly [RegExp, string]> = [
   [/\b(of|in) turn \d+/g, '$1 a message'],
@@ -47,7 +47,9 @@ export function plainWords(s: string): string {
   for (const [re, to] of NOISE) out = out.replace(re, to);
   return out
     .replace(/\(\s*\)/g, '')
-    .replace(/\(\s*,\s*/g, '(')
+    .replace(/\(\s*,?\s*/g, '(')
+    .replace(/(\w)\(/g, '$1 (')
+    .replace(/,\s*;/g, ';')
     .replace(/\s+([,;.)])/g, '$1')
     .replace(/,\s*,/g, ',')
     .replace(/[ \t]{2,}/g, ' ')
