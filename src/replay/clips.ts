@@ -1,6 +1,6 @@
 import { timeline } from '../data/timeline';
 import type { TimelineEvent } from '../data/types';
-import { WORLD_ASSET_BASE } from './world';
+import { WORLD_ASSET_BASE } from './assets';
 
 /** A point on the replay's timeline, tied to the timeline event that dates it. */
 export type ReplayMark = { sessionTick: number; label: string; event: TimelineEvent };

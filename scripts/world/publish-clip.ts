@@ -370,7 +370,7 @@ async function fetchPut(
   const url = s3.presign(key, { method: 'PUT', expiresIn: 600 });
   const headers: Record<string, string> = { 'Content-Type': meta.type, 'Cache-Control': meta.cacheControl };
   if (meta.contentEncoding) headers['Content-Encoding'] = meta.contentEncoding;
-  const resp = await fetch(url, { method: 'PUT', body, headers });
+  const resp = await fetch(url, { method: 'PUT', body: new Uint8Array(body), headers });
   if (!resp.ok) fail(`upload of ${key} failed: HTTP ${resp.status}`);
   console.log(`uploaded ${key} (${body.length} bytes)`);
 }
