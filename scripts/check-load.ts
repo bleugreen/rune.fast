@@ -7,8 +7,8 @@
  *   screen needs: the shell, the story text and the tree, which is the document, hashed files under
  *   /assets/, the roman serif, the sans and the favicon. Anything else (a clip poster, a figure) is
  *   below the fold and must wait for the reader. Two requests are allowed later: the italic, only
- *   once the tree is drawn (src/lib/fonts.ts), and Cloudflare's analytics beacon, only after the
- *   load event (src/lib/analytics.ts). Chrome resolves rune.fast to the preview server, so the page
+ *   once the tree is drawn and the page has loaded (src/lib/fonts.ts), and Cloudflare's analytics
+ *   beacon, only after the load event (src/lib/analytics.ts). Chrome resolves rune.fast to the preview server, so the page
  *   runs as on the site; the beacon is answered here with an empty script, so nothing is sent.
  *
  * `--measure` also prints, for the desktop page loaded plainly and over an emulated slow link
@@ -149,6 +149,7 @@ function problems(m: Load): string[] {
     if (r.path.startsWith(BEACON_SRC) || FIRST_SCREEN.some((re) => re.test(r.path))) continue;
     if (r.path === ITALIC) {
       if (m.drawn === null || r.start < m.drawn) out.push(`the italic started at ${s(r.start)}, before the tree was drawn`);
+      if (r.start < m.load) out.push(`the italic started at ${s(r.start)}, before load at ${s(m.load)}`);
       continue;
     }
     out.push(`below the fold, requested without scrolling: ${r.path}`);
