@@ -14,8 +14,7 @@
  * `--measure` also prints, for the desktop page loaded plainly and over an emulated slow link
  * (300 ms RTT, 1.6 Mbps down, cache disabled): DOMContentLoaded, load, when the first screen is
  * drawn (the tree), and the bytes and requests before load and once the network settles.
- * `vite preview` serves files uncompressed, so its bytes are larger than Pages' (which serves
- * brotli) and the slow-link times pessimistic.
+ * `vite preview` serves gzip where Pages serves brotli, so its bytes run a little over the site's.
  *
  *   bun run build && bun run check:load [--measure]
  *
