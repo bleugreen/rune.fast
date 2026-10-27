@@ -1,5 +1,5 @@
 /**
- * Copies the narrator's draft into data/story.md, and its per-section dig files
+ * Copies the operator's draft into data/story.md, and its per-section dig files
  * (digs/section-N.md beside the draft) into data/receipts/, byte for byte, after
  * checking that they parse and that every section's figure anchor, pulled quote
  * and link is still in its prose. Nothing is edited here or anywhere else
