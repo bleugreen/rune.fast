@@ -3,7 +3,7 @@
  * (requested tick reached, the followed account drawn, no map squares or bakes outstanding).
  *
  *   bun scripts/world/shoot.ts [--base http://localhost:4173] [--out .world/shots] [--headed] \
- *     [--shot agility-99@6095:agility-99] [--shot rekit@10:rekit]
+ *     [--shot agility-99@6095:agility-99] [--shot rekit@10:rekit] [--timings] [--reload]
  *
  * Prints each page's console errors and, against a dev server, its dev status line.
  */
