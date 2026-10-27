@@ -112,7 +112,7 @@ export function Timeline({ manifest, range, state, marks, onSeek, onPlay, onPaus
           return (
           <span key={m.label} className={styles.mark} style={{ left: pct(m.sessionTick + kOffset) }}>
             <span className={styles.markLabel} data-edge={at < 0.15 ? 'start' : at > 0.85 ? 'end' : undefined}>
-              {m.label}, {pacificClock.format(recvOfTick(manifest, m.sessionTick + kOffset))}
+              {m.label}, {fmtPacificHms(recvOfTick(manifest, m.sessionTick + kOffset))}
             </span>
           </span>
           );
