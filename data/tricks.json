@@ -232,14 +232,14 @@
   },
   {
     "id": "same-page-relog",
-    "name": "A relog that can act on the first tick",
+    "name": "A relog that sees the world on its first tick",
     "kind": "client and packet technique",
     "group": "client",
     "what_normally": "The swarm’s bots relogged by reloading the browser tab, and the account stood in the world for about 20 ticks before the bot could act.",
-    "what_instead": "The rebuilt relog logs in again inside the same page, so the bot acts on the first tick, and the game’s own logout button leaves the world at once where a dropped connection can leave the player standing for hundreds of ticks.",
+    "what_instead": "The rebuilt relog logs in again inside the same page, so the bot sees the world on the new session’s first tick, and the game’s own logout button leaves the world at once where a dropped connection can leave the player standing for hundreds of ticks. In the run’s own order the login turns run on first, so the first click goes out on the third tick: in the lab, the bank booth clicked on tick 3 was open on tick 4.",
     "why_allowed": "Both are ordinary logins and logouts.",
     "saving": {
-      "label": "Tick at which the bot can first act after a relog",
+      "label": "Tick at which the bot first sees the world after a relog",
       "unit": "ticks after login",
       "before_label": "Reloaded tab",
       "before": [20, 22],
@@ -247,7 +247,7 @@
       "after": 1,
       "basis": "measured",
       "n": 3,
-      "note": "Three relogs each way."
+      "note": "Three relogs each way; the lab film’s two same-page relogs also saw the world on tick 1."
     },
     "steps_plain": ["the two logins of the Cooking step", "the relog before the body-altar Runecrafting", "every helper hand-off"],
     "failed_live": "In the last attempt the game refused a logout in the middle of combat, and the account died in the world.",
@@ -257,7 +257,8 @@
       "rs-sdk docs/speedrun/research/travel-and-overhead.md row 3",
       "cairn://p/rs/168",
       "cairn://p/rs/164",
-      "data/attempts-timeline.json, attempt 5, 26 Oct 03:36Z"
+      "data/attempts-timeline.json, attempt 5, 26 Oct 03:36Z",
+      "the lab film of the Cooking step’s relog, rs-sdk 4f62822f (first state on session tick 1, booth click on tick 3, bank open on tick 4, in 2 of 2 relogs)"
     ],
     "clip": "lab-relog"
   },
@@ -483,7 +484,25 @@
       "rs tenet 1",
       "cairn://p/rs/287 and cairn://p/rs/312 (the loopback gateway the skip needs)"
     ],
-    "clip": null
+    "clip": null,
+    "stills": {
+      "frames": [
+        { "src": "/stills/tutorial-skip-1.jpg", "alt": "Tutorial Island’s character design screen, with its Accept button" },
+        { "src": "/stills/tutorial-skip-2.jpg", "alt": "The RuneScape Guide asks: Do you want to skip the tutorial?" },
+        { "src": "/stills/tutorial-skip-3.jpg", "alt": "The choice: Yes please, or No, thank you" },
+        { "src": "/stills/tutorial-skip-4.jpg", "alt": "The account in Lumbridge, the starter kit in its inventory" }
+      ],
+      "width": 764,
+      "height": 502,
+      "caption": "A new account on Tutorial Island accepts its character design and talks to the RuneScape Guide, who offers to skip the tutorial; it answers “Yes please.” and stands in Lumbridge with the starter kit three ticks after its first click. Four frames, because the whole moment is under three seconds. The swarm’s own step, re-run in the lab on a local server.",
+      "recorded": ["2026-10-27T01:11:27Z", "2026-10-27T01:11:30Z"],
+      "step": "The run’s first step, rehearsed",
+      "source": {
+        "label": "lab film",
+        "commit": "4f62822f0fa2a0f320abedba7fc473776c5b408d",
+        "note": "Frames of the lab capture of speedrun/skills/start.ts on a fresh account, 1.2, 2.2, 2.6 and 4.0 s into the 4.7 s capture."
+      }
+    }
   },
   {
     "id": "run-host",

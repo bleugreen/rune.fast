@@ -2,7 +2,8 @@
   {
     "id": "levelup-firemaking",
     "kind": "video",
-    "src": "/clips/levelup-firemaking.mp4",
+    "src": "clips/levelup-firemaking.d8fbab2d.mp4",
+    "bytes": 679442,
     "poster": "/clips/levelup-firemaking.jpg",
     "width": 764,
     "height": 502,
@@ -24,7 +25,8 @@
   {
     "id": "lab-dialogue-burst",
     "kind": "video",
-    "src": "/clips/lab-dialogue-burst.mp4",
+    "src": "clips/lab-dialogue-burst.891ac5ce.mp4",
+    "bytes": 697966,
     "poster": "/clips/lab-dialogue-burst.jpg",
     "width": 764,
     "height": 502,
@@ -46,7 +48,8 @@
   {
     "id": "lab-dialogue-fixed",
     "kind": "video",
-    "src": "/clips/lab-dialogue-fixed.mp4",
+    "src": "clips/lab-dialogue-fixed.baf83c5b.mp4",
+    "bytes": 313889,
     "poster": "/clips/lab-dialogue-fixed.jpg",
     "width": 764,
     "height": 502,
@@ -68,29 +71,31 @@
   {
     "id": "lab-relog",
     "kind": "video",
-    "src": "/clips/lab-relog.mp4",
+    "src": "clips/lab-relog.9745e41c.mp4",
+    "bytes": 603805,
     "poster": "/clips/lab-relog.jpg",
     "width": 764,
     "height": 502,
     "seconds": 10,
-    "caption": "The bot logs out with the game’s own button and logs back in inside the same page: the title screen, the loading screen, and the account back beside the Varrock bank booths 1.2 s after the logout, its first state arriving on the new session’s first tick. The bank click it sends as soon as the booth is in view is cancelled by the run toggle every login sends in the same tick, so the bank stays shut. The swarm’s own measurement script, re-run in the lab on a local server.",
+    "caption": "The bot logs out with the game’s own button and logs back in inside the same page, as the run’s Cooking step relogs: the title screen through a two-second pause, then the account back beside the Varrock bank booths. It sees the world on the new session’s first tick, turns run on, clicks the booth on the third tick, and the bank is open on the fourth; at the end it logs out for the next relog. The swarm’s own code, re-run in the lab on a local server.",
     "recorded": [
-      "2026-10-27T01:16:43Z",
-      "2026-10-27T01:16:53Z"
+      "2026-10-27T01:34:09Z",
+      "2026-10-27T01:34:19Z"
     ],
     "step": "A relog, rehearsed",
     "source": {
       "label": "lab film",
       "commit": "4f62822f0fa2a0f320abedba7fc473776c5b408d",
-      "note": "The lab capture of speedrun/tools/relog-probe.ts with the in-page relog and the bank click, run through rune-fast lab/films/relog-page.ts (which starts the page server the in-page login needs), 6.2 s to 16.2 s into the capture; the counter is the server tick its trace records."
+      "note": "The lab capture of speedrun/lib/session.ts relog followed by speedrun/helpers/wine-receive.ts openBankThroughPages, the Cooking step’s own calls, run through rune-fast lab/films/relog-bank.ts (which starts the page server the in-page login needs), 6.4 s to 16.4 s into the capture; the counter is the server tick its trace records."
     },
     "trace": "rune-fast lab/films/takes/relog/trace.jsonl",
-    "ticks": [[0,58],[192,59],[590,60],[991,61],[1389,62],[1794,63],[2191,64],[2596,65],[2998,66],[3395,67],[3798,68],[4201,69],[4598,70],[4999,71],[5398,72],[5799,73],[6201,74],[6599,75],[7000,76],[7401,77],[7800,78],[8203,79],[8603,80],[9008,81],[9405,82],[9809,83]]
+    "ticks": [[0,58],[386,59],[784,60],[1186,61],[1585,62],[1985,63],[2384,64],[2785,65],[3184,66],[3585,67],[3996,68],[4389,69],[4790,70],[5190,71],[5591,72],[5991,73],[6394,74],[6797,75],[7195,76],[7596,77],[7995,78],[8397,79],[8796,80],[9195,81],[9594,82],[9996,83]]
   },
   {
     "id": "finish-rekit",
     "kind": "video",
-    "src": "/clips/finish-rekit.mp4",
+    "src": "clips/finish-rekit.6f9c2b21.mp4",
+    "bytes": 1314446,
     "poster": "/clips/finish-rekit.jpg",
     "width": 1380,
     "height": 904,
@@ -109,7 +114,8 @@
   {
     "id": "finish-cannon",
     "kind": "video",
-    "src": "/clips/finish-cannon.mp4",
+    "src": "clips/finish-cannon.6fdf2c69.mp4",
+    "bytes": 1239960,
     "poster": "/clips/finish-cannon.jpg",
     "width": 1380,
     "height": 904,
@@ -128,7 +134,8 @@
   {
     "id": "finish-agility99",
     "kind": "video",
-    "src": "/clips/finish-agility99.mp4",
+    "src": "clips/finish-agility99.db4c9156.mp4",
+    "bytes": 2042794,
     "poster": "/clips/finish-agility99.jpg",
     "width": 1036,
     "height": 680,
