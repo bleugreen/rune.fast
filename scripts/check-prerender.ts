@@ -137,12 +137,13 @@ async function beforeScript(browser: Browser, base: string): Promise<void> {
   });
   await page.goto(`${base}/`, { waitUntil: 'commit' });
   await page.locator('main h1').first().waitFor();
+  await page.waitForFunction(() => performance.getEntriesByName('first-contentful-paint').length > 0);
   await page.evaluate(() => document.fonts.ready);
-  const at = await page.evaluate(() => performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? null);
+  const at = await page.evaluate(() => performance.getEntriesByName('first-contentful-paint')[0]!.startTime);
   const hydrated = await page.evaluate(() => Object.keys(document.getElementById('root')!).some((k) => k.startsWith('__reactContainer')));
   check(!hydrated, 'the story before its scripts: the app ran');
   await page.screenshot({ path: join(shots!, 'story-before-js.png') });
-  console.log(`The story page before its scripts, first painted at ${at === null ? '?' : (at / 1000).toFixed(2)} s on 300 ms RTT, 1.6 Mbps`);
+  console.log(`The story page before its scripts, first painted at ${(at / 1000).toFixed(2)} s on 300 ms RTT, 1.6 Mbps`);
   release();
   await context.close();
 }
