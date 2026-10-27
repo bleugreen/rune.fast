@@ -191,6 +191,7 @@ export function buildHarnessModel(d: HarnessData) {
   const coordinators = d.lifelines.coordinators.map(ms);
   rows.push({ name: 'coordinators', operator: null, filed: binned(coordinators, from, bins), operatorTotal: 0, filedTotal: coordinators.length });
   const main = rows.find((r) => r.name === 'main')!;
+  const threadRows = rows.filter((r) => r.operator !== null);
   const lifelines = {
     from,
     to,
@@ -369,6 +370,8 @@ export function buildHarnessModel(d: HarnessData) {
     medianWaitMinutes: Math.round(waits[Math.floor(waits.length / 2)]! / MINUTE),
     quoted: tenetRows.find((r) => r.n === 39)!,
     research: tenetRows.find((r) => r.n === 3)!,
+    /** The part of tenet 3 that says why research is not a sub-agent's job, as the statement words it. */
+    researchWhy: /We do not run research as blocking sub-agent tasks \([^)]*\)/.exec(tenetRows.find((r) => r.n === 3)!.statement ?? '')?.[0] ?? '',
     declinedRows: tenetRows.filter((r) => r.status === 'declined'),
     from: Math.min(...tenetRows.map((r) => r.created)),
   };
@@ -415,13 +418,18 @@ export function buildHarnessModel(d: HarnessData) {
     integration: t.mergesBy.integration ?? 0,
   };
 
+  const quoted = tenets.quoted;
   return {
-    window: { start, end },
+    window: { start, end, days: Math.round((end - start) / (24 * HOUR)) },
     totals: t,
     facts,
     address,
     lifelines,
     mainFiled: main.filedTotal,
+    threadFiled: sum(threadRows.map((r) => r.filedTotal)),
+    otherThreads: threadRows.filter((r) => r !== main).map((r) => r.name),
+    quotedSeconds: Math.round((quoted.answered! - quoted.created) / SECOND),
+    oneOffMinutes: Math.round((ms(d.quotes.find((q) => q.key === 'oneOff')!.t) - ms(d.quotes.find((q) => q.key === 'publish')!.t)) / MINUTE),
     issue,
     recipes,
     recipeTotal,
