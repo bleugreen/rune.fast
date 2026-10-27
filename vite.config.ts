@@ -5,6 +5,7 @@ import { projectTimeline } from './scripts/public-timeline';
 import { projectCostData, projectRoles } from './scripts/public-cost';
 import { projectTricks } from './scripts/public-tricks';
 import { isStoryMd, storyModule } from './scripts/story-module';
+import { pacificDayKey } from './src/lib/time';
 
 /** Archival exports in data/, by path suffix, and the public projection that replaces each in the build. */
 const PROJECTIONS: ReadonlyArray<readonly [string, (raw: never) => unknown]> = [
@@ -51,7 +52,7 @@ const site: UserConfig = {
     plugins: [publicData(), story(), worldAssets('.world')],
     resolve: { dedupe: ['react', 'react-dom'] },
     define: {
-      __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+      __BUILD_DATE__: JSON.stringify(pacificDayKey(Date.now())),
     },
     build: {
       rollupOptions: {
