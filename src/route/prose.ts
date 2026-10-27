@@ -31,6 +31,8 @@ export const GAME_FACTS = {
   climbLevel: 25,
   /** Quest points the Champions' Guild door asks: the run order's row for the three Varrock quests. */
   guildPoints: 32,
+  /** Ranged for the magic shortbow: the run order's row for the spiders. */
+  bowLevel: 50,
 } as const;
 
 const n = (x: number) => fmtInt(Math.round(x));
@@ -186,7 +188,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
   'grand-tree': {
     body: (s) => [
       p(
-        `The Grand Tree’s climb needs Agility ${GAME_FACTS.climbLevel}, and the account had none, so it ran laps of the Gnome Stronghold’s course until it got there: the only plain training in this stretch. The quest then pays Agility in its reward, up to ${to(s, 'Agility')}, which is why the Agility course at the very end of the route starts there and not at 1.`,
+        `The Grand Tree’s climb needs Agility ${GAME_FACTS.climbLevel}, and the account had none, so it ran laps of the Gnome Stronghold’s course until it got there: the only plain training in this stretch. The quest then pays Agility in its reward, up to ${to(s, 'Agility')}, which is why the Agility course at the very end of the route starts there and not from nothing.`,
       ),
       p(
         'Then a click went missing. Partway through, a cupboard search didn’t register: the script had sent the click once and waited for a result that never came. The account logged out; when it logged back in, the search took on the first try.',
@@ -231,7 +233,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
     ],
     sources: (s) => [
       'The helper with the cannon and the balls: the tricks page, A cannon carried by a helper, and the run order’s first cannon row.',
-      'The magic shortbow from Ranged 50: the run order’s row for the spiders near the end.',
+      `The magic shortbow from Ranged ${GAME_FACTS.bowLevel}: the run order’s row for the spiders near the end.`,
       priced(s),
     ],
   },
@@ -420,9 +422,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
       ),
       clip('finish-rekit'),
       clip('finish-cannon'),
-      p(
-        `The step ran ${priceNote(s)}. The hatched stretch is ${n(s.composition.unassigned)} of them: ticks the hiscore counted while the body stood at the spiders, which no log holds and the swarm could not place.`,
-      ),
+      p(`The step ran ${priceNote(s)}, ${n(s.composition.unassigned)} of them in the hatched stretch while the body stood among the spiders.`),
     ],
     sources: (s) => [
       'Defence with the scimitar, then the bow from Defence 99, and Hitpoints as a by-product: the run order’s row for the spiders.',
@@ -434,7 +434,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
   'wilderness-course': {
     body: (s) => [
       p(
-        `The route ends on the Wilderness Agility Course: laps of five obstacles in the deep Wilderness, from Agility ${from(s, 'Agility')} to ${to(s, 'Agility')}. It is last for two reasons. A clean lap can’t be run any faster, so all that varies is how often the account falls, and nothing else on the route waits on it. And the hiscore stops counting at the last level-up, so a step that ends on one and logs out in the same tick spends nothing after it.`,
+        `The route ends on the Wilderness Agility Course: laps of five obstacles in the deep Wilderness, from Agility ${from(s, 'Agility')} to ${to(s, 'Agility')}. It is last for two reasons. A clean lap can’t be run any faster, so all that varies is how often the account falls, and nothing else on the route waits on it. And the hiscore stops counting at the last level-up, so whatever the account does after its last 99 costs nothing.`,
       ),
       clip('agility-lap'),
       p(`The account fell less often than the run order’s simulation expected, and the step ran ${priceNote(s)}.`),
@@ -483,15 +483,10 @@ export function loginWords(l: ShortLogin, r: Route): string {
     case 'prayer':
       return `${n(l.ticks)} ticks to drink a prayer potion brought to the spiders; the protection prayer never switched on, and it logged out`;
     case 'return':
-      return `${n(l.ticks)} ticks to walk back to the cannon spot; the logout was refused in combat, the runner was stopped, and the body stood among the spiders until they killed it: ${n(l.unassigned)} ticks the hiscore counted that no log holds, about ${n(Math.round(deathWallTicks(l, r) / 10) * 10)} by the wall clock`;
+      return `${n(l.ticks)} ticks to walk back to the cannon spot; the logout was refused in combat, the runner was stopped, and the body stood among the spiders until they killed it: ${n(l.unassigned)} ticks the hiscore counted that no log holds`;
     default:
       return `a login of ${n(l.ticks)} ticks`;
   }
-}
-
-/** The ticks the wall clock gives the body's stand, from the end of the logged walk to the logout after the death. */
-export function deathWallTicks(l: ShortLogin, r: Route): number {
-  return (l.end! - l.at) / r.tickMs - l.ticks;
 }
 
 /** The short logins a break holds without stating when each ended, as one phrase. */
@@ -534,39 +529,15 @@ export function opening(r: Route, f: OpeningFacts, days: { start: string; end: s
   const under = Math.ceil(scoredHours);
   const [shortest, longest] = stretchWords(r);
   return [
-    `The hiscore this record stands on does not time an account by the wall clock. It counts the game ticks the account spends logged in, ${r.tickMs / 1000} seconds each, up to the tick of its last level-up, and while the account is logged out the count stands still. Attempt 5 logged in at ${clockTime(f.start)} ${zone} on ${days.start} and reached its last 99 at ${clockTime(f.last99)} on ${days.end}, ${wallHours} hours later. The hiscore counted ${n(r.finish)} ticks, just under ${HOURS_WORDS[under]} of those hours.`,
+    `The hiscore this record stands on does not time an account by the wall clock. It counts the game ticks the account spends logged in, ${r.tickMs / 1000} seconds each, up to the tick of its last level-up, and while the account is logged out the count stands still. ${f.name} logged in at ${clockTime(f.start)} ${zone} on ${days.start} and reached its last 99 at ${clockTime(f.last99)} on ${days.end}, ${wallHours} hours later. The hiscore counted ${n(r.finish)} ticks, just under ${HOURS_WORDS[under]} of those hours.`,
     `The swarm planned the route around that rule, and the operator put it plainly on the Sunday afternoon: “${f.quote}”. When something went wrong, the account logged out and waited, and the wait cost nothing. It fetched almost nothing for itself, because helper accounts met it with supplies at nearly every step, so its logged-in ticks went to training. Where one skill left it standing idle, the route put another skill in the gap.`,
     `This page follows the ${n(r.finish)} ticks in order. The line down the left is the hiscore’s clock. Scrolling moves the run forward, and where the account was logged out the line breaks, and the break takes the same small room whether the wait was ${shortest} or ${longest}. As you go, the ${r.stamps.length} skills climb to 99 as the run’s own log recorded them. Before the attempt, the swarm’s run order priced every step in ticks; I have grouped its steps into ${HOURS_WORDS[r.stretches.length]} stretches, and for each I say what the account did, why it came at that point, what the plan expected it to cost and what it took. The stops, the death and the recovery show here only as breaks in the line, each linked to the story, which tells them.`,
   ];
 }
 
-/** The finish's words: before the drift chart, and between it and the ledger. */
-export function finishWords(r: Route): { before: string[]; middle: string[] } {
+/** The finish: the last 99 against the record it beat, in one sentence. */
+export function finishWords(r: Route): string {
   const margin = r.record - r.finish;
-  const drift = [...new Set(r.stampDrift.map((s) => s.drift))].filter((d) => d > 0);
-  const firstAt = (d: number) => r.stampDrift.find((s) => s.drift === d)!.skill;
-  const lastEven = [...r.stampDrift].reverse().find((s) => s.drift === 0)!.skill;
-  const death = r.segments.find((g) => g.kind === 'unassigned' && g.login === 'return')!;
-  const deathLogin = r.logins.find((l) => l.id === 'return')!;
-  const [a, b] = death.kind === 'unassigned' ? death.bracket : [null, null];
-  return {
-    before: [
-      `Agility reached 99 on tick ${n(r.finish)} of the hiscore’s clock, and the account logged out in the same tick. The record it beat was ${n(r.record)}, so the margin was ${n(margin)} ticks, about ${n((margin * r.tickMs) / 1000)} seconds.`,
-      `The run order, as it stood when the attempt logged in, expected ${n(r.planTotal)} ticks for the whole route. The run took ${n(r.finish - r.planTotal)} more, and still beat the record.`,
-      `The swarm kept its own count as the run went, from the runner’s sessions and the short logins it knew of, and it came to ${n(r.ledger.swarm)}, which is ${n(r.ledger.residual)} fewer than the hiscore. The hiscore’s own stamps show where the difference lies. Up to ${lastEven} 99 the two clocks agree to the tick. The greegree login puts the hiscore ${n(drift[0]!)} ahead by ${firstAt(drift[0]!)} 99, the next morning’s logins ${n(drift[1]!)} by ${firstAt(drift[1]!)} 99, and the window around the death ${n(drift[2]!)} by ${firstAt(drift[2]!)} 99; after that the two never move apart again.`,
-    ],
-    middle: [
-      `Of the ${n(r.ledger.residual)}, ${n(r.ledger.unassigned)} are ticks no log holds. The stamps bracket them, and ${n(death.to - death.from)} fall between ${a} 99 and ${b} 99: the window in which the account’s body stood at the spiders after its controller had been stopped, long enough by the wall clock for about ${n(Math.round(deathWallTicks(deathLogin, r) / 10) * 10)} ticks. That fits, but it is a bracket and not a measurement, so the page draws those ticks hatched and calls them unassigned.`,
-    ],
-  };
+  const seconds = ((margin * r.tickMs) / 1000).toFixed(1);
+  return `${r.stamps.at(-1)!.skill} reached 99 on tick ${n(r.finish)} of the hiscore’s clock, ${n(margin)} ticks (${seconds} seconds) under the record of ${n(r.record)}.`;
 }
-
-/** The ledger's rows, in words, as the finish's table prints them. */
-export const LEDGER_WORDS: Readonly<Record<string, string>> = {
-  swarm: 'The swarm’s ledger: its runner sessions and the short logins it counted',
-  unassigned: 'Ticks no log holds, in three brackets of the hiscore’s stamps',
-  'short-logins': 'Short-login ticks the timeline gives and the ledger did not count',
-  'after-finish': 'The last session tick, after Agility 99, which the hiscore does not count',
-  residual: 'Not accounted for',
-  hiscore: 'The hiscore',
-};
