@@ -75,7 +75,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
       ),
       clip('levelup-firemaking'),
       p(
-        `It comes first because it depends on nothing, and one quest much later, Sea Slug, needs Firemaking ${GAME_FACTS.torchLevel} to light a torch. The step ran ${priceNote(s)}, and Firemaking was the run’s first 99.`,
+        `It comes first because it depends on nothing. One quest much later, Sea Slug, needs Firemaking ${GAME_FACTS.torchLevel} to light a torch. The step ran ${priceNote(s)}, and Firemaking was the run’s first 99.`,
       ),
     ],
     sources: (s) => [
@@ -87,7 +87,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
   rings: {
     body: (s) => [
       p(
-        'Enchanting rings is the quickest Magic a new account can do, and every level it gives here unlocks something the route uses next. Three helpers stood at the end of the castle row with sapphire, emerald, ruby and diamond rings; the account enchanted sixty and traded them back as it went.',
+        'Enchanting rings is the quickest Magic a new account can do. Each level it gives here opens a spell the route casts next. Three helpers stood at the end of the castle row with sapphire, emerald, ruby and diamond rings; the account enchanted sixty and traded them back as it went.',
       ),
       p(
         `At Magic ${to(s, 'Magic')} it could teleport to Falador, Camelot and Ardougne, the jumps that carry it between most of the steps that follow, and cast Fire Blast, the spell the first quest that fights is won with. The run order had weighed casting on the walk to the next quest instead, and measured it slower than standing still and teleporting after.`,
@@ -189,7 +189,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
         `The Grand Tree’s climb needs Agility ${GAME_FACTS.climbLevel}, and the account had none, so it ran laps of the Gnome Stronghold’s course until it got there: the only plain training in this stretch. The quest then pays Agility in its reward, up to ${to(s, 'Agility')}, which is why the Agility course at the very end of the route starts there and not at 1.`,
       ),
       p(
-        'Partway through, a cupboard search didn’t register. The script had sent the click once and waited for a result that never came. The account logged out; when it logged back in, the search took on the first try.',
+        'Then a click went missing. Partway through, a cupboard search didn’t register: the script had sent the click once and waited for a result that never came. The account logged out; when it logged back in, the search took on the first try.',
       ),
       brk(0),
       p('The quest’s demon fell to Fire Bolt, under Protect from Melee like every fight before it.'),
@@ -223,7 +223,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
   'first-cannon': {
     body: (s) => [
       p(
-        'The cannon trains Ranged by itself. Once it is set down and loaded it fires at whatever is near, and its hits count for the player who set it. A helper carried the four pieces and the cannonballs to the poison spiders in the Wilderness; the account set the cannon up, stood beside it with auto-retaliate off, and picked it up again.',
+        'The cannon trains Ranged on its own. Once it is set down and loaded it fires at whatever is near, and its hits count for the player who set it. A helper carried the four pieces and the cannonballs to the poison spiders in the Wilderness; the account set the cannon up, stood beside it with auto-retaliate off, and picked it up again.',
       ),
       p(
         `It stopped at Ranged ${to(s, 'Ranged')}, the level the magic shortbow needs. The bow waits for the last stretch; this short session only buys the level for it.`,
@@ -348,7 +348,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
         `These four quests are here for their quest points. Dragon Slayer, two steps on, starts inside the Champions’ Guild, whose door opens at ${GAME_FACTS.guildPoints} quest points, and with these four the account arrived with exactly that many and none to spare.`,
       ),
       p(
-        `Their rewards help too. Cook’s Assistant gives Cooking its first ${to(s, 'Cooking')} levels, and Druidic Ritual unlocks Herblore and starts it at ${to(s, 'Herblore')}. Goblin Diplomacy and Romeo and Juliet are there for the points alone.`,
+        `Their rewards help too. Cook’s Assistant gives Cooking its first ${to(s, 'Cooking')} levels. Druidic Ritual is what lets an account train Herblore at all, and its reward starts it at ${to(s, 'Herblore')}. Goblin Diplomacy and Romeo and Juliet are there for the points alone.`,
       ),
     ],
     sources: (s) => [
