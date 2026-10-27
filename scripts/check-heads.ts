@@ -3,8 +3,10 @@
  * src/meta.ts: each page's HTML, fetched without running anything, carries its own title,
  * description, canonical URL and preview image, with the site's isolation headers; opened from
  * that page, the app renders and the document's title and description are the page's; from it,
- * every nav link routes client-side to its page, with that page's title and description; and an
- * unknown path gets the shell and the 'Nothing here' page.
+ * every nav link routes client-side to its page, with that page's title and description; each page
+ * is reached from its trailing-slash and .html forms (and the story from /index.html) by Pages'
+ * redirects; an unknown path, /attempts among them, gets the 'Nothing here' page with status 404;
+ * and a missing file under /assets/ is a plain-text 404.
  *
  *   bun run build && wrangler pages dev dist --ip 127.0.0.1 --port 8788   # Pages' own asset server
  *   bun run check:heads [--base http://127.0.0.1:8788]
@@ -38,7 +40,30 @@ for (const p of PAGE_PATHS) {
   check(attr(html, /<meta name="twitter:description" content="([^"]*)"/) === m.description, `${p}: served twitter:description is not the page's`);
   check(res.headers.get('cross-origin-embedder-policy') === 'require-corp', `${p}: no COEP header`);
   check(res.headers.get('cross-origin-opener-policy') === 'same-origin', `${p}: no COOP header`);
+  check(html.includes(`<div id="root" data-prerendered="${p}"><div`), `${p}: the served HTML does not carry its page`);
 }
+
+// The other addresses of each page lead to it.
+for (const p of PAGE_PATHS) {
+  for (const alias of p === '/' ? ['/index.html'] : [`${p}/`, `${p}.html`]) {
+    const res = await fetch(args.base + alias);
+    const landed = new URL(res.url).pathname;
+    const title = attr(await res.text(), /<title>([^<]*)<\/title>/);
+    check(res.status === 200 && landed === p && title === meta[p].title, `${alias}: ${res.status} at ${landed}, "${title}"`);
+  }
+}
+
+for (const unknown of ['/nope', '/attempts', '/route/deeper']) {
+  const res = await fetch(args.base + unknown, { redirect: 'manual' });
+  const html = await res.text();
+  check(
+    res.status === 404 && html.includes('<div id="root" data-prerendered="*">') && html.includes('>Nothing here</h1>'),
+    `${unknown}: ${res.status}, not the Nothing here page`,
+  );
+  check(res.headers.get('cross-origin-embedder-policy') === 'require-corp', `${unknown}: no COEP header`);
+}
+const gone = await fetch(args.base + '/assets/index-GONE0000.js');
+check(gone.status === 404 && !!gone.headers.get('content-type')?.startsWith('text/plain'), `/assets/index-GONE0000.js: ${gone.status} ${gone.headers.get('content-type')}`);
 const image = await fetch(args.base + SHARE_IMAGE.path);
 check(image.status === 200 && image.headers.get('content-type') === 'image/png', `${SHARE_IMAGE.path}: ${image.status} ${image.headers.get('content-type')}`);
 
@@ -77,7 +102,7 @@ try {
     const res = await page.goto(args.base + unknown);
     await page.locator('main h1').first().waitFor();
     const s = await now();
-    check(res?.status() === 200 && s.h1 === 'Nothing here' && s.title === 'Nothing here · rune.fast', `${unknown}: ${res?.status()} "${s.h1}" "${s.title}"`);
+    check(res?.status() === 404 && s.h1 === 'Nothing here' && s.title === 'Nothing here · rune.fast', `${unknown}: ${res?.status()} "${s.h1}" "${s.title}"`);
     console.log(`${unknown}: ${res?.status()}, "${s.h1}", "${s.title}"`);
   }
   check(errors.length === 0, `page errors: ${errors.join('; ')}`);
@@ -86,5 +111,5 @@ try {
 }
 
 for (const p of problems) console.log(`FAIL ${p}`);
-console.log(problems.length ? `check-heads: ${problems.length} problem(s)` : 'check-heads: every page serves its own head, renders, and routes');
+console.log(problems.length ? `check-heads: ${problems.length} problem(s)` : 'check-heads: every page serves its own head and content, renders, and routes; unknown paths are 404s');
 process.exit(problems.length ? 1 : 0);

@@ -15,7 +15,7 @@
     "check:load": "bun scripts/check-load.ts",
     "check:prerender": "bun --preload ./scripts/test-preload.ts scripts/check-prerender.ts",
     "render:share": "bun --preload ./scripts/test-preload.ts scripts/render-share.ts",
-    "check": "bun run typecheck && bun run test && bun run build && bun run check:public && bun run check:load"
+    "check": "bun run typecheck && bun run test && bun run build && bun run check:public && bun run check:prerender && bun run check:load"
   },
   "dependencies": {
     "@rune/world": "workspace:*",

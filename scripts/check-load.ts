@@ -39,6 +39,12 @@ const { values: args } = parseArgs({ options: { measure: { type: 'boolean', defa
 
 /** Brotli bytes of the home page's initial JavaScript. */
 const ENTRY_BUDGET = 150 * 1024;
+/**
+ * Brotli bytes of the home page's HTML and initial JavaScript together: what comes down before the
+ * page can run. The HTML carries the story rendered (scripts/page-heads.ts), which the entry also
+ * holds as data to hydrate it from.
+ */
+const FIRST_LOAD_BUDGET = 180 * 1024;
 
 /** What the first screen may request, by path. */
 const FIRST_SCREEN: readonly RegExp[] = [
@@ -218,6 +224,11 @@ const entryBytes = scripts.reduce((sum, f) => sum + brotli(readFileSync(join('di
 failed ||= entryBytes > ENTRY_BUDGET;
 console.log(
   `${entryBytes > ENTRY_BUDGET ? 'FAIL' : 'ok'}: initial JavaScript ${kb(entryBytes)} brotli (budget ${kb(ENTRY_BUDGET)}): ${scripts.join(', ')}`,
+);
+const htmlBytes = brotli(readFileSync('dist/index.html'));
+failed ||= htmlBytes + entryBytes > FIRST_LOAD_BUDGET;
+console.log(
+  `${htmlBytes + entryBytes > FIRST_LOAD_BUDGET ? 'FAIL' : 'ok'}: the HTML, ${kb(htmlBytes)} brotli with the story in it, and the initial JavaScript, ${kb(htmlBytes + entryBytes)} (budget ${kb(FIRST_LOAD_BUDGET)})`,
 );
 
 const server = args.port ? { port: Number(args.port), stop: async () => {} } : await startPreview();
