@@ -76,7 +76,7 @@ function world(): Promise<SharedWorld> {
       await Promise.all(OVERLAY_FONTS.map((font) => document.fonts.load(font)));
       performance.mark('replay:fonts');
       // Each downloaded part is progress, so a slow connection is not taken for a stalled load.
-      const cache = await loadCache(undefined, () => advance(`${progress.phase.split(' (')[0]} (cache download)`));
+      const cache = await loadCache(undefined, () => advance(progress.phase));
       performance.mark('replay:cache-fetched');
       const viewer = new MapViewer(pool, cache);
       made.viewers++;
