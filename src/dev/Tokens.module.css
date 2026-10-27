@@ -85,3 +85,12 @@
   font-size: 11px;
   fill: var(--ink-muted);
 }
+
+/* Footage at the story's prose measure, the width the story's figures take. */
+.full {
+  grid-column: 1 / -1;
+}
+.footage {
+  max-width: var(--measure);
+  margin-bottom: var(--space-5);
+}

@@ -113,7 +113,7 @@ export default function Tokens() {
         </svg>
       </section>
 
-      <section className={styles.block}>
+      <section className={`${styles.block} ${styles.full}`}>
         <h2 className={styles.h2}>Footage: a 3D replay and a video clip, in the one frame</h2>
         {TOKENS_CLIPS.map((id) => (
           <div key={id} className={styles.footage}>
