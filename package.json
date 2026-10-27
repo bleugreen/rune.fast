@@ -10,6 +10,7 @@
     "typecheck": "tsc -b",
     "test": "bun test",
     "check:public": "bun scripts/check-public.ts",
+    "check:masthead": "bun scripts/check-masthead.ts",
     "check": "bun run typecheck && bun run test && bun run build && bun run check:public"
   },
   "dependencies": {
