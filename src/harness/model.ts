@@ -268,8 +268,10 @@ export function buildHarnessModel(d: HarnessData) {
       (x, y) => x - y,
     ),
     testWakes: wakes843.filter((tn) => tn.wake!.kind === 'batch' && tn.wake!.tests).length,
-    messageWakes: wakes843.filter((tn) => tn.wake!.kind !== 'batch').length,
+    messageWakes: wakes843.filter((tn) => tn.wake!.kind === 'message').length,
     bothWakes: wakes843.filter((tn) => tn.wake!.kind === 'both').length,
+    /** Messages in the briefing that opened the turn woken by both. */
+    bothMessages: i.turns.find((r) => r.reason === 'wait_resolved' && r.senders.length)?.senders.length ?? 0,
   };
 
   /* Fig 4 ---------------------------------------------------------------- */
@@ -310,6 +312,9 @@ export function buildHarnessModel(d: HarnessData) {
   const fanout = steps.find((s) => s.kind === 'fanout')!;
   const execs = Object.values(d.rs3.executions);
   const routing = {
+    coordinator: issueOf(d.rs3.steps.find((s) => s.kind === 'question')!.from),
+    childCount: d.rs3.children.length,
+    started: d.rs3.steps.find((s) => s.kind === 'start')!.to.map(issueOf),
     children: d.rs3.children.map((n) => ({ n, key: `c${n}` })),
     steps,
     from: steps[0]!.t,

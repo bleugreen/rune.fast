@@ -1,11 +1,14 @@
 import { scaleLinear } from 'd3-scale';
 import { fmtInt } from '../../lib/numbers';
 import { fmtPacificWeekdayDay } from '../../lib/time';
-import { BIN, type HarnessModel } from '../model';
+import { BIN, type HarnessModel, type LifelineRow } from '../model';
 import { NARROW, useChartWidth } from './frame';
 import styles from './Figures.module.css';
 
 const TOP = 26;
+
+const sub = (r: LifelineRow) =>
+  r.operator === null ? `filed ${fmtInt(r.filedTotal)}` : `${fmtInt(r.operatorTotal)} in, ${fmtInt(r.filedTotal)} filed`;
 /** Tallest bar, in px, above or below a row's line. */
 const BAR = 17;
 
@@ -55,10 +58,17 @@ export function Lifelines({ m, label }: { m: HarnessModel; label: string }) {
               )}
               <text className={styles.row} x={0} y={narrow ? y - BAR - 9 : y - 2}>
                 {r.name}
+                {narrow && (
+                  <tspan className={styles.rowSub} dx={8}>
+                    {sub(r)}
+                  </tspan>
+                )}
               </text>
-              <text className={styles.rowSub} x={narrow ? 0 : 0} y={narrow ? y - BAR - 9 + 0 : y + 11} dx={narrow ? r.name.length * 6.6 + 8 : 0}>
-                {coordinators ? `filed ${fmtInt(r.filedTotal)}` : `${fmtInt(r.operatorTotal)} in, ${fmtInt(r.filedTotal)} filed`}
-              </text>
+              {!narrow && (
+                <text className={styles.rowSub} x={0} y={y + 11}>
+                  {sub(r)}
+                </text>
+              )}
             </g>
           );
         })}

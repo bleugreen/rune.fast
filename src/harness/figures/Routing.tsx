@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { countWord, listWords } from '../../lib/numbers';
 import { fmtPacificHms } from '../../lib/time';
 import { edgeKey, type HarnessModel, type NodeKey, type RouteStep } from '../model';
-import { shownSteps, stepTimeline, usePlayer } from '../player';
+import { shownSteps, stepTimeline, usePlayer, useReducedMotion } from '../player';
 import { EASE_OUT, TRAVEL_MS, useChartWidth } from './frame';
 import styles from './Figures.module.css';
 
@@ -49,11 +49,11 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
   const [ref, width] = useChartWidth();
   const r = m.routing;
   const n = r.steps.length;
-  const tl = useMemo(() => stepTimeline(n, SLOT), [n]);
+  const reduced = useReducedMotion();
+  // Under reduced motion, Play keeps a slower beat over each step and nothing travels.
+  const tl = useMemo(() => stepTimeline(n, reduced ? REDUCED_SLOT : SLOT), [n, reduced]);
   const player = usePlayer(tl);
-  const { state, reduced } = player;
-  const reducedTl = useMemo(() => stepTimeline(n, REDUCED_SLOT), [n]);
-  void reducedTl;
+  const { state } = player;
   const shown = state.started ? shownSteps(n, state.t) : n;
   const current = state.started && shown > 0 ? r.steps[shown - 1]! : null;
 
@@ -83,9 +83,12 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
   edges.set(edgeKey('main', 'rs22'), ['main', 'rs22']);
   edges.set(edgeKey('main', 'rs23'), ['main', 'rs23']);
   edges.set('q', ['rs3', 'operator']);
+  // rs/22 and rs/23 are main's children; rs/3 started them without being their parent.
+  edges.set(edgeKey('rs3', 'rs22'), ['rs3', 'rs22']);
+  edges.set(edgeKey('rs3', 'rs23'), ['rs3', 'rs23']);
   for (const c of r.children) edges.set(edgeKey('rs3', c.key), ['rs3', c.key]);
-  // rs/3 starts the fixes through main's tree: their edges are drawn from main, where they sit.
-  const routeEdge = (a: NodeKey, b: NodeKey) => (a === 'rs3' && (b === 'rs22' || b === 'rs23') ? edgeKey('main', b) : edgeKey(a, b));
+  const routeEdge = edgeKey;
+  const dashed = (key: string) => key === 'q' || key === edgeKey('rs3', 'rs22') || key === edgeKey('rs3', 'rs23');
 
   const used = new Set<string>();
   r.steps.slice(0, shown).forEach((s) => s.to.forEach((to) => used.add(routeEdge(s.from, to))));
@@ -124,13 +127,6 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
     });
   }, [shown, state.started, state.via, reduced]);
 
-  // Under reduced motion, Play steps on a slower beat and nothing travels.
-  useEffect(() => {
-    if (!reduced || !state.playing) return;
-    const id = setInterval(() => player.step(1, 'jump'), REDUCED_SLOT);
-    return () => clearInterval(id);
-  }, [reduced, state.playing]);
-
   const node = (k: NodeKey, r0: number, cls: string) => (
     <g key={k}>
       <circle className={cls} cx={pt(k)[0]} cy={pt(k)[1]} r={r0} />
@@ -154,7 +150,7 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
       <svg className={styles.svg} width={width} height={H} role="img" aria-label={label}>
         {[...edges].map(([key, [a, b]]) => {
           const d = edgePath(key, a, b);
-          const dash = key === 'q' ? '3 3' : undefined;
+          const dash = dashed(key) ? '3 3' : undefined;
           return (
             <g key={key}>
               <path className={styles.hair} d={d} strokeDasharray={dash} />
