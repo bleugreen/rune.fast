@@ -26,6 +26,12 @@ import { SHARE_IMAGE, siteMeta } from '../meta';
  * UTC. Quoted words are evidence and stay as they were said: blockquotes and quoted
  * spans everywhere, and on the story page the operator's draft and its receipts,
  * which are imported verbatim (scripts/import-story.ts).
+ *
+ * One exemption: the story's Sources disclosures (each section's receipts and dig
+ * tables) keep the UTC and 24-hour times rune/main's research notes were written in.
+ * They are closed by default and the operator ruled them out of scope, and many of
+ * their times carry no date, so converting them to Pacific would mean guessing the day.
+ * Every other page's disclosure lines are checked below, as the build ships them.
  */
 
 /** A clock time as the site writes it, or a span sharing one period: '2:37 PM', '4:14:43 AM', '3:27:15–3:27:27 AM'. */
@@ -135,10 +141,6 @@ describe('the story’s draft', () => {
     expect(zones(narrator)).toEqual([]);
     expect(narrator.match(TWENTY_FOUR) ?? []).toEqual([]);
   });
-
-  // The receipts and dig tables under each section are rune/main's research notes, imported verbatim,
-  // and keep the UTC and 24-hour times it wrote them in; they want Pacific with no zone, like every other source line.
-  test.todo('its Sources disclosures print the 12-hour clock with no zone');
 });
 
 describe('link previews', () => {

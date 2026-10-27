@@ -206,7 +206,7 @@ describe('what the page adds to the draft', () => {
     expect(hero.match(/<figure/g)?.length).toBe(1);
   });
 
-  test('the death section sets the body among the spiders after the death, its timeline before the recovery, the re-kit after it, then the Agility clip and the hiscore board after host’s #1', () => {
+  test('the death section sets the body among the spiders after the death, its timeline before the recovery, the re-kit after it, the Agility clip after host’s #1, and the hiscore board after the texts to the operator’s brother', () => {
     const s = sections.find((x) => x.id === 'the-death')!;
     const placed = [...s.figuresAt].sort(([a], [b]) => a - b).flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
     expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['spider-death', 'timeline', 'finish-rekit', 'finish-agility99', 'image']);
@@ -222,11 +222,20 @@ describe('what the page adds to the draft', () => {
     const recovery = s.blocks[rekit!.at]!;
     expect(recovery.kind === 'p' && recovery.text.startsWith('Overnight the helpers rebuilt the lost kit')).toBe(true);
     // Agility 99 is in the paragraph that closes on a colon before host's verification, so its clip
-    // follows that quotation, ahead of the board.
+    // follows that quotation.
     const climb = s.blocks[agility!.at - 1]!;
     expect(climb.kind === 'p' && climb.text.includes('reached Agility 99, the final skill, at 4:07 AM')).toBe(true);
     expect(quotes(s.blocks[agility!.at]!, 'OFFICIAL #1 VERIFIED')).toBe(true);
-    expect(board!.at).toBe(agility!.at);
+    expect(board!.at).toBeGreaterThan(agility!.at);
+  });
+
+  test('the swarm section closes on the cost link, after host’s answer, not between the usage limits and the quotation they lead into', () => {
+    const s = sections.find((x) => x.id === 'the-swarm')!;
+    const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
+    expect(placed.map(({ f }) => f.kind)).toEqual(['cost']);
+    const [{ at }] = placed as [{ at: number }];
+    expect(at).toBe(s.blocks.length - 1);
+    expect(quotes(s.blocks[at]!, 'Not exactly. Those are written handoffs, not a direct view of my internal reasoning.')).toBe(true);
   });
 
   test('the final run section sets the stop at the spiders after the quotation its paragraph introduces, and no Dragon Slayer stop, which it does not narrate', () => {
@@ -256,13 +265,16 @@ describe('what the page adds to the draft', () => {
     expect(narrated.kind === 'p' && narrated.text.includes('It died at the door of the Grand Tree')).toBe(true);
   });
 
-  test('the hiscore board follows host’s #1 verification, last of its figures, its files match it, and its caption reads in Pacific with no zone', () => {
+  test('the hiscore board closes the story, after the texts that sent it, its files match it, and its caption reads in Pacific with no zone', () => {
     const s = sections.find((x) => x.id === 'the-death')!;
+    expect(s).toBe(sections.at(-1)!);
     const [at, fs] = [...s.figuresAt].find(([, f]) => f.some((x) => x.kind === 'image'))!;
     const image = fs.at(-1)!;
     if (image.kind !== 'image') throw new Error('the board is not the last figure after its block');
-    expect(quotes(s.blocks[at]!, 'OFFICIAL #1 VERIFIED on BOTH playerpage')).toBe(true);
-    expect(quotes(s.blocks[at + 1]!, 'we did it!!!!')).toBe(true);
+    expect(at).toBe(s.blocks.length - 1);
+    expect(quotes(s.blocks[at]!, 'Im da king of runescape')).toBe(true);
+    const sent = s.blocks[at - 1]!;
+    expect(sent.kind === 'p' && sent.text === 'At 4:30 AM I sent my brother a screenshot of the hiscores:').toBe(true);
 
     const pub = new URL('../../public', import.meta.url).pathname;
     const png = readFileSync(`${pub}${image.src}.png`);
