@@ -56,8 +56,6 @@ export interface Tree {
   roots: number[];
   threads: number[];
   edges: Edge[];
-  /** The edges touching each unit. */
-  edgesOf: number[][];
   problems: Tick[];
 }
 
@@ -124,7 +122,6 @@ export function buildTree(data: TreeData): Tree {
   }
 
   const edges: Edge[] = [];
-  const edgesOf: number[][] = units.map(() => []);
   let window = 0;
   for (const [a, b, dw, n] of data.edges) {
     window += dw;
@@ -134,8 +131,6 @@ export function buildTree(data: TreeData): Tree {
     const lo = Math.max(ua.s, ub.s, window * EDGE_WINDOW);
     const hi = Math.min(ua.e, ub.e, window * EDGE_WINDOW + EDGE_WINDOW - 1);
     const t = Math.min(hi, Math.max(lo, window * EDGE_WINDOW + EDGE_WINDOW / 2));
-    edgesOf[a]!.push(edges.length);
-    edgesOf[b]!.push(edges.length);
     edges.push({ a, b, t, n });
   }
 
@@ -157,7 +152,6 @@ export function buildTree(data: TreeData): Tree {
     roots: units.filter((u) => u.parent < 0).map((u) => u.index),
     threads: units.filter((u) => u.kind === 'thread').map((u) => u.index),
     edges,
-    edgesOf,
     problems,
   };
 }
@@ -227,8 +221,6 @@ export interface Layout {
   y(t: number): number;
   tAt(y: number): number;
   xAt(unit: number, t: number): number;
-  /** The unit drawn nearest (x, y), within `radius` pixels, or -1. */
-  nearest(x: number, y: number, radius: number): number;
 }
 
 /** Lateral reach: a branch may drift this many pixels plus LAT_PER_PX per pixel it lives, plus its subtree's share. */
@@ -238,9 +230,6 @@ const LAT_PER_PX = 0.9;
 const LEAN = 2.2;
 /** No root band narrower than this share of the units. */
 const BAND_FLOOR = 0.03;
-const CELL = 12;
-/** Branches win a hit over a thread limb this many pixels nearer. */
-const LIMB_PENALTY = 4;
 
 export function layout(tree: Tree, { width, height, compact }: LayoutOptions): Layout {
   const left = compact ? 40 : 52;
@@ -355,37 +344,5 @@ export function layout(tree: Tree, { width, height, compact }: LayoutOptions): L
     }),
   ];
 
-  const grid = new Map<string, number[]>();
-  paths.forEach(({ xy }, u) => {
-    for (let k = 0; k < xy.length; k += 2) {
-      const key = `${Math.floor(xy[k]! / CELL)},${Math.floor(xy[k + 1]! / CELL)}`;
-      let cell = grid.get(key);
-      if (!cell) grid.set(key, (cell = []));
-      cell.push(xy[k]!, xy[k + 1]!, u);
-    }
-  });
-  const nearest = (x: number, py: number, radius: number): number => {
-    let best = -1;
-    let bd = Infinity;
-    const span = Math.ceil(radius / CELL);
-    const cx = Math.floor(x / CELL);
-    const cy = Math.floor(py / CELL);
-    for (let i = -span; i <= span; i++) {
-      for (let j = -span; j <= span; j++) {
-        const cell = grid.get(`${cx + i},${cy + j}`);
-        if (!cell) continue;
-        for (let k = 0; k < cell.length; k += 3) {
-          const u = cell[k + 2]!;
-          const d = Math.hypot(cell[k]! - x, cell[k + 1]! - py) + (units[u]!.kind === 'thread' ? LIMB_PENALTY : 0);
-          if (d < bd) {
-            bd = d;
-            best = u;
-          }
-        }
-      }
-    }
-    return bd < radius ? best : -1;
-  };
-
-  return { width, height, compact, left, top, bottom, bands, slot, limbs, paths, labels, days, y, tAt, xAt, nearest };
+  return { width, height, compact, left, top, bottom, bands, slot, limbs, paths, labels, days, y, tAt, xAt };
 }

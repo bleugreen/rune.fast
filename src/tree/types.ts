@@ -66,6 +66,3 @@ export interface RawTreeData extends Omit<TreeData, 'threads' | 'problems'> {
   threads: (TreeThread & { w?: string })[];
   problems: [number, number, string][];
 }
-
-/** Issue number to title. */
-export type TreeTitles = Record<string, string>;

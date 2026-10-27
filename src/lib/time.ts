@@ -33,7 +33,6 @@ const pacDayKey = new Intl.DateTimeFormat('en-CA', { timeZone: PACIFIC, year: 'n
 const pacWeekdayDay = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric' });
 const pacDayLong = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long', day: 'numeric', month: 'long' });
 const pacWeekday = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long' });
-const pacWeekdayShort = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short' });
 const pacDayShort = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric', month: 'short' });
 const pacDayMonthYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'long', year: 'numeric' });
 const pacDayMonYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'short', year: 'numeric' });
@@ -74,8 +73,6 @@ export const pacificHour = (t: number) => Number(pacHour.formatToParts(t).find((
 export const fmtPacificHm = (t: number) => clock(pacHm, t);
 /** '4:14:43 AM', Pacific, with no zone. */
 export const fmtPacificHms = (t: number) => clock(pacHms, t);
-/** 'Wed 1:00 PM', Pacific, with no zone. */
-export const fmtPacificWeekdayHm = (t: number) => `${pacWeekdayShort.format(t)} ${fmtPacificHm(t)}`;
 
 /** A span of the clock, the period written once where both ends share it: '3:27:15–3:27:27 AM', '11:58 PM–12:03 AM'. */
 export function fmtPacificClockRange(a: number, b: number, withSeconds = false): string {
