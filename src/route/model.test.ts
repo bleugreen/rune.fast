@@ -110,8 +110,8 @@ describe('the hiscore’s clock', () => {
 
   test('the hiscore runs 6, then 76, then 730 ticks ahead of the session clock, and never falls back', () => {
     expect([...new Set(route.stampDrift.map((s) => s.drift))]).toEqual([0, 6, 76, 730]);
-    route.drift.forEach((p, i) => i && expect(p.drift).toBeGreaterThanOrEqual(route.drift[i - 1]!.drift));
-    expect(route.drift.at(-1)).toEqual({ tick: route.finish, drift: 730 });
+    route.stampDrift.forEach((p, i) => i && expect(p.drift).toBeGreaterThanOrEqual(route.stampDrift[i - 1]!.drift));
+    expect(route.stampDrift.at(-1)).toMatchObject({ skill: 'Agility', drift: 730 });
   });
 });
 
@@ -165,6 +165,14 @@ describe('the rail', () => {
       expect(route.levelsAt(tick - 1)[skill]).toBeLessThan(99);
       expect(route.levelsAt(tick)[skill]).toBe(99);
     }
+  });
+
+  test('marks each 99 as just reached on the tick of its stamp, the ones on a step’s last tick included', () => {
+    for (const { skill, tick } of route.stamps) expect(route.justReached(tick)).toBe(skill);
+    expect(route.justReached(0)).toBeUndefined();
+    // Gone once the step after the one it was reached in begins.
+    const fm = route.steps.find((s) => s.spec.id === 'rings')!;
+    expect(route.justReached(fm.end)).toBeUndefined();
   });
 
   test('at Magic 99 it shows the knights’ levels', () => {

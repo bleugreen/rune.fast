@@ -49,7 +49,12 @@ export function Spine({ step, route, points, height }: Props) {
     const y = yIn(points, s.tick);
     return y === undefined ? [] : [{ y, tick: s.tick, text: `${s.skill} 99` }];
   });
-  const labels: { y: number; at: number; tick: number; text?: string }[] = [{ y: 0, at: 0, tick: step.start }, ...marks.map((m) => ({ ...m, at: m.y }))];
+  // A step that begins on the tick of the previous step's last 99 leaves that label alone at its top.
+  const startTaken = route.steps[step.index - 1]?.nineties.some((s) => s.tick === step.start) ?? false;
+  const labels: { y: number; at: number; tick: number; text?: string }[] = [
+    ...(startTaken ? [] : [{ y: 0, at: 0, tick: step.start }]),
+    ...marks.map((m) => ({ ...m, at: m.y })),
+  ];
   for (let i = 1; i < labels.length; i++) labels[i]!.at = Math.max(labels[i]!.at, labels[i - 1]!.at + LABEL_GAP);
 
   return (

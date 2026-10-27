@@ -96,12 +96,6 @@ export interface Step {
   relogs: readonly Relog[];
 }
 
-export interface DriftPoint {
-  /** The hiscore's clock, and how far it is ahead of the runner's session clock there. */
-  tick: number;
-  drift: number;
-}
-
 export interface LedgerTerm {
   id: 'unassigned' | 'short-logins' | 'after-finish' | 'residual';
   ticks: number;
@@ -143,7 +137,6 @@ export interface Route {
   breaks: readonly Break[];
   relogs: readonly Relog[];
   logins: readonly ShortLogin[];
-  drift: readonly DriftPoint[];
   /** Each stamp's drift: the hiscore's tick less the runner's own tick for the same 99. */
   stampDrift: readonly (Stamp & { drift: number })[];
   ledger: Ledger;
@@ -151,6 +144,12 @@ export interface Route {
   levelsAt(tick: number): Levels;
   /** The step a tick falls in (the last step holds the finish). */
   stepAt(tick: number): Step;
+  /**
+   * The 99 the rail marks as just reached at `tick`: the latest stamp at or before it, while the
+   * step being read is the one it was reached in or the one straight after (a 99 on a step's last
+   * tick is first seen as the next step begins).
+   */
+  justReached(tick: number): Skill | undefined;
 }
 
 const START_LEVEL = (s: Skill) => (s === 'Hitpoints' ? 10 : 1);
@@ -355,19 +354,12 @@ export function buildRoute(log: RouteLog, plan: RoutePlan, timeline: Timeline): 
     };
   });
   const stepAt = (tick: number) => steps.find((s) => tick < s.end) ?? steps.at(-1)!;
+  const justReached = (tick: number) => {
+    const step = stepAt(tick);
+    return [...stamps].reverse().find((s) => s.tick <= tick && s.tick >= step.start)?.skill;
+  };
 
-  /* How far the hiscore runs ahead of the runner's session clock. */
-  const drift: DriftPoint[] = [{ tick: 0, drift: 0 }];
-  let ahead = 0;
-  for (const g of clock.segments) {
-    if (g.from >= finish) break;
-    if (g.kind === 'session') continue;
-    if (g.to === g.from) continue;
-    drift.push({ tick: g.from, drift: ahead });
-    ahead += Math.min(g.to, finish) - g.from;
-    drift.push({ tick: Math.min(g.to, finish), drift: ahead });
-  }
-  drift.push({ tick: finish, drift: ahead });
+  /* How far the hiscore runs ahead of the runner's session clock at each logged 99. */
   const sessionClock = (tick: number) =>
     clock.segments.filter((g) => g.kind === 'session').reduce((s, g) => s + overlap(g, 0, tick), 0);
   const stampDrift = stamps.filter((s) => logged.has(s.skill)).map((s) => ({ ...s, drift: s.tick - sessionClock(s.tick) }));
@@ -401,7 +393,6 @@ export function buildRoute(log: RouteLog, plan: RoutePlan, timeline: Timeline): 
     breaks,
     relogs,
     logins: [...loginById.values()],
-    drift,
     stampDrift,
     ledger: {
       hiscore: finish,
@@ -415,5 +406,6 @@ export function buildRoute(log: RouteLog, plan: RoutePlan, timeline: Timeline): 
     },
     levelsAt,
     stepAt,
+    justReached,
   };
 }

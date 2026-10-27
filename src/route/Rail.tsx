@@ -10,15 +10,13 @@ interface RailState {
   tick: number;
   levels: Readonly<Record<Skill, number>>;
   step: Route['steps'][number];
-  /** The 99 reached last, while the step it was reached in is still the one being read. */
+  /** The 99 just reached (Route.justReached). */
   now: Skill | undefined;
 }
 
 function useRail(route: Route): RailState {
   const tick = useReadingTick();
-  const step = route.stepAt(tick);
-  const now = [...route.stamps].reverse().find((s) => s.tick <= tick && s.tick > step.start)?.skill;
-  return { tick, levels: route.levelsAt(tick), step, now };
+  return { tick, levels: route.levelsAt(tick), step: route.stepAt(tick), now: route.justReached(tick) };
 }
 
 const skillClass = (s: RailState, skill: Skill) =>

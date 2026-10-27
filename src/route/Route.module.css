@@ -431,45 +431,6 @@
   display: none;
 }
 
-/* ---------- The finish ---------- */
-
-.drift {
-  margin: var(--space-2) 0;
-}
-.driftTitle {
-  font-family: var(--font-sans);
-  font-size: var(--label-lg);
-  font-weight: 600;
-  line-height: var(--leading-snug);
-  margin-bottom: var(--space-2);
-}
-.drift svg {
-  display: block;
-  overflow: visible;
-}
-.driftGrid {
-  stroke: var(--hairline);
-  stroke-width: var(--stroke-hair);
-}
-.driftAxis,
-.driftLabel {
-  font-family: var(--font-sans);
-  font-size: 10.5px;
-  fill: var(--ink-muted);
-  font-variant-numeric: lining-nums tabular-nums;
-}
-.driftLabel {
-  fill: var(--ink);
-}
-.driftLine {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 1.5;
-}
-.driftDot {
-  fill: var(--accent);
-}
-
 /* ---------- Narrow: the gutter is a rule beside the text ---------- */
 
 @media (max-width: 63.999rem) {

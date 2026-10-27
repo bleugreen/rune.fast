@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react';
 import { timeline } from '../data/timeline';
-import { fmtInt } from '../lib/numbers';
 import { fmtPacificDayLong, pacificZone, parseUtc } from '../lib/time';
 import { route } from '../route/data';
 import { DriftChart } from '../route/DriftChart';
@@ -12,6 +11,7 @@ import { StepSection } from '../route/StepSection';
 import { ClockContext, ReadingClock } from '../route/useReadingTick';
 import { story } from '../story/story';
 import { storySections } from '../story/sections';
+import { TicksLadder } from '../story/TicksLadder';
 import type { Timeline } from '../data/types';
 import styles from './RoutePage.module.css';
 
@@ -33,26 +33,6 @@ export function openingFacts(t: Timeline): OpeningFacts {
 function days(f: OpeningFacts): { start: string; end: string } {
   const start = fmtPacificDayLong(f.start);
   return { start, end: fmtPacificDayLong(f.last99).split(' ')[0]! };
-}
-
-function Ledger({ r }: { r: Route }) {
-  const rows: [string, number][] = [
-    [LEDGER_WORDS.swarm!, r.ledger.swarm],
-    ...r.ledger.terms.map((t) => [LEDGER_WORDS[t.id]!, t.ticks] as [string, number]),
-    [LEDGER_WORDS.hiscore!, r.ledger.hiscore],
-  ];
-  return (
-    <table className={styles.ledger}>
-      <tbody>
-        {rows.map(([label, ticks]) => (
-          <tr key={label}>
-            <td>{label}</td>
-            <td>{ticks < 0 ? `−${fmtInt(-ticks)}` : fmtInt(ticks)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
 }
 
 export function RoutePage() {
@@ -90,20 +70,12 @@ export function RoutePage() {
             <section className={styles.finish} aria-labelledby="finish-title">
               <p className={styles.kicker}>The finish</p>
               <h2 id="finish-title" className={styles.finishTitle}>
-                {`${route.stamps.at(-1)!.skill} ${MAX_LEVEL}, and the two clocks`}
+                {`${route.stamps.at(-1)!.skill} ${MAX_LEVEL}, and the record`}
               </h2>
-              {finish.before.map((text, i) => (
-                <p key={i} className={styles.prose}>
-                  {text}
-                </p>
-              ))}
-              <DriftChart route={route} />
-              {finish.middle.map((text, i) => (
-                <p key={i} className={styles.prose}>
-                  {text}
-                </p>
-              ))}
-              <Ledger r={route} />
+              <p className={styles.prose}>{finish}</p>
+              <figure className={styles.record}>
+                <TicksLadder record={{ label: 'The previous record', ticks: route.record }} run={{ label: facts.name, ticks: route.finish }} />
+              </figure>
             </section>
           </div>
           <aside className={styles.railCol} aria-label="Where the run is">
