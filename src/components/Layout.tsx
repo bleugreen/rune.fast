@@ -82,7 +82,7 @@ export function Layout() {
       <footer className={styles.footer}>
         <div className={styles.footInner}>
           <span>
-            <Byline /> · Every number on this site traces to a source
+            <Byline /> · <span className={styles.phrase}>Every number on this site traces to a source</span>
           </span>
           <span>Generated {fmtCalendarDate(__BUILD_DATE__)}</span>
           <p className={styles.credits}>

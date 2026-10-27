@@ -78,7 +78,7 @@ const BYLINE = 'Operated by <a href="https://bleu.green">bleugreen</a>';
 describe('the footer', () => {
   test.each([...PAGE_PATHS])('%s names the operator, linked to their site, first', async (p) => {
     const f = footer(await renderSite(p));
-    expect(f).toContain(`<span><span>${BYLINE}</span> · Every number on this site traces to a source</span>`);
+    expect(f).toMatch(new RegExp(`^<footer[^>]*><div[^>]*><span><span>${BYLINE}</span> · <span[^>]*>Every number on this site traces to a source</span></span>`));
     expect(f).not.toContain('target=');
   });
 
