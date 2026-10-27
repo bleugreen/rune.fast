@@ -272,8 +272,8 @@ export function HarnessPage() {
           <code>~</code> in these targets means the agent making the call, so <code>{ADDRESSES.wakes}</code> is
           main’s own list of wake subscriptions. The fourth item files rs/{filed.issue}, the project’s first issue, by
           appending it to the issues collection, and names the recipe to start on it. Filing an issue is a write like
-          any other, and so is merging a pull request. (The builder that took rs/{filed.issue} found the fault was in
-          main’s own call to the client, not the client.)
+          any other, and so is merging a pull request. (The builder that took rs/{filed.issue} found the hang began with
+          a malformed call in main’s own script, which neither client rejected.)
         </p>
         <p className={styles.prose}>
           The verb an agent used most shows what its job was. Builders ran commands above all:{' '}

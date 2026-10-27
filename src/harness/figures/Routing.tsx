@@ -32,7 +32,7 @@ export function stepText(s: RouteStep, m: HarnessModel): string {
     case 'answer':
       return `The operator answers “${s.words}”, ${r.answerSeconds} seconds later.`;
     case 'start':
-      return `rs/3 starts work on ${listWords(s.to.map(issue))}, two fixes filed under main.`;
+      return `rs/3 starts work on ${listWords(s.to.map(issue))}, two client fixes that neither sat under rs/3.`;
     case 'decision':
       return `main to rs/3: “${s.words}” main has started both fixes too; its starts become execution ${r.mainExecution} of each and supersede rs/3’s.`;
     case 'fanout':
