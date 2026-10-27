@@ -27,6 +27,7 @@ import { brotliCompressSync, constants } from 'node:zlib';
 import { chromium, type Browser, type BrowserContextOptions } from 'playwright-core';
 import { preview } from 'vite';
 import { BEACON_SRC } from '../src/lib/analytics';
+import { PAGE_ONLY } from '../src/meta';
 
 const { values: args } = parseArgs({ options: { measure: { type: 'boolean', default: false } } });
 
@@ -57,10 +58,17 @@ const s = (ms: number) => `${(ms / 1000).toFixed(2)} s`;
 /** Brotli at a middling level, as a CDN compresses on the fly; the maximum would flatter the budget. */
 const brotli = (buf: Buffer) => brotliCompressSync(buf, { params: { [constants.BROTLI_PARAM_QUALITY]: 5 } }).length;
 
+/**
+ * The entry and the chunks it imports, which the build modulepreloads. A preload marked for one
+ * page (the story's tree data, vite.config.ts) is data fetched beside them, not code, and the
+ * first-screen check holds it.
+ */
 function initialScripts(): string[] {
   const html = readFileSync('dist/index.html', 'utf8');
   const entry = [...html.matchAll(/<script\b[^>]*\btype="module"[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]!);
-  const preloads = [...html.matchAll(/<link\b[^>]*\brel="modulepreload"[^>]*\bhref="([^"]+)"/g)].map((m) => m[1]!);
+  const preloads = [...html.matchAll(/<link\b[^>]*\brel="modulepreload"[^>]*>/g)]
+    .filter((m) => !m[0].includes(`${PAGE_ONLY}=`))
+    .map((m) => /\bhref="([^"]+)"/.exec(m[0])![1]!);
   return [...entry, ...preloads];
 }
 

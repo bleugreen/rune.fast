@@ -153,12 +153,22 @@ export function headTags(m: PageMeta): string[] {
   ];
 }
 
-/** The built shell with a page's head written in at the marker, at the marker's indent. */
+/** The attribute that marks a tag of the built shell's head as one page's alone, by its path. */
+export const PAGE_ONLY = 'data-page';
+
+const pageOnlyTag = new RegExp(`[ \\t]*<[^>]*\\b${PAGE_ONLY}="([^"]*)"[^>]*>\\n?`, 'g');
+
+/**
+ * The built shell with a page's head written in at the marker, at the marker's indent, and
+ * without the tags marked for another page.
+ */
 export function withHead(shell: string, m: PageMeta): string {
   const at = shell.indexOf(HEAD_MARKER);
   if (at < 0 || shell.indexOf(HEAD_MARKER, at + 1) >= 0) {
     throw new Error(`page heads: the shell must carry ${HEAD_MARKER} exactly once (index.html)`);
   }
   const indent = /[ \t]*$/.exec(shell.slice(0, at))![0];
-  return shell.slice(0, at) + headTags(m).join(`\n${indent}`) + shell.slice(at + HEAD_MARKER.length);
+  const head = shell.slice(0, at) + headTags(m).join(`\n${indent}`) + shell.slice(at + HEAD_MARKER.length);
+  const end = head.indexOf('</head>');
+  return head.slice(0, end).replace(pageOnlyTag, (tag, path: string) => (path === m.path ? tag : '')) + head.slice(end);
 }

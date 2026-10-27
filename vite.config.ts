@@ -10,6 +10,7 @@ import { projectTree } from './scripts/public-tree';
 import { isStoryMd, storyModule } from './scripts/story-module';
 import { pagesRoutesFile } from './scripts/pages-routes';
 import { pacificDayKey } from './src/lib/time';
+import { PAGE_ONLY } from './src/meta';
 
 /** Archival exports in data/, by path suffix, and the public projection that replaces each in the build. */
 const PROJECTIONS: ReadonlyArray<readonly [string, (raw: never) => unknown]> = [
@@ -55,9 +56,29 @@ function story(): Plugin {
   };
 }
 
+/**
+ * The story page's HTML preloads the run tree's data chunk (src/tree/data.ts), so it downloads
+ * beside the entry rather than once the entry has run. Written into the shell marked for the story
+ * page alone; withHead (src/meta.ts) drops it from every other page's HTML.
+ */
+function treePreload(): Plugin {
+  return {
+    name: 'rune:tree-preload',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, ctx) {
+        const chunk = Object.values(ctx.bundle ?? {}).find((c) => c.type === 'chunk' && c.facadeModuleId?.endsWith('/data/tree.json'));
+        if (!chunk) throw new Error('rune:tree-preload: no chunk holds data/tree.json');
+        return [{ tag: 'link', attrs: { rel: 'modulepreload', href: `/${chunk.fileName}`, [PAGE_ONLY]: '/' }, injectTo: 'head' }];
+      },
+    },
+  };
+}
+
 const site: UserConfig = {
     // .world/ holds the local cache copy and clip output; never under public/, so never in dist/.
-    plugins: [publicData(), story(), worldAssets('.world'), pagesRoutesFile()],
+    plugins: [publicData(), story(), worldAssets('.world'), pagesRoutesFile(), treePreload()],
     resolve: { dedupe: ['react', 'react-dom'] },
     define: {
       __BUILD_DATE__: JSON.stringify(pacificDayKey(Date.now())),

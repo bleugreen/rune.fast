@@ -7,7 +7,8 @@ import { costInputs } from './data/cost';
 import { timeline } from './data/timeline';
 import { fmtInt, fmtUsd } from './lib/numbers';
 import { fmtDuration } from './lib/time';
-import { AUTHOR, HEAD_MARKER, ORIGIN, PAGE_PATHS, SHARE_IMAGE, SITE_NAME, applyPageMeta, metaFor, pageFile, siteMeta, withHead, type PageMeta } from './meta';
+import { AUTHOR, PAGE_ONLY } from './lib/site';
+import { HEAD_MARKER, ORIGIN, PAGE_PATHS, SHARE_IMAGE, SITE_NAME, applyPageMeta, metaFor, pageFile, siteMeta, withHead, type PageMeta } from './meta';
 import { story } from './story/story';
 
 const root = new URL('../', import.meta.url);
@@ -127,6 +128,15 @@ describe('each page’s built head', () => {
 
   test('each page has its own file, where Pages serves it without a redirect', () => {
     expect(PAGE_PATHS.map(pageFile)).toEqual(['index.html', 'route.html', 'tricks.html', 'cost.html', 'harness.html']);
+  });
+
+  test('a head tag marked for one page stays in that page’s HTML only', () => {
+    const marked = shell.replace('</head>', `  <link rel="modulepreload" href="/assets/tree-x.js" ${PAGE_ONLY}="/">\n  </head>`);
+    for (const p of PAGE_PATHS) {
+      const html = withHead(marked, meta[p]);
+      expect(html.includes('/assets/tree-x.js')).toBe(p === '/');
+      expect(html.slice(html.indexOf('</head>'))).toBe(shell.slice(shell.indexOf('</head>')));
+    }
   });
 
   test('the shell must carry the marker exactly once', () => {
