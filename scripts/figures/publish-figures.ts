@@ -87,8 +87,8 @@ function magick(...argv: string[]): string {
 /** Throws unless every mask of `f` is one flat colour in `file`, at the source's own scale. */
 function assertMasked(f: FigureEntry, file: string) {
   for (const m of f.masks) {
-    const spread = magick(file, '-crop', `${m.width}x${m.height}+${m.x}+${m.y}`, '+repage', '-format', '%[fx:maxima-minima]', 'info:');
-    if (Number(spread) !== 0) throw new Error(`${file}: the mask over ${m.what} is not solid (spread ${spread})`);
+    const colours = magick(file, '-crop', `${m.width}x${m.height}+${m.x}+${m.y}`, '+repage', '-format', '%k', 'info:');
+    if (colours.trim() !== '1') throw new Error(`${file}: the mask over ${m.what} is not solid (${colours} colours)`);
   }
 }
 
