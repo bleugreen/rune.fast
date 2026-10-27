@@ -20,11 +20,16 @@ function* files(dir: string): Generator<string> {
   }
 }
 
+const ENTITIES: Readonly<Record<string, string>> = { '&quot;': '"', '&#x27;': "'", '&#39;': "'", '&lt;': '<', '&gt;': '>', '&amp;': '&' };
+/** A page's HTML with its character references as the reader gets them, so an escaped quote ends an address as a quote does. */
+const decoded = (html: string) => html.replace(/&(?:quot|#x27|#39|lt|gt|amp);/g, (e) => ENTITIES[e]!);
+
 let hits = 0;
 for (const f of files('dist')) {
   // The harness page's taught addresses are subject matter, and its HTML sets the head of one as a
   // segment of its own; any other address still fails.
-  const text = withoutAddresses(readFileSync(f, 'utf8'), [...TAUGHT, ADDRESS_HEAD]);
+  const raw = readFileSync(f, 'utf8');
+  const text = withoutAddresses(f.endsWith('.html') ? decoded(raw) : raw, [...TAUGHT, ADDRESS_HEAD]);
   for (const [what, re] of FORBIDDEN) {
     const m = re.exec(text);
     if (m) {
