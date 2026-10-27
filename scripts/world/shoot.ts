@@ -2,7 +2,7 @@
  * Screenshots footage embeds in system Chrome, through the frame's own controls.
  *
  *   bun scripts/world/shoot.ts [--base http://localhost:5173] [--page /tokens] [--out .world/shots] \
- *     [--shot agility-lap@0:agility-lap] [--mode still|playing] [--bare] [--headed] [--timings]
+ *     [--shot agility-lap@0:agility-lap] [--mode still|playing] [--bare] [--scale 2] [--headed] [--timings]
  *
  * A shot is <embed id>@<seconds into the window>:<name>. `still` plays, pauses at once and steps
  * to the second given, then for a replay waits for its data-replay-ready signal (the followed
@@ -27,6 +27,8 @@ const { values: args } = parseArgs({
     // Print the load stages (the page's replay:* marks), network and worker timings.
     timings: { type: 'boolean', default: false },
     width: { type: 'string', default: '1440' },
+    // Device pixels per CSS pixel; a poster is shot above its registered size and scaled down.
+    scale: { type: 'string', default: '2' },
     timeout: { type: 'string', default: '180000' },
   },
 });
@@ -44,7 +46,7 @@ try {
     const [where, name] = spec.split(':') as [string, string];
     const [id, at] = where.split('@') as [string, string];
     const seconds = Number(at ?? 0);
-    const page = await browser.newPage({ viewport: { width: Number(args.width), height: 900 }, deviceScaleFactor: 2 });
+    const page = await browser.newPage({ viewport: { width: Number(args.width), height: 900 }, deviceScaleFactor: Number(args.scale) });
     const errors: string[] = [];
     const logs: string[] = [];
     page.on('console', (m) => {
