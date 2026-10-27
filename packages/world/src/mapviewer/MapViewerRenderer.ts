@@ -39,16 +39,13 @@ export abstract class MapViewerRenderer<T extends MapSquare = MapSquare> extends
         this.mapViewer.inputManager.cleanUp();
     }
 
+    // Map squares are queued by the first frame's mapManager.update, after the live layer has
+    // placed the camera. Queuing here would load the squares around the camera's construction-time
+    // position, which a replay never shows, ahead of the renderer's own worker calls.
     initCache(): void {
         this.mapManager.init(
             this.mapViewer.mapFileIndex,
             SceneBuilder.fillEmptyTerrain(this.mapViewer.loadedCache.info),
-        );
-        this.mapManager.update(
-            this.mapViewer.camera,
-            this.stats.frameCount,
-            this.mapViewer.renderDistance,
-            this.mapViewer.unloadDistance,
         );
     }
 

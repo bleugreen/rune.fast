@@ -23,6 +23,7 @@ The dashboard, server and telemetry; the world map, minimap, menus and loading U
 - `src/replay`: the clip format, the deterministic `Playhead`, the chunk cutter and the browser `ReplayDriver`.
 - Settings are a plain `RenderSettings` object instead of a leva panel; the cache is fetched from a configured asset base; overlay text is drawn in IBM Plex Sans.
 - The renderer's teardown no longer stops the viewer's live controller.
+- Loading a cache no longer queues map squares around the camera's default position (Lumbridge); the first frame queues them where the live layer has put the camera.
 
 ## Credits
 
