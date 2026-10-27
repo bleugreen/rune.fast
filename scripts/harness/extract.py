@@ -256,6 +256,10 @@ def extract(x: Export) -> dict:
         "end": export_end,
     }
     src("head", "threads", "main", f"the rs project's main thread, created {when(main_created)}")
+    src("operator", "export", "ev", f"the operator's {len(typed)} typed messages in the agents' transcripts, less {len(user_rows) - len(typed)} the app wrote itself")
+    src("operator", "export", "turns", f"the {totals_answers(x)} turns that began with the operator's answer to a question")
+    src("operator", "export", "tenets", "the operator's tenet verdicts")
+    src("operator", "export", "messages", f"the export's {messages:,} messages, {system_msgs:,} of them from the harness")
     src("head", "export", "issues", "the rs project's export: its 900 issues, 2,481 agent jobs and 35,598 messages")
 
     # --- Fig 1: the address ---------------------------------------------------
@@ -627,6 +631,10 @@ def extract(x: Export) -> dict:
         "rs302": rs302,
         "sources": dict(sources),
     }
+
+
+def totals_answers(x: Export) -> int:
+    return x.val("select count(*) from turns where start_reason='prompt_response'")
 
 
 def before_address(text: str) -> str:
