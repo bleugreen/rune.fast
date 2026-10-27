@@ -20,7 +20,9 @@
  *
  * Inline markdown is limited to `code` spans and *emphasis*, which the page
  * renders; anything else is refused rather than shown to the reader as literal
- * brackets or asterisks.
+ * brackets or asterisks. Square brackets on their own are not markdown: they are
+ * the narrator's editorial insertions in a quotation ('The record is [3 hours 59
+ * minutes]'), set as written, so only a link's '](' is refused.
  */
 
 import { plainReceiptLines, plainSourceLines } from './sources';
