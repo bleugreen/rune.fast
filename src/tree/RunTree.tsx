@@ -233,11 +233,10 @@ export function RunTree({ className }: { className?: string }) {
             {L.labels.map((l) => {
               const w = l.text.length * monoPx * MONO_ADVANCE;
               const x = l.side === 'left' ? l.x - w - 6 : l.side === 'right' ? l.x + 6 : l.x - w / 2;
-              // Clear of the day labels' gutter wherever it is.
-              const lo = L.axis === 'left' ? L.left : 0;
+              // Clear of the day labels' gutter, on whichever side it is.
               const hi = L.axis === 'left' ? L.width : L.width - L.right;
               return (
-                <code key={l.unit} className={styles.thread} style={{ left: Math.max(lo, Math.min(hi - w - 2, x)), top: l.y }}>
+                <code key={l.unit} className={styles.thread} style={{ left: Math.max(L.left, Math.min(hi - w - 2, x)), top: l.y }}>
                   {l.text}
                 </code>
               );
