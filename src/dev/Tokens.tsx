@@ -7,10 +7,10 @@ import { clipById } from '../clips/registry';
 import styles from './Tokens.module.css';
 
 /**
- * Footage shown here, one of each kind in the shared frame: a 3D replay window no page places yet,
- * and a video clip the story places.
+ * Footage shown here in the shared frame: two 3D replay windows no page places yet, which share the
+ * page's one world and take its stage in turn, and a video clip the story places.
  */
-export const TOKENS_CLIPS = ['agility-lap', 'finish-rekit'] as const;
+export const TOKENS_CLIPS = ['agility-lap', 'agility-rocks', 'finish-rekit'] as const;
 
 const COLOURS = ['--paper', '--paper-shade', '--ink', '--ink-muted', '--ink-faint', '--accent', '--hairline', '--rule'] as const;
 
@@ -114,7 +114,7 @@ export default function Tokens() {
       </section>
 
       <section className={`${styles.block} ${styles.full}`}>
-        <h2 className={styles.h2}>Footage: a 3D replay and a video clip, in the one frame</h2>
+        <h2 className={styles.h2}>Footage: two 3D replays and a video clip, in the one frame</h2>
         {TOKENS_CLIPS.map((id) => (
           <div key={id} className={styles.footage}>
             <Clip clip={clipById(id)} />
