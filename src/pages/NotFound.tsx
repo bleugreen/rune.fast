@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { SITE_NAME } from '../meta';
+import { NOT_FOUND_TITLE } from '../meta';
 import styles from './StoryPage.module.css';
 
 export function NotFound() {
   useEffect(() => {
-    document.title = `Nothing here · ${SITE_NAME}`;
+    document.title = NOT_FOUND_TITLE;
   }, []);
 
   return (
