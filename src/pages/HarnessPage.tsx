@@ -78,6 +78,7 @@ export function HarnessPage() {
   const r = m.routing;
   const T = m.tenets;
   const o = m.operator;
+  const f = m.filing;
   const q = m.quotes as Record<string, { t: number; words: string; issue: number; from: string }>;
   const s = m.sources as Record<string, string[]>;
   const verbsBuilders = m.verbs.rows[0]!;
@@ -89,7 +90,7 @@ export function HarnessPage() {
 
   const titles = {
     address: 'Each segment of the address names an object, from the project down to the pull request',
-    lifelines: `The operator talked mostly to the ${countWord(t.threads)} threads; the threads and their coordinators filed the issues`,
+    lifelines: `The operator talked mostly to the ${countWord(t.threads)} threads; coordinators filed most of the issues`,
     issue: `rs/${a.issue} sat held for ${fmtDuration(i.heldMs)}; one builder did the work in ${fmtDuration(i.workMs)}`,
     recipes: `${fmtInt(m.build.executions)} of the ${fmtInt(m.recipeTotal)} executions ran the one-stage build recipe, not the documented planbuild`,
     write: `One write carried ${countWord(m.write.items.length)} changes: replace a terminal, wake on its output, and file an issue`,
@@ -160,27 +161,38 @@ export function HarnessPage() {
           A thread is a long-lived agent that a person talks to. It has a name where an issue has a number, and it has
           no end. The run had {countWord(t.threads)}. <code>main</code> held the
           speedrun itself, and {threadList(m.otherThreads)} each held one part of the project. Most of what the operator
-          typed went to them: {fmtInt(o.toThreads)} of {fmtInt(o.messages)} messages.
+          typed before the run took the record, at {at(f.cut)}, went to them: {fmtInt(f.operatorToThreads)} of{' '}
+          {fmtInt(f.operatorTyped)} messages.
         </p>
         <p className={styles.prose}>
-          A thread hands out work by filing issues. An issue filed under a thread reports back to that thread, and its
-          pull request lands on the project’s base branch.
+          A thread hands out work by filing issues. Each issue also has a parent, the thread or issue it reports back
+          to, which is usually the one that filed it. An issue whose parent is a thread lands its pull request on the
+          project’s base branch.
         </p>
         <Figure
           title={titles.lifelines}
-          sub="Each bar is six hours. Above a thread’s line, the operator’s messages to it; below, the issues filed under it. The dashed last row: issues filed by coordinators."
+          sub="Each bar is six hours, up to the record. Above a thread’s line, the operator’s messages to it; below, the issues it filed. The dashed last row: issues filed by coordinators."
         >
           <Lifelines m={m} label={titles.lifelines} />
+          <p className={styles.note}>
+            Not drawn: {fmtInt(f.builders)} issues filed by builders and {countWord(f.harness)} by the harness itself.
+          </p>
         </Figure>
         <p className={styles.prose}>
           Most issues, though, were filed by other issues. A coordinator is an issue whose agent’s job is to file
           issues: it splits a mission into child issues, reviews what each child sends back, and puts the results
-          together. Coordinators filed {fmtInt(t.coordinatorFiled)} of the {fmtInt(t.issues)} issues, so the work
-          forms a tree: the operator at the top, the threads below, coordinators below the threads, and the agents
-          doing the work at the leaves.
-          The first red mark on <code>main</code>’s line is rs/{r.coordinator}, a coordinator for quest routes that{' '}
-          <code>main</code> filed at{' '}
-          {at(m.lifelines.marks.rs3)}. The section on asking and answering comes back to it.
+          together. Of the {fmtInt(f.issues)} issues filed before the record, coordinators filed{' '}
+          {fmtInt(f.coordinators)} and the threads {fmtInt(f.threads)}, so the work forms a tree: the operator at the
+          top, the threads below, coordinators below the threads, and the agents doing the work at the leaves. The red
+          mark on <code>main</code>’s line is rs/{r.coordinator}, a coordinator for quest routes that <code>main</code>{' '}
+          filed at {at(m.lifelines.marks[0]!.t)}. The section on asking and answering comes back to it.
+        </p>
+        <p className={styles.prose}>
+          Who files an issue and where it reports can differ. The other red mark, on the coordinators’ row, is rs/
+          {f.crossed.issue}: the rs/{f.crossed.filer} {f.crossed.filerRole} filed it, but gave it{' '}
+          <code>{f.crossed.parent}</code> as its parent, so the harness’s notices about it went to{' '}
+          <code>{f.crossed.parent}</code>. This page counts an issue as filed by the agent that filed it; its parent
+          is where its news is routed.
         </p>
         <p className={styles.prose}>
           A child issue is different from the sub-agent you know from Claude Code. A sub-agent runs inside your
@@ -314,7 +326,7 @@ export function HarnessPage() {
           Agents need decisions from the person, and the person needs to hear what the agents did. Cairn routes both
           through objects. A question is an object the
           harness puts in front of the operator. A decision travels down as a message, and a report travels up as a
-          message to whoever filed the work. A message wakes the agent it is addressed to.
+          message to the issue’s parent. A message wakes the agent it is addressed to.
         </p>
         <p className={styles.prose}>
           These are {countWord(r.spanMinutes)} minutes on the first evening around rs/{r.coordinator}, the quest-route
