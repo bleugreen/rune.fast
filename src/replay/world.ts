@@ -75,7 +75,8 @@ function world(): Promise<SharedWorld> {
     try {
       await Promise.all(OVERLAY_FONTS.map((font) => document.fonts.load(font)));
       performance.mark('replay:fonts');
-      const cache = await loadCache();
+      // Each downloaded part is progress, so a slow connection is not taken for a stalled load.
+      const cache = await loadCache(undefined, () => advance(`${progress.phase.split(' (')[0]} (cache download)`));
       performance.mark('replay:cache-fetched');
       const viewer = new MapViewer(pool, cache);
       made.viewers++;
@@ -126,8 +127,21 @@ async function fetchChunk(recording: string, chunk: ClipChunk): Promise<ChunkDat
   return parseChunk(text, REVISION);
 }
 
-/** The last stage handed out and how far its claim got, for `window.__replay()` in development. */
-const debug: { phase?: string; stage?: Omit<Stage, 'kFrom' | 'kTo'> } = {};
+/** The latest claim's load: the step it is on and when it last moved on (performance.now()). */
+const progress = { phase: 'idle', at: 0 };
+
+/** How far the latest claim's load has got, and when it last moved on: the embed's stall watchdog reads it. */
+export function loadProgress(): { readonly phase: string; readonly at: number } {
+  return progress;
+}
+
+function advance(phase: string): void {
+  progress.phase = phase;
+  progress.at = performance.now();
+}
+
+/** The last stage handed out, for `window.__replay()` in development. */
+const debug: { stage?: Omit<Stage, 'kFrom' | 'kTo'> } = {};
 
 if (import.meta.env.DEV) {
   (window as unknown as { __replay: () => unknown }).__replay = () => {
@@ -135,7 +149,7 @@ if (import.meta.env.DEV) {
     const followed = s?.controller.getFollowed();
     const live = s?.renderer.liveRenderer;
     return {
-      phase: debug.phase,
+      phase: progress.phase,
       tenant: tenant?.ticket.entry.id,
       driver: s?.driver.debugState(),
       follow: s && {
@@ -186,7 +200,7 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
     entry,
     ready: (async () => {
       const phase = (name: string) => {
-        debug.phase = `${entry.id}: ${name}`;
+        advance(`${entry.id}: ${name}`);
         performance.mark(`replay:acquire ${entry.id} ${name}`);
       };
       phase('asked');
@@ -205,7 +219,11 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
       host.appendChild(renderer.canvas);
       overlay.appendChild(renderer.liveOverlay.canvas);
       phase('renderer-init');
-      rendererStarted ??= renderer.init();
+      if (!rendererStarted) {
+        rendererStarted = renderer.init();
+        // A failed start is not kept: the next play tries again.
+        rendererStarted.catch(() => (rendererStarted = undefined));
+      }
       await rendererStarted;
       const kFrom = manifest.anchor.kOffset + entry.from;
       phase('seek');

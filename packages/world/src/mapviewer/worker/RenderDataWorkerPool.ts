@@ -15,6 +15,9 @@ class WorkerHandle {
     private readonly worker: Worker;
     private readonly pending = new Map<number, Pending>();
     private nextId = 0;
+    // Set once the worker has died (its module failed to load, or it crashed) or was terminated:
+    // it will never answer again, so every later call fails at once instead of waiting forever.
+    private failed?: Error;
     // Running a task from the pool queue; broadcasts do not count.
     busy = false;
 
@@ -37,6 +40,7 @@ class WorkerHandle {
     }
 
     call<M extends Method>(method: M, ...args: Args<M>): Promise<Result<M>> {
+        if (this.failed) return Promise.reject(this.failed);
         const id = this.nextId++;
         return new Promise<Result<M>>((resolve, reject) => {
             this.pending.set(id, { resolve: resolve as (value: unknown) => void, reject });
@@ -51,6 +55,7 @@ class WorkerHandle {
     }
 
     private failAll(error: Error): void {
+        this.failed ??= error;
         for (const pending of this.pending.values()) pending.reject(error);
         this.pending.clear();
     }
