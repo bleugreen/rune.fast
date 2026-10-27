@@ -3,19 +3,23 @@
  *
  * - The JavaScript the home page's HTML loads before anything runs (its entry module and the chunks
  *   it modulepreloads) stays under ENTRY_BUDGET, brotli-compressed as Pages serves it.
- * - What the home page requests before its load event is only what its first screen needs: the
- *   shell, the story text and the tree, which is the document, hashed files under /assets/, the
- *   roman serif, the sans and the favicon. Anything else there (a clip poster, the italic, a figure)
- *   is below the fold and should wait until the reader nears it. Checked on a desktop and a phone.
+ * - Loaded without scrolling, on a desktop and a phone, the home page requests only what its first
+ *   screen needs: the shell, the story text and the tree, which is the document, hashed files under
+ *   /assets/, the roman serif, the sans and the favicon. Anything else (a clip poster, a figure) is
+ *   below the fold and must wait for the reader. Two requests are allowed later: the italic, only
+ *   once the tree is drawn (src/lib/fonts.ts), and Cloudflare's analytics beacon, only after the
+ *   load event (src/lib/analytics.ts). Chrome resolves rune.fast to the preview server, so the page
+ *   runs as on the site; the beacon is answered here with an empty script, so nothing is sent.
  *
  * `--measure` also prints, for the desktop page loaded plainly and over an emulated slow link
- * (300 ms RTT, 1.6 Mbps down, cache disabled), DOMContentLoaded, load, and the bytes and requests
- * before load and once the network settles. `vite preview` serves files uncompressed, so its bytes
- * are larger than Pages' (which serves brotli) and the slow-link times are pessimistic.
+ * (300 ms RTT, 1.6 Mbps down, cache disabled): DOMContentLoaded, load, when the first screen is
+ * drawn (the tree), and the bytes and requests before load and once the network settles.
+ * `vite preview` serves files uncompressed, so its bytes are larger than Pages' (which serves
+ * brotli) and the slow-link times pessimistic.
  *
- *   bun run build && bun run check:load [--measure] [--base http://localhost:4173]
+ *   bun run build && bun run check:load [--measure]
  *
- * Without --base it starts `vite preview` itself. Exits 1 if either budget is exceeded.
+ * Exits 1 if any budget is exceeded.
  */
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -23,37 +27,35 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { brotliCompressSync, constants } from 'node:zlib';
 import { chromium, type Browser, type BrowserContextOptions } from 'playwright-core';
+import { BEACON_SRC } from '../src/lib/analytics';
 
-const { values: args } = parseArgs({
-  options: {
-    base: { type: 'string' },
-    measure: { type: 'boolean', default: false },
-  },
-});
+const { values: args } = parseArgs({ options: { measure: { type: 'boolean', default: false } } });
 
 /** Brotli bytes of the home page's initial JavaScript. */
-export const ENTRY_BUDGET = 150 * 1024;
+const ENTRY_BUDGET = 150 * 1024;
 
-/** What the first screen may request before the load event, by path. */
+/** What the first screen may request, by path. */
 const FIRST_SCREEN: readonly RegExp[] = [
   /^\/$/,
-  /^\/assets\/[^/]+\.(js|css|json)$/,
+  /^\/assets\/[^/]+\.(js|css)$/,
   /^\/fonts\/RuneSerif-Roman\.var\.woff2$/,
   /^\/fonts\/IBMPlexSans-[A-Za-z]+-Latin1\.woff2$/,
   /^\/favicon[^/]*$/,
 ];
+const ITALIC = '/fonts/RuneSerif-Italic.var.woff2';
 
 const VIEWPORTS: Record<string, BrowserContextOptions> = {
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 },
   phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
 };
 
-/** The slow link: DevTools' units, bytes per second and ms. */
+/** The slow link, in DevTools' units: ms, and bytes per second. */
 const SLOW = { offline: false, latency: 300, downloadThroughput: 1_600_000 / 8, uploadThroughput: 750_000 / 8 };
 
 const kb = (n: number) => `${(n / 1024).toFixed(0)} KB`;
+const s = (ms: number) => `${(ms / 1000).toFixed(2)} s`;
 
-/** Pages compresses at a lower brotli level than the maximum; 5 matches what it served for the same files. */
+/** Brotli at a middling level, as a CDN compresses on the fly; the maximum would flatter the budget. */
 const brotli = (buf: Buffer) => brotliCompressSync(buf, { params: { [constants.BROTLI_PARAM_QUALITY]: 5 } }).length;
 
 function initialScripts(): string[] {
@@ -63,104 +65,131 @@ function initialScripts(): string[] {
   return [...entry, ...preloads];
 }
 
-async function startPreview(): Promise<{ base: string; stop(): void }> {
-  const port = 4300 + Math.floor(Math.random() * 600);
+async function startPreview(port: number): Promise<() => void> {
   const child = spawn('node_modules/.bin/vite', ['preview', '--port', String(port), '--strictPort'], { stdio: 'ignore' });
-  const base = `http://localhost:${port}`;
   for (let i = 0; i < 100; i++) {
     try {
-      if ((await fetch(base)).ok) return { base, stop: () => child.kill() };
+      if ((await fetch(`http://localhost:${port}/`)).ok) return () => child.kill();
     } catch {
       // not listening yet
     }
     await new Promise((r) => setTimeout(r, 200));
   }
   child.kill();
-  throw new Error(`vite preview did not answer on ${base}`);
+  throw new Error(`vite preview did not answer on port ${port}`);
+}
+
+interface Request {
+  path: string;
+  bytes: number;
+  start: number;
 }
 
 interface Load {
   dcl: number;
   load: number;
-  /** [path, transfer bytes, started before load] for the document and every resource. */
-  requests: [string, number, boolean][];
+  /** When the tree finished drawing, or null if it never did. */
+  drawn: number | null;
+  /** The document and every resource, until the network settles. */
+  requests: Request[];
 }
 
-async function load(browser: Browser, base: string, options: BrowserContextOptions, slow: boolean): Promise<Load> {
+async function load(browser: Browser, url: string, options: BrowserContextOptions, slow: boolean): Promise<Load> {
   const context = await browser.newContext(options);
+  await context.route(`${BEACON_SRC}*`, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
   await cdp.send('Network.enable');
   await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
   if (slow) await cdp.send('Network.emulateNetworkConditions', SLOW);
-  await page.goto(`${base}/`, { waitUntil: 'load', timeout: 120_000 });
-  // Settled: no new resource for two seconds.
+  await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
+  // Settled: no new resource for three seconds.
   let seen = -1;
   for (;;) {
     const n = await page.evaluate(() => performance.getEntriesByType('resource').length);
     if (n === seen) break;
     seen = n;
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
   }
   const result = await page.evaluate(() => {
     const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const draw = performance.getEntriesByName('rune:tree-draw')[0];
     const path = (u: string) => {
       const url = new URL(u);
       return url.origin === location.origin ? url.pathname : u;
     };
-    const resources = (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).map(
-      (r) => [path(r.name), r.transferSize, r.startTime < nav.loadEventStart] as [string, number, boolean],
-    );
+    const resources = (performance.getEntriesByType('resource') as PerformanceResourceTiming[]).map((r) => ({
+      path: path(r.name),
+      bytes: r.transferSize,
+      start: r.startTime,
+    }));
     return {
       dcl: nav.domContentLoadedEventStart,
       load: nav.loadEventStart,
-      requests: [[path(nav.name), nav.transferSize, true] as [string, number, boolean], ...resources],
+      drawn: draw ? draw.startTime + draw.duration : null,
+      requests: [{ path: path(nav.name), bytes: nav.transferSize, start: 0 }, ...resources],
     };
   });
   await context.close();
   return result;
 }
 
+/** What is wrong with a home page load, in words; empty if nothing. */
+function problems(m: Load): string[] {
+  const out: string[] = [];
+  if (m.drawn === null) out.push('the tree never drew');
+  const beacon = m.requests.filter((r) => r.path.startsWith(BEACON_SRC));
+  if (!beacon.length) out.push('no analytics beacon was requested');
+  for (const r of beacon) if (r.start < m.load) out.push(`the analytics beacon started at ${s(r.start)}, before load at ${s(m.load)}`);
+  for (const r of m.requests) {
+    if (r.path.startsWith(BEACON_SRC) || FIRST_SCREEN.some((re) => re.test(r.path))) continue;
+    if (r.path === ITALIC) {
+      if (m.drawn === null || r.start < m.drawn) out.push(`the italic started at ${s(r.start)}, before the tree was drawn`);
+      continue;
+    }
+    out.push(`below the fold, requested without scrolling: ${r.path}`);
+  }
+  return out;
+}
+
 let failed = false;
 
 const scripts = initialScripts();
-const entryBytes = scripts.reduce((sum, s) => sum + brotli(readFileSync(join('dist', s))), 0);
-const over = entryBytes > ENTRY_BUDGET;
-failed ||= over;
+const entryBytes = scripts.reduce((sum, f) => sum + brotli(readFileSync(join('dist', f))), 0);
+failed ||= entryBytes > ENTRY_BUDGET;
 console.log(
-  `${over ? 'FAIL' : 'ok'}: initial JavaScript ${kb(entryBytes)} brotli (budget ${kb(ENTRY_BUDGET)}): ${scripts.join(', ')}`,
+  `${entryBytes > ENTRY_BUDGET ? 'FAIL' : 'ok'}: initial JavaScript ${kb(entryBytes)} brotli (budget ${kb(ENTRY_BUDGET)}): ${scripts.join(', ')}`,
 );
 
-const preview = args.base ? { base: args.base, stop() {} } : await startPreview();
-const browser = await chromium.launch({ channel: 'chrome' });
+const port = 4300 + Math.floor(Math.random() * 600);
+const stopPreview = await startPreview(port);
+const browser = await chromium.launch({ channel: 'chrome', args: [`--host-resolver-rules=MAP rune.fast 127.0.0.1`] });
+const home = `http://rune.fast:${port}/`;
 try {
   for (const [name, options] of Object.entries(VIEWPORTS)) {
-    const { requests } = await load(browser, preview.base, options, false);
-    const extra = requests.filter(([p, , early]) => early && !FIRST_SCREEN.some((re) => re.test(p))).map(([p]) => p);
-    failed ||= extra.length > 0;
-    console.log(
-      extra.length
-        ? `FAIL: the ${name} home page requests what its first screen does not show before load: ${extra.join(', ')}`
-        : `ok: the ${name} home page requests only its first screen before load`,
-    );
+    const found = problems(await load(browser, home, options, false));
+    failed ||= found.length > 0;
+    console.log(found.length ? `FAIL: the ${name} home page:\n  ${found.join('\n  ')}` : `ok: the ${name} home page requests only its first screen, then the italic and the beacon`);
   }
 
   if (args.measure) {
-    console.log('\n| Link | DOMContentLoaded | Load | Before load | Settled |\n|---|---|---|---|---|');
+    console.log('\n| Link | DOMContentLoaded | Load | First screen drawn | Before load | Settled |\n|---|---|---|---|---|---|');
+    const rows: string[] = [];
     for (const slow of [false, true]) {
-      const m = await load(browser, preview.base, VIEWPORTS.desktop!, slow);
-      const early = m.requests.filter(([, , e]) => e);
-      const sum = (rs: typeof m.requests) => kb(rs.reduce((s, [, b]) => s + b, 0));
+      const m = await load(browser, home, VIEWPORTS.desktop!, slow);
+      const early = m.requests.filter((r) => r.start < m.load);
+      const sum = (rs: Request[]) => kb(rs.reduce((t, r) => t + r.bytes, 0));
       console.log(
-        `| ${slow ? '300 ms RTT, 1.6 Mbps' : 'Plain'} | ${(m.dcl / 1000).toFixed(2)} s | ${(m.load / 1000).toFixed(2)} s | ` +
+        `| ${slow ? '300 ms RTT, 1.6 Mbps' : 'Plain'} | ${s(m.dcl)} | ${s(m.load)} | ${m.drawn === null ? 'never' : s(m.drawn)} | ` +
           `${sum(early)} in ${early.length} | ${sum(m.requests)} in ${m.requests.length} |`,
       );
-      if (slow) for (const [p, b, e] of m.requests) console.log(`    ${e ? 'before load' : 'after load '} ${kb(b).padStart(7)}  ${p}`);
+      if (slow) for (const r of m.requests) rows.push(`    ${s(r.start).padStart(7)} ${kb(r.bytes).padStart(7)}  ${r.path}`);
     }
+    console.log(`\nThe slow load's requests, by start:\n${rows.join('\n')}`);
   }
 } finally {
   await browser.close();
-  preview.stop();
+  stopPreview();
 }
 
 process.exit(failed ? 1 : 0);
