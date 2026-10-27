@@ -159,14 +159,22 @@ async function hydrates(browser: Browser): Promise<void> {
     process.env.NODE_ENV = before;
   }
   await writePages(client, server);
-  check(/react-dom\.development|Warning: Text content did not match/.test(readFileSync(join(client, 'assets', readFileSync(join(client, 'index.html'), 'utf8').match(/src="\/assets\/([^"]+\.js)"/)![1]!), 'utf8')), 'the hydration build is not React’s development build');
+  const entry = readFileSync(join(client, 'index.html'), 'utf8').match(/src="(\/assets\/[^"]+\.js)"/)![1]!;
+  check(readFileSync(join(client, entry), 'utf8').includes('did not match. Server:'), 'the hydration build is not React’s development build');
 
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   for (const p of PATHS) {
     const page = await context.newPage();
     const said: string[] = [];
-    page.on('console', (m) => (m.type() === 'error' || m.type() === 'warning') && said.push(`${m.type()}: ${m.text().slice(0, 300)}`));
+    // A failed request is reported by its address below; the console's own line for it names none.
+    page.on('console', (m) => {
+      if ((m.type() === 'error' || m.type() === 'warning') && !m.text().startsWith('Failed to load resource')) said.push(`${m.type()}: ${m.text().slice(0, 300)}`);
+    });
     page.on('pageerror', (e) => said.push(`pageerror: ${e.message}`));
+    page.on('response', (r) => {
+      const unknownPage = r.request().resourceType() === 'document' && p === '/nothing-here';
+      if (r.status() >= 400 && !unknownPage) said.push(`${r.status()}: ${r.url()}`);
+    });
     // The server's nodes, held before any script runs, to compare with what the app ends on.
     await page.addInitScript(() => {
       document.addEventListener('readystatechange', () => {
