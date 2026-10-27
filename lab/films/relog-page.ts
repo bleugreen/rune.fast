@@ -60,9 +60,10 @@ try {
     await closeSession(session);
 
     // measure-relog.ts's launchLabBrowser({ clientUrl }): the tab's page is the page server's.
-    // localhost, not 127.0.0.1, keeps the navigation on the film tab's own site.
+    // localhost, not 127.0.0.1, keeps the navigation on the film tab's own site; `minimal` keeps the
+    // page capture.ts films (the canvas alone, no overlay panels) through the probe's navigation.
     const envPath = join(ROOT, 'bots', bot, 'bot.env');
-    writeFileSync(envPath, labBotEnv(readFileSync(envPath, 'utf8'), `http://localhost:${pagePort}/bot?server=localhost:${webPort}&gateway=${gateway}`), { mode: 0o600 });
+    writeFileSync(envPath, labBotEnv(readFileSync(envPath, 'utf8'), `http://localhost:${pagePort}/bot?server=localhost:${webPort}&gateway=${gateway}&minimal`), { mode: 0o600 });
 
     const probe = Bun.spawn(
         [process.execPath, '--no-install', 'speedrun/tools/relog-probe.ts', bot, '--via=page', `--n=${n}`, '--bank', `--json=${join(log, `relog-${bot}.json`)}`],
