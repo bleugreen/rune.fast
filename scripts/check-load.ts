@@ -66,10 +66,11 @@ function initialScripts(): string[] {
 }
 
 async function startPreview(port: number): Promise<() => void> {
-  const child = spawn('node_modules/.bin/vite', ['preview', '--port', String(port), '--strictPort'], { stdio: 'ignore' });
+  const args = ['preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'];
+  const child = spawn('node_modules/.bin/vite', args, { stdio: 'ignore' });
   for (let i = 0; i < 100; i++) {
     try {
-      if ((await fetch(`http://localhost:${port}/`)).ok) return () => child.kill();
+      if ((await fetch(`http://127.0.0.1:${port}/`)).ok) return () => child.kill();
     } catch {
       // not listening yet
     }
