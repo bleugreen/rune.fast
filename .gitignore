@@ -1,5 +1,7 @@
 node_modules/
 dist/
+# The build's server entry, which renders each page into its HTML (scripts/page-heads.ts); never deployed.
+dist-server/
 .DS_Store
 .wrangler/
 # Local game cache copy and clip output (scripts/world); never committed, never in public/.
