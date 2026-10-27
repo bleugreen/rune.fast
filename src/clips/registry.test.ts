@@ -6,7 +6,7 @@ import { TOKENS_CLIPS } from '../dev/Tokens';
 import { parseUtc } from '../lib/time';
 import { SECTION_META } from '../story/sections';
 import { TRICKS } from '../tricks/model';
-import { CLIPS, TICK_MS, clipById, clipSource, clipTickAt, clipWhen, tickAt } from './registry';
+import { CLIPS, TICK_MS, clipById, clipSource, clipWhen, tickAt } from './registry';
 
 /** The ceiling on one clip's file, so a page of clips stays light. */
 const MAX_BYTES = 3_000_000;
@@ -117,15 +117,6 @@ describe('the caption line', () => {
     expect(clipWhen(clipById('wine-relog'))).toBe('25 Oct 2026, 1:26:01–1:26:16 PM');
     expect(clipSource(clipById('levelup-firemaking'))).toBe('Lab film, rs-sdk 3546291');
     for (const c of CLIPS) if (c.kind === 'replay') expect(clipSource(c)).toBe('Run feed');
-  });
-
-  test('counts a replay in session ticks, from its first to its last', () => {
-    for (const c of CLIPS) {
-      if (c.kind !== 'replay') continue;
-      expect(clipTickAt(c, 0)).toBe(c.from);
-      expect(clipTickAt(c, TICK_MS * 2.5)).toBe(c.from + 2);
-      expect(clipTickAt(c, c.seconds * 1000)).toBe(c.to);
-    }
   });
 });
 

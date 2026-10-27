@@ -132,8 +132,11 @@ export function tickAt(ticks: NonNullable<VideoEntry['ticks']>, ms: number): num
   return ticks[lo]![1];
 }
 
-/** The tick the caption counts at this point of the clip: a lab clip's server tick, a replay's session tick. */
+/**
+ * The tick the caption counts at this point of the clip: only a lab clip's server tick, which its
+ * source note names. A replay counts none: its window is numbered in its recording's ticks (the
+ * feed's own, for a death), which a reader would take for the run's scored count.
+ */
 export function clipTickAt(c: ClipEntry, ms: number): number | undefined {
-  if (c.kind === 'replay') return Math.min(c.from + Math.floor(ms / TICK_MS), c.to);
-  return c.ticks && tickAt(c.ticks, ms);
+  return c.kind === 'video' && c.ticks ? tickAt(c.ticks, ms) : undefined;
 }
