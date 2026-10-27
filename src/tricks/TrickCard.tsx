@@ -11,7 +11,9 @@ function Sources({ sources }: { sources: readonly string[] }) {
       <summary>sources</summary>
       <ul>
         {sources.map((s) => (
-          <li key={s}>{s}</li>
+          <li key={s}>
+            <Threaded text={s} />
+          </li>
         ))}
       </ul>
     </details>

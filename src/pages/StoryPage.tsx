@@ -178,7 +178,9 @@ export function StoryPage() {
               <summary>Sources</summary>
               <div className={styles.sourceText}>
                 {s.sources.map((line, k) => (
-                  <p key={k}>{line}</p>
+                  <p key={k}>
+                    <Threaded text={line} />
+                  </p>
                 ))}
               </div>
             </details>

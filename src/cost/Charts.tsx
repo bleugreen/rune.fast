@@ -69,11 +69,16 @@ export function DayChart({ days, firstLead, label }: { days: readonly DayCost[];
 }
 
 export function DayLegend() {
-  const items: [string, string][] = [
+  const items: [string, ReactNode][] = [
     ['coord', 'managers'],
     ['work', 'workers'],
     ['thread', 'threads'],
-    ['other', 'carry and document'],
+    [
+      'other',
+      <>
+        carry and <code>document</code>
+      </>,
+    ],
   ];
   return (
     <span className={styles.legend}>

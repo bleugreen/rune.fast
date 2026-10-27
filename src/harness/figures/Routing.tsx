@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { countWord, listWords } from '../../lib/numbers';
 import { fmtPacificHms } from '../../lib/time';
 import { edgeKey, type HarnessModel, type NodeKey, type RouteStep } from '../model';
+import { Threaded } from '../../components/Coded';
 import { stepAt, useAutoplay, type Loop } from '../autoplay';
 import { arrivalDelay, dotDelay, EASE_OUT, TRAVEL_MS, useChartWidth } from './frame';
 import styles from './Figures.module.css';
@@ -170,7 +171,7 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
           the operator
         </text>
         {node('main', 6, styles.hollow!)}
-        <text className={styles.row} x={pt('main')[0] + 14} y={pt('main')[1] + 4}>
+        <text className={`${styles.row} ${styles.mono}`} x={pt('main')[0] + 14} y={pt('main')[1] + 4}>
           main
         </text>
         {node('rs3', 6, styles.hollow!)}
@@ -203,7 +204,7 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
         {current ? (
           <>
             <span className={styles.time}>{fmtPacificHms(current.t)}</span>
-            {stepText(current, m)}
+            <Threaded text={stepText(current, m)} />
           </>
         ) : (
           `Every edge the ${countWord(n)} messages took, ${fmtPacificHms(r.steps[0]!.t)} to ${fmtPacificHms(r.steps.at(-1)!.t)}. They are listed in order below.`
@@ -213,7 +214,7 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
         {r.steps.map((s, k) => (
           <li key={k} aria-current={current === s ? 'step' : undefined}>
             <span className={styles.stepTime}>{fmtPacificHms(s.t)}</span>
-            {stepText(s, m)}
+            <Threaded text={stepText(s, m)} />
           </li>
         ))}
       </ol>
