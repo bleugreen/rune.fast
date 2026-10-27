@@ -98,5 +98,26 @@
       "label": "run feed",
       "note": "The swarm’s recording of the demo server’s world feed, redacted before publication, drawn by the rs-map-viewer engine from the server’s game cache; times from the feed’s receive stamps."
     }
+  },
+  {
+    "id": "agility-rocks",
+    "kind": "replay",
+    "recording": "finish",
+    "from": 2948,
+    "to": 2978,
+    "poster": "/clips/agility-rocks.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 12,
+    "caption": "The same lap, its last obstacles: the record account steps off the log over the spike pit, climbs the rocks and heads back to the start of the course.",
+    "recorded": [
+      "2026-10-26T10:46:54Z",
+      "2026-10-26T10:47:06Z"
+    ],
+    "step": "Agility 75 to 99, the run’s last step",
+    "source": {
+      "label": "run feed",
+      "note": "The swarm’s recording of the demo server’s world feed, redacted before publication, drawn by the rs-map-viewer engine from the server’s game cache; times from the feed’s receive stamps."
+    }
   }
 ]
