@@ -17,9 +17,6 @@ import { story } from './story/story';
 export const ORIGIN = 'https://rune.fast';
 export const SITE_NAME = 'rune.fast';
 
-/** Who runs the site: named in every page's footer and head. */
-export const AUTHOR = { name: 'bleugreen', url: 'https://bleu.green' } as const;
-
 export const PAGE_PATHS = ['/', '/route', '/tricks', '/cost', '/harness'] as const;
 export type PagePath = (typeof PAGE_PATHS)[number];
 
