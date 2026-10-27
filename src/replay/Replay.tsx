@@ -2,17 +2,14 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { WorldLoadError } from '@rune/world';
 import type { MediaHandle, MediaProps } from '../clips/Clip';
 import { TICK_MS, type ReplayEntry } from '../clips/registry';
+// Asked to play and not yet shown, a load that has not moved on for this long has stalled.
+import { STALL_MS } from '../clips/watchdog';
 import { Superseded, acquire, loadProgress, release, type Stage } from './world';
 import styles from './Replay.module.css';
 
 /** If the scene never settles (the account out of the recorded area), show it anyway after this long. */
 const SHOW_AFTER_MS = 3000;
 
-/**
- * Asked to play and not yet shown, a load that has not moved on for this long has stalled: the frame
- * goes back to its poster with a message, and playing it again starts the load again.
- */
-const STALL_MS = 30_000;
 
 /**
  * A window of a published world-feed recording, as the footage inside a clip frame. It borrows the

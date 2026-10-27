@@ -14,6 +14,7 @@ import {
 import { Contained } from '../components/Contained';
 import { fmtInt } from '../lib/numbers';
 import { clipSource, clipSrc, clipTickAt, clipWhen, type ClipEntry, type ReplayEntry, type VideoEntry } from './registry';
+import { ProgressWatch, STALL_MS } from './watchdog';
 import styles from './Clip.module.css';
 
 /** rest: the poster; loading: asked to play, no frame yet; then playing or paused. */
@@ -247,12 +248,17 @@ export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: s
   );
 }
 
-/** A video file, with the browser's own controls never shown. */
+/**
+ * A video file, with the browser's own controls never shown. A file that fails to load (a 404, a
+ * refused range) or stops arriving fails the frame visibly, never an indefinite dimmed mark.
+ */
 const VideoMedia = forwardRef<MediaHandle, MediaProps<VideoEntry>>(function VideoMedia(
   { entry, playing, onPlaying, onPaused, onEnded, onTime, onFailed },
   ref,
 ) {
   const video = useRef<HTMLVideoElement>(null);
+  const watch = useRef(new ProgressWatch());
+  const moved = () => watch.current.moved(performance.now());
 
   useImperativeHandle(ref, () => ({
     seek: (ms) => {
@@ -264,9 +270,11 @@ const VideoMedia = forwardRef<MediaHandle, MediaProps<VideoEntry>>(function Vide
     const v = video.current;
     if (!v) return;
     if (!playing) {
+      watch.current.rest();
       v.pause();
       return;
     }
+    watch.current.watch(performance.now());
     v.play().catch((e: unknown) => {
       // A pause before the first frame interrupts play(); that is the reader's doing, not a failure.
       if (!(e instanceof DOMException && e.name === 'AbortError')) onFailed('The clip failed to play');
@@ -276,7 +284,16 @@ const VideoMedia = forwardRef<MediaHandle, MediaProps<VideoEntry>>(function Vide
       onTime(v.currentTime * 1000);
       raf = requestAnimationFrame(follow);
     });
-    return () => cancelAnimationFrame(raf);
+    const stall = setInterval(() => {
+      if (!watch.current.stalled(performance.now())) return;
+      watch.current.rest();
+      console.error(`Clip ${entry.id} stalled: no progress for ${STALL_MS / 1000} s`);
+      onFailed('The clip stopped loading. Play it to try again.');
+    }, 1000);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(stall);
+    };
     // The callbacks only set the frame's state, so the ones from when play began serve throughout.
   }, [playing]);
 
@@ -291,10 +308,23 @@ const VideoMedia = forwardRef<MediaHandle, MediaProps<VideoEntry>>(function Vide
       muted
       playsInline
       disablePictureInPicture
-      onPlaying={onPlaying}
+      onPlaying={() => {
+        moved();
+        onPlaying();
+      }}
+      onProgress={moved}
+      onTimeUpdate={moved}
+      onLoadedData={moved}
       onPause={(e) => !e.currentTarget.ended && onPaused()}
       onEnded={onEnded}
-      onSeeked={(e) => onTime(e.currentTarget.currentTime * 1000)}
+      onSeeked={(e) => {
+        moved();
+        onTime(e.currentTarget.currentTime * 1000);
+      }}
+      onError={() => {
+        watch.current.rest();
+        onFailed('The clip failed to load');
+      }}
     />
   );
 });

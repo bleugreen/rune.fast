@@ -11,15 +11,26 @@ export function siteRoutes(pages: RouteObject[]): RouteObject[] {
   return [{ element: <Layout />, errorElement: <RouteError />, children: [{ errorElement: <RouteError />, children: pages }] }];
 }
 
-const LIVE = [
+export const NAV = [
   { to: '/', label: 'Story' },
   { to: '/attempts', label: 'Attempts' },
+  { to: '/route', label: 'Route' },
   { to: '/tricks', label: 'Tricks' },
   { to: '/cost', label: 'Cost' },
   { to: '/harness', label: 'Harness' },
 ] as const;
 
-const SOON = ['Routes'] as const;
+export function Nav() {
+  return (
+    <nav className={styles.nav} aria-label="Pages">
+      {NAV.map((n) => (
+        <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => (isActive ? styles.current : styles.link)}>
+          {n.label}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
 
 export function Layout() {
   return (
@@ -29,19 +40,7 @@ export function Layout() {
           <Link to="/" className={styles.wordmark}>
             rune.fast
           </Link>
-          <nav className={styles.nav} aria-label="Pages">
-            {LIVE.map((n) => (
-              <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => (isActive ? styles.current : styles.link)}>
-                {n.label}
-              </NavLink>
-            ))}
-            {SOON.map((label) => (
-              <span key={label} className={styles.soon}>
-                {label}
-                <span className={styles.soonTag}>soon</span>
-              </span>
-            ))}
-          </nav>
+          <Nav />
         </div>
       </header>
       <main className={styles.main}>

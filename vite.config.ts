@@ -5,6 +5,7 @@ import { projectTimeline } from './scripts/public-timeline';
 import { projectCostData, projectRoles } from './scripts/public-cost';
 import { projectTricks } from './scripts/public-tricks';
 import { projectHarness } from './scripts/public-harness';
+import { projectRouteLog, projectRoutePlan } from './scripts/public-route';
 import { isStoryMd, storyModule } from './scripts/story-module';
 import { pagesRoutesFile } from './scripts/pages-routes';
 import { pacificDayKey } from './src/lib/time';
@@ -16,6 +17,8 @@ const PROJECTIONS: ReadonlyArray<readonly [string, (raw: never) => unknown]> = [
   ['/data/roles.json', projectRoles],
   ['/data/tricks.json', projectTricks],
   ['/data/harness.json', projectHarness],
+  ['/data/route-log.json', projectRouteLog],
+  ['/data/route-plan.json', projectRoutePlan],
 ];
 
 /**

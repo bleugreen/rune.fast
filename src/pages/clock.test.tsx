@@ -16,6 +16,9 @@ import { projectHarness } from '../../scripts/public-harness';
 import type { RawHarnessData } from '../harness/types';
 import { StoryPage } from './StoryPage';
 import { TricksPage } from './TricksPage';
+import { RoutePage } from './RoutePage';
+import { route } from '../route/data';
+import { WORDS } from '../route/prose';
 
 /*
  * Every clock time the site prints is Pacific on the 12-hour clock ('2:37 PM',
@@ -84,6 +87,7 @@ function render(Page: ComponentType): string {
 /** The pages whose own components print the zone, and the open surface each is checked on. */
 const ZONED: ReadonlyArray<readonly [string, ComponentType]> = [
   ['/attempts', AttemptsPage],
+  ['/route', RoutePage],
   ['/tricks', TricksPage],
   ['/cost', CostPage],
   ['/harness', HarnessPage],
@@ -144,6 +148,7 @@ describe('lines behind the disclosures, as the build ships them', () => {
     ...projectTricks(TRICKS).flatMap((t) => t.sources),
     ...timeline.attempts.flatMap((a) => [a.start, a.end, ...a.events].flatMap((x) => x.sources)),
     ...Object.values(projectHarness(rawHarness as unknown as RawHarnessData).sources).flatMap((rows) => rows.map((r) => r.plain)),
+    ...route.steps.flatMap((s) => WORDS[s.spec.id]!.sources(s, route)),
   ];
 
   test('print the 12-hour clock with no zone: the page has named it', () => {

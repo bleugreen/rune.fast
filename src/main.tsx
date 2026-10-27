@@ -10,6 +10,7 @@ import { AttemptsPage } from './pages/AttemptsPage';
 import { TricksPage } from './pages/TricksPage';
 import { CostPage } from './pages/CostPage';
 import { HarnessPage } from './pages/HarnessPage';
+import { RoutePage } from './pages/RoutePage';
 import { NotFound } from './pages/NotFound';
 
 /* The tokens screen exists only in development; the production build drops it. */
@@ -18,6 +19,7 @@ const Tokens = import.meta.env.DEV ? lazy(() => import('./dev/Tokens')) : null;
 const pages: RouteObject[] = [
   { index: true, element: <StoryPage /> },
   { path: 'attempts', element: <AttemptsPage /> },
+  { path: 'route', element: <RoutePage /> },
   { path: 'tricks', element: <TricksPage /> },
   { path: 'cost', element: <CostPage /> },
   { path: 'harness', element: <HarnessPage /> },

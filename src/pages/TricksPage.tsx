@@ -13,6 +13,17 @@ export function TricksPage() {
     document.title = 'Tricks · rune.fast';
   }, []);
 
+  // A link to /tricks#<id> lands on that card, arriving from another page or by a changed hash.
+  useEffect(() => {
+    const land = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      if (id) document.getElementById(id)?.scrollIntoView({ block: 'start' });
+    };
+    land();
+    window.addEventListener('hashchange', land);
+    return () => window.removeEventListener('hashchange', land);
+  }, []);
+
   return (
     <article className={styles.page}>
       <header className={styles.head}>
