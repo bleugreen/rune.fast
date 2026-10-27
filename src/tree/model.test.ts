@@ -15,7 +15,7 @@ const threads = units.filter((u) => u.kind === 'thread');
 const named = (name: string) => units.find((u) => u.kind === 'thread' && u.name === name)!;
 const sum = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0);
 
-const desk = layout(tree, { width: 1220, height: 1035, compact: false });
+const desk = layout(tree, { width: 1220, height: 630, compact: false });
 const phone = layout(tree, { width: 350, height: 506, compact: true });
 const LAYOUTS: ReadonlyArray<readonly [string, Layout]> = [
   ['desktop', desk],

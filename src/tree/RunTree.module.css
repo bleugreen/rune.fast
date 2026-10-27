@@ -5,13 +5,14 @@
 }
 
 /*
- * The height is reserved, so nothing below moves when the figure paints: 1.15 screens on a
- * desktop, 0.6 on a phone. lvh, not vh, so a phone's collapsing toolbar never resizes it mid-scroll.
+ * The height is reserved, so nothing below moves when the figure paints: 0.7 screens on a
+ * desktop, so the whole run and its caption fit in the first screen under the masthead, and 0.6
+ * on a phone. lvh, not vh, so a phone's collapsing toolbar never resizes it mid-scroll.
  */
 .frame {
   position: relative;
-  height: max(760px, 115vh);
-  height: max(760px, 115lvh);
+  height: max(520px, 70vh);
+  height: max(520px, 70lvh);
 }
 @media (max-width: 599px) {
   .frame {
