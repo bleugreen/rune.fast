@@ -1,17 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { fmtInt } from '../lib/numbers';
-import { SECOND, fmtPacificWeekdayHm } from '../lib/time';
-import { loadTitles, treeData } from './data';
+import { treeData } from './data';
 import { buildTree, layout, type Edge, type Layout, type Tree } from './model';
-import type { TreeTitles } from './types';
 import styles from './RunTree.module.css';
 
-/** The phone's tap card is on trial with the operator: false removes it, and nothing else changes. */
-const TAP_CARD = true;
-/** Below this width the figure is the phone's: half as tall, with thinner marks (RunTree.module.css agrees). */
+/** Below this width the figure is the phone's: thinner marks and narrower margins (RunTree.module.css agrees). */
 const PHONE = '(max-width: 599px)';
-const HOVER_RADIUS = 9;
-const TAP_RADIUS = 16;
 const RESIZE_DEBOUNCE = 150;
 /** A mono label's width per character, as a share of its size, to keep it inside the figure. */
 const MONO_ADVANCE = 0.6;
@@ -155,85 +149,10 @@ function draw(ctx: CanvasRenderingContext2D, tree: Tree, L: Layout, c: Colours):
   ctx.stroke();
 }
 
-/** One unit's message lines and its own path, over the figure. */
-function highlight(ctx: CanvasRenderingContext2D, tree: Tree, L: Layout, unit: number, c: Colours): void {
-  ctx.clearRect(0, 0, L.width, L.height);
-  if (unit < 0) return;
-  ctx.lineWidth = 0.8;
-  ctx.lineCap = 'butt';
-  for (const k of tree.edgesOf[unit]!) {
-    const e = tree.edges[k]!;
-    ctx.strokeStyle = rgba(c.ink, Math.min(0.35, 0.15 * Math.sqrt(e.n)));
-    ctx.beginPath();
-    arc(ctx, L, e);
-    ctx.stroke();
-  }
-  const { xy } = L.paths[unit]!;
-  ctx.strokeStyle = rgba(c.ink, 1);
-  ctx.lineWidth = 2;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.beginPath();
-  ctx.moveTo(xy[0]!, xy[1]!);
-  for (let k = 2; k < xy.length; k += 2) ctx.lineTo(xy[k]!, xy[k + 1]!);
-  ctx.stroke();
-}
-
 interface Size {
   width: number;
   height: number;
   compact: boolean;
-}
-
-interface Pick {
-  unit: number;
-  x: number;
-  y: number;
-  /** A mouse hover, beside the pointer; or a tap, docked at the foot of the screen. */
-  mode: 'hover' | 'tap';
-}
-
-const OUTCOME = { m: 'merged', c: 'closed without merging', o: 'still open at the #1' } as const;
-
-function CardBody({ tree, unit, titles }: { tree: Tree; unit: number; titles: TreeTitles | null }) {
-  const u = tree.units[unit]!;
-  const at = (s: number) => fmtPacificWeekdayHm((tree.t0 + s) * SECOND);
-  const threadNames = new Set(tree.threads.map((i) => tree.units[i]!.name));
-  const who = (by: string) => (threadNames.has(by) ? <code>{by}</code> : by);
-  if (u.kind === 'thread') {
-    return (
-      <>
-        <p className={styles.cardTitle}>
-          <code>{u.name}</code>
-        </p>
-        <p className={styles.cardMeta}>
-          opened by {who(u.by)} · {at(u.s)}
-        </p>
-      </>
-    );
-  }
-  const resolved =
-    u.outcome === 'm'
-      ? `merged ${at(u.e)}`
-      : u.outcome === 'c'
-        ? `closed ${at(u.e)}`
-        : u.after
-          ? `${u.after[0] === 'm' ? 'merged' : 'closed'} ${at(u.after[1])}, after the record`
-          : null;
-  return (
-    <>
-      <p className={styles.cardMeta}>
-        {u.name} · filed by {who(u.by)}
-      </p>
-      <p className={styles.cardTitle} aria-busy={titles ? undefined : true}>
-        {titles?.[String(u.number)] ?? ' '}
-      </p>
-      <p className={styles.cardMeta}>
-        <span className={styles.outcome}>{OUTCOME[u.outcome!]}</span> · filed {at(u.s)}
-        {resolved && ` · ${resolved}`}
-      </p>
-    </>
-  );
 }
 
 /**
@@ -243,13 +162,8 @@ function CardBody({ tree, unit, titles }: { tree: Tree; unit: number; titles: Tr
 export function RunTree() {
   const tree = useMemo(() => buildTree(treeData), []);
   const frameRef = useRef<HTMLDivElement>(null);
-  const baseRef = useRef<HTMLCanvasElement>(null);
-  const overRef = useRef<HTMLCanvasElement>(null);
-  const coloursRef = useRef<Colours | null>(null);
-  const pointerType = useRef('mouse');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState<Size | null>(null);
-  const [pick, setPick] = useState<Pick | null>(null);
-  const [titles, setTitles] = useState<TreeTitles | null>(null);
   const L = useMemo(() => (size ? layout(tree, size) : null), [tree, size]);
 
   useEffect(() => {
@@ -274,59 +188,16 @@ export function RunTree() {
 
   useEffect(() => {
     if (!L) return;
-    const base = baseRef.current!;
-    const over = overRef.current!;
+    const cv = canvasRef.current!;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    for (const cv of [base, over]) {
-      cv.width = Math.round(L.width * dpr);
-      cv.height = Math.round(L.height * dpr);
-      cv.getContext('2d')!.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    coloursRef.current = colours(base);
+    cv.width = Math.round(L.width * dpr);
+    cv.height = Math.round(L.height * dpr);
+    const ctx = cv.getContext('2d')!;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     performance.mark('rune:tree-draw-start');
-    draw(base.getContext('2d')!, tree, L, coloursRef.current);
+    draw(ctx, tree, L, colours(cv));
     performance.measure('rune:tree-draw', 'rune:tree-draw-start');
-    setPick(null);
   }, [tree, L]);
-
-  const picked = pick?.unit ?? -1;
-  useEffect(() => {
-    if (!L || !coloursRef.current) return;
-    highlight(overRef.current!.getContext('2d')!, tree, L, picked, coloursRef.current);
-  }, [tree, L, picked]);
-
-  // A tap card goes away when the reader scrolls on; the listener exists only while one is open.
-  const tapped = pick?.mode === 'tap';
-  useEffect(() => {
-    if (!tapped) return;
-    const close = () => setPick(null);
-    window.addEventListener('scroll', close, { passive: true, once: true });
-    return () => window.removeEventListener('scroll', close);
-  }, [tapped]);
-
-  const at = (e: ReactMouseEvent): [number, number] => {
-    const r = overRef.current!.getBoundingClientRect();
-    return [e.clientX - r.left, e.clientY - r.top];
-  };
-  const choose = (unit: number, x: number, y: number, mode: Pick['mode']) => {
-    if (unit < 0) return setPick(null);
-    if (!titles) void loadTitles().then(setTitles);
-    setPick({ unit, x, y, mode });
-  };
-
-  const onPointerMove = (e: ReactPointerEvent<HTMLCanvasElement>) => {
-    if (e.pointerType !== 'mouse' || !L) return;
-    const [x, y] = at(e);
-    choose(L.nearest(x, y, HOVER_RADIUS), x, y, 'hover');
-  };
-  const onPointerLeave = (e: ReactPointerEvent<HTMLCanvasElement>) => {
-    if (e.pointerType === 'mouse') setPick((p) => (p?.mode === 'hover' ? null : p));
-  };
-  const onClick = (e: ReactMouseEvent<HTMLCanvasElement>) => {
-    if (!TAP_CARD || pointerType.current === 'mouse' || !L) return;
-    const [x, y] = at(e);
-    choose(L.nearest(x, y, TAP_RADIUS), x, y, 'tap');
-  };
 
   const t = tree.totals;
   const description =
@@ -334,22 +205,11 @@ export function RunTree() {
     `${fmtInt(t.issues)} issues, each growing from the thread or coordinator that filed it until it merged or closed.`;
 
   const monoPx = L?.compact ? 10 : 11;
-  const cardWidth = L ? Math.min(300, L.width) : 300;
-  const below = pick && L ? pick.y < L.height * 0.7 : true;
 
   return (
     <figure className={styles.hero}>
       <div ref={frameRef} className={styles.frame} role="img" aria-label={description}>
-        <canvas ref={baseRef} className={styles.canvas} aria-hidden="true" />
-        <canvas
-          ref={overRef}
-          className={styles.canvas}
-          aria-hidden="true"
-          onPointerDown={(e) => (pointerType.current = e.pointerType)}
-          onPointerMove={onPointerMove}
-          onPointerLeave={onPointerLeave}
-          onClick={onClick}
-        />
+        <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
         {L && (
           <div className={styles.labels} aria-hidden="true">
             {L.days.map((d) => (
@@ -366,22 +226,6 @@ export function RunTree() {
                 </code>
               );
             })}
-          </div>
-        )}
-        {pick && L && (
-          <div
-            className={pick.mode === 'tap' ? `${styles.card} ${styles.docked}` : styles.card}
-            style={
-              pick.mode === 'tap'
-                ? undefined
-                : {
-                    width: cardWidth,
-                    left: Math.max(0, Math.min(L.width - cardWidth, pick.x + 14)),
-                    ...(below ? { top: pick.y + 14 } : { bottom: L.height - pick.y + 14 }),
-                  }
-            }
-          >
-            <CardBody tree={tree} unit={pick.unit} titles={titles} />
           </div>
         )}
       </div>

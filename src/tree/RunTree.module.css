@@ -5,14 +5,15 @@
 }
 
 /*
- * The height is reserved, so nothing below moves when the figure paints: 0.7 screens on a
- * desktop, so the whole run and its caption fit in the first screen under the masthead, and 0.6
- * on a phone. lvh, not vh, so a phone's collapsing toolbar never resizes it mid-scroll.
+ * The height is reserved, so nothing below moves when the figure paints: 0.55 screens on a
+ * desktop, so the whole run, its caption and the story's title fit in the first screen under the
+ * masthead, and 0.6 on a phone. lvh, not vh, so a phone's collapsing toolbar never resizes it
+ * mid-scroll.
  */
 .frame {
   position: relative;
-  height: max(520px, 70vh);
-  height: max(520px, 70lvh);
+  height: max(440px, 55vh);
+  height: max(440px, 55lvh);
 }
 @media (max-width: 599px) {
   .frame {
@@ -69,57 +70,6 @@
   .thread {
     font-size: calc(var(--label-sm) - 1px);
   }
-}
-
-.card {
-  position: absolute;
-  z-index: 3;
-  padding: var(--space-2) var(--space-3);
-  background: var(--paper);
-  border: var(--stroke-thin) solid var(--rule);
-  box-shadow: 0 1px 0 rgb(28 26 22 / 0.06);
-  font-family: var(--font-sans);
-  font-size: var(--label);
-  line-height: 1.4;
-  pointer-events: none;
-}
-
-/* The phone's tap card, docked at the foot of the screen. */
-.docked {
-  position: fixed;
-  left: var(--space-3);
-  right: var(--space-3);
-  bottom: var(--space-3);
-  z-index: 20;
-}
-
-.cardTitle {
-  margin: 2px 0 6px;
-  font-family: var(--font-serif);
-  font-size: var(--text-small);
-  line-height: var(--leading-snug);
-  color: var(--ink);
-  text-wrap: pretty;
-}
-.cardTitle code {
-  font-size: 0.86em;
-}
-
-.cardMeta {
-  color: var(--ink-muted);
-  font-size: var(--label-sm);
-  font-variant-numeric: tabular-nums;
-}
-.cardMeta code {
-  color: var(--ink);
-  font-size: inherit;
-}
-
-.outcome {
-  font-weight: 600;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  font-size: 0.95em;
 }
 
 .caption {
