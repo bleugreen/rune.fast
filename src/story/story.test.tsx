@@ -249,7 +249,7 @@ describe('what the page adds to the draft', () => {
     const s = sections.find((x) => x.id === 'the-swarm')!;
     const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
     expect(placed.map(({ f }) => f.kind)).toEqual(['cost']);
-    const [{ at }] = placed as [{ at: number }];
+    const at = placed[0]!.at;
     expect(at).toBe(s.blocks.length - 1);
     expect(quotes(s.blocks[at]!, 'Not exactly. Those are written handoffs, not a direct view of my internal reasoning.')).toBe(true);
   });
