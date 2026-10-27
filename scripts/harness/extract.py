@@ -351,7 +351,7 @@ def extract(x: Export) -> dict:
     }
     src(
         "lifelines", "export", "issues",
-        f"the {lifelines['issues']} issues filed by the #1 at {when(cut)}, each counted by its author, the agent that filed it",
+        f"the {lifelines['issues']} issues filed up to the #1, {when(cut)}, each counted by its author, the agent that filed it",
     )
     src("lifelines", "issues", 3, f"issue rs/3, the quest-route coordinator, filed by main {when(lifelines['marks']['rs3']['t'])}")
     src("lifelines", "issues", ISSUE, f"issue rs/843, filed by {crossed_filer.plain} under the {crossed_parent} thread {when(filed)}")
@@ -753,6 +753,13 @@ def verify(x: Export, data: dict) -> int:
             if n != 1:
                 missing += 1
                 print(f"verify: {fig}: {table} {key} resolves to {n} rows ({s['plain']})", file=sys.stderr)
+    lf = data["lifelines"]
+    counted = collections.Counter(f.thread if f.kind == "thread" else f.kind for _, _, f in issues_filed(x.con, lf["cut"]))
+    drawn = {th["name"]: len(th["filed"]) for th in lf["threads"]}
+    drawn |= {"coordinator": len(lf["coordinators"]), "builder": len(lf["builders"]), "harness": len(lf["harness"])}
+    if {k: v for k, v in drawn.items() if v} != dict(counted):
+        missing += 1
+        print(f"verify: Fig 2's filings {drawn} are not the export's authors {dict(counted)}", file=sys.stderr)
     print(f"verify: {checked} sources checked, {missing} unresolved")
     return 1 if missing else 0
 
