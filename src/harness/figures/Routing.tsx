@@ -133,7 +133,8 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
         dot.remove();
       };
     });
-  }, [state, reduced]);
+    // Keyed on the rendered state alone: a reduced-motion change while a step sits launched must not fly it again.
+  }, [state]);
 
   // An arrival ring waits for its own dot when one is launched for it, and leaves at once. The
   // step's edges light at once, as the route the message is taking.

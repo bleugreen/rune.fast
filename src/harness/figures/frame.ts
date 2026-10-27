@@ -19,7 +19,7 @@ export const STAGGER = 40;
 export const dotDelay = (j: number) => j * STAGGER;
 /**
  * When its arrival ring starts to fade in: where the dot visibly stops. On this ease-out the dot
- * has covered about 97 percent of its edge two thirds of the way through, so the ring starts there
+ * has covered about 99 percent of its edge two thirds of the way through, so the ring starts there
  * and its 160 ms fade ends as the dot settles.
  */
 export const arrivalDelay = (j: number) => dotDelay(j) + Math.round((TRAVEL_MS * 2) / 3);

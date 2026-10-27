@@ -63,7 +63,8 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
         });
       }
     }
-  }, [state, reduced, i]);
+    // Keyed on the rendered state alone: a reduced-motion change must not drop a wake again.
+  }, [state, i]);
 
   const scrub = (e: PointerEvent<SVGSVGElement>) => {
     if (e.type === 'pointermove' && !e.currentTarget.hasPointerCapture(e.pointerId)) return;
