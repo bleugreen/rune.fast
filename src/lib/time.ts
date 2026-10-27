@@ -22,7 +22,6 @@ export function parseUtc(s: string): number {
 
 const PACIFIC = 'America/Los_Angeles';
 
-const utcDayMonthYear = new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'long', year: 'numeric' });
 const pacHm = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 const pacZone = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, timeZoneName: 'short' });
 
@@ -53,8 +52,18 @@ export const fmtPacificDayShort = (t: number) => pacDayShort.format(t);
 export const fmtPacificDate = (t: number) => pacDayMonthYear.format(t);
 /** The Pacific hour of t, 0-23. */
 export const pacificHour = (t: number) => Number(pacHm.format(t).slice(0, 2));
-export const fmtUtcDate = (t: number) => utcDayMonthYear.format(t);
 export const fmtPacificHm = (t: number) => pacHm.format(t);
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const DAY_KEY = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/** A calendar day 'YYYY-MM-DD' (such as a pacificDayKey) as '26 October 2026'. No instant is involved, so no zone can move it. */
+export function fmtCalendarDate(key: string): string {
+  const m = DAY_KEY.exec(key);
+  const month = m && MONTHS[Number(m[2]) - 1];
+  if (!m || !month) throw new Error(`Not a calendar day: ${key}`);
+  return `${Number(m[3])} ${month} ${m[1]}`;
+}
 
 /** Pacific zone abbreviation in force at t (PDT or PST). */
 export function pacificZone(t: number): string {

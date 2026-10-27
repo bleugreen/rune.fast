@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router-dom';
-import { fmtUtcDate, parseUtc } from '../lib/time';
+import { fmtCalendarDate } from '../lib/time';
 import styles from './Layout.module.css';
 
 const LIVE = [
@@ -44,7 +44,7 @@ export function Layout() {
       <footer className={styles.footer}>
         <div className={styles.footInner}>
           <span>Every number on this site traces to a source</span>
-          <span>Generated {fmtUtcDate(parseUtc(`${__BUILD_DATE__}T00:00Z`))}</span>
+          <span>Generated {fmtCalendarDate(__BUILD_DATE__)}</span>
           <p className={styles.credits}>
             3D replays use rs-map-viewer (BSD-2-Clause) via RS World and rs-dash · Credits: rs-sdk and LostCity (MIT),
             Jagex, RuneLite, OpenRS2 Archive, RuneScape Archive, OSRS Wiki, 2004scape, 2009scape, RuneStar, Blurite,
