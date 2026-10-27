@@ -10,7 +10,7 @@ import { projectTree } from './scripts/public-tree';
 import { isStoryMd, storyModule } from './scripts/story-module';
 import { pagesRoutesFile } from './scripts/pages-routes';
 import { pacificDayKey } from './src/lib/time';
-import { PAGE_ONLY } from './src/lib/head';
+import { PAGE_ONLY } from './src/lib/site';
 
 /** Archival exports in data/, by path suffix, and the public projection that replaces each in the build. */
 const PROJECTIONS: ReadonlyArray<readonly [string, (raw: never) => unknown]> = [

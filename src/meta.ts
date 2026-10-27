@@ -2,7 +2,7 @@ import { recordFacts } from './attempts/model';
 import { buildCostModel } from './cost/model';
 import { costInputs } from './data/cost';
 import { timeline } from './data/timeline';
-import { PAGE_ONLY } from './lib/head';
+import { AUTHOR, PAGE_ONLY } from './lib/site';
 import { fmtInt, fmtUsd } from './lib/numbers';
 import { inlineTokens } from './story/draft';
 import { story } from './story/story';
