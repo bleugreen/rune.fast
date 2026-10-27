@@ -1,19 +1,22 @@
-/* The story page's hero: the run as a tree, at the site's wide measure, above the title. */
+/*
+ * The story page's hero: the run as a tree, above the title at the site's wide measure, or beside
+ * it where the story page sets the two side by side (StoryPage.module.css).
+ */
 .hero {
   max-width: var(--wide);
   margin: 0 auto var(--space-8);
 }
 
 /*
- * The height is reserved, so nothing below moves when the figure paints: 0.55 screens on a
- * desktop, so the whole run, its caption and the story's title fit in the first screen under the
- * masthead, and 0.6 on a phone. lvh, not vh, so a phone's collapsing toolbar never resizes it
- * mid-scroll.
+ * The height is reserved, so nothing below moves when the figure paints. Beside the title the page
+ * sets it through --tree-height; above the title it is 0.55 screens on a desktop, so the whole run,
+ * its caption and the start of the title fit in the first screen under the masthead, and 0.6 on a
+ * phone. lvh, not vh, so a phone's collapsing toolbar never resizes it mid-scroll.
  */
 .frame {
   position: relative;
   height: max(440px, 55vh);
-  height: max(440px, 55lvh);
+  height: var(--tree-height, max(440px, 55lvh));
 }
 @media (max-width: 599px) {
   .frame {
