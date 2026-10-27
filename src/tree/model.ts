@@ -163,6 +163,8 @@ export interface LayoutOptions {
   height: number;
   /** The phone's half-height figure: narrower margins, thinner marks. */
   compact: boolean;
+  /** The side the day labels take: the left, or the right when the story's title is beside the figure's left. */
+  axis: 'left' | 'right';
 }
 
 /** How a branch reaches its slot: from x0 at y0, easing out to x1 over `reach` pixels of height. */
@@ -208,7 +210,10 @@ export interface Layout {
   width: number;
   height: number;
   compact: boolean;
+  axis: 'left' | 'right';
+  /** The margins the branches keep clear; the day labels sit in the one on the axis's side. */
   left: number;
+  right: number;
   top: number;
   bottom: number;
   bands: Band[];
@@ -231,9 +236,11 @@ const LEAN = 2.2;
 /** No root band narrower than this share of the units. */
 const BAND_FLOOR = 0.03;
 
-export function layout(tree: Tree, { width, height, compact }: LayoutOptions): Layout {
-  const left = compact ? 40 : 52;
-  const right = compact ? 4 : 10;
+export function layout(tree: Tree, { width, height, compact, axis }: LayoutOptions): Layout {
+  const gutter = compact ? 40 : 52;
+  const edge = compact ? 4 : 10;
+  const left = axis === 'left' ? gutter : edge;
+  const right = axis === 'left' ? edge : gutter;
   const top = compact ? 20 : 22;
   const bottom = 6;
   const { units, children, weight } = tree;
@@ -344,5 +351,5 @@ export function layout(tree: Tree, { width, height, compact }: LayoutOptions): L
     }),
   ];
 
-  return { width, height, compact, left, top, bottom, bands, slot, limbs, paths, labels, days, y, tAt, xAt };
+  return { width, height, compact, axis, left, right, top, bottom, bands, slot, limbs, paths, labels, days, y, tAt, xAt };
 }
