@@ -49,19 +49,29 @@ describe('every date and time', () => {
   // So nothing written may depend on a locale's patterns or names, only on the clock's numbers.
   test('owes nothing to the engine’s locale data', () => {
     const proto = Intl.DateTimeFormat.prototype;
-    const { format, formatToParts } = proto;
-    proto.format = () => {
-      throw new Error('a locale pattern was used');
-    };
-    proto.formatToParts = function (this: Intl.DateTimeFormat, t?: number | Date) {
-      return formatToParts
-        .call(this, t)
-        .map((p) => (p.type === 'literal' ? { ...p, value: ', ' } : /^\d+$/.test(p.value) ? p : { ...p, value: '?' }));
-    };
+    // `format` is an accessor, `formatToParts` a method: put both back exactly as they were.
+    const own = Object.getOwnPropertyDescriptors(proto);
+    const formatToParts = proto.formatToParts;
+    Object.defineProperty(proto, 'format', {
+      configurable: true,
+      get: () => () => {
+        throw new Error('a locale pattern was used');
+      },
+    });
+    Object.defineProperty(proto, 'formatToParts', {
+      configurable: true,
+      writable: true,
+      value(this: Intl.DateTimeFormat, t?: number | Date) {
+        return formatToParts
+          .call(this, t)
+          .map((p) => (p.type === 'literal' ? { ...p, value: ', ' } : /^\d+$/.test(p.value) ? p : { ...p, value: '?' }));
+      },
+    });
     try {
       for (const [name, f, t, want] of WRITTEN) expect(`${name}: ${f(t)}`).toBe(`${name}: ${want}`);
     } finally {
-      Object.assign(proto, { format, formatToParts });
+      Object.defineProperty(proto, 'format', own.format!);
+      Object.defineProperty(proto, 'formatToParts', own.formatToParts!);
     }
   });
 });
