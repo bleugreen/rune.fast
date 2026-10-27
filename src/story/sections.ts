@@ -80,7 +80,13 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'twenty-eight-hours',
     dates: 'Sat 24–Sun 25 Oct',
-    figures: [{ figure: { kind: 'timeline', crop: ['2026-10-25T06:00Z', '2026-10-25T22:00Z'] }, after: 'Attempt 5 logged in' }],
+    figures: [
+      { figure: { kind: 'timeline', crop: ['2026-10-25T06:00Z', '2026-10-25T22:00Z'] }, after: 'Attempt 5 logged in' },
+      // Elvarg's fight ending and the Strength 99 page the run stopped on, after the paragraph that narrates it.
+      { figure: { kind: 'clip', id: 'dragon-slayer-stop' }, after: 'Five minutes later Elvarg was dead and the run had stopped' },
+      // The 2:34 PM stop at the spiders with no prayer. Its paragraph ends in a colon, so the clip follows the quotation it introduces.
+      { figure: { kind: 'clip', id: 'spider-stop' }, after: 'builder is overestimating, wall clock is free, ticks are not' },
+    ],
     pulled: ['wall clock is free, ticks are not'],
     links: [],
   },

@@ -59,9 +59,10 @@
       "cairn://p/rs/468 (re-read on the demo engine)",
       "cairn://p/rs/339 (the Cooking step module)",
       "rs tenet 6",
-      "the run host’s screen recording of attempt 5, 25 Oct 20:25:43-20:26:17Z, cropped to the game canvas (Cooking 60 after the first relog, 99 after the second)"
+      "the run host’s screen recording of attempt 5, 25 Oct 20:25:43-20:26:17Z, cropped to the game canvas (Cooking 60 after the first relog, 99 after the second)",
+      "the run host’s screen recording of attempt 5, 25 Oct 20:26:01-20:26:16Z, cropped to the game canvas, the login form cut out (the clip)"
     ],
-    "clip": null
+    "clip": "wine-relog"
   },
   {
     "id": "stun-pack",
@@ -94,9 +95,10 @@
       "rs-sdk speedrun/runner/chain.ts line 1190 at the run commit 10215624 (S18: the stun pack with Superheat, 2 casts a stun, and Charge unlocked)",
       "rs-sdk speedrun/skills/thieving.ts lines 45-90 at 10215624 (the pack, and its Superheat form in place of the burials)",
       "cairn://p/rs/host/messages, 25 Oct 09:36Z (the courier's asks: copper, tin, iron, sharks and arrow tips; Magic 99 and Fletching 99 at the stop)",
-      "the run host’s screen recording of attempt 5, 25 Oct 09:18:44-09:20:06Z, cropped to the game canvas (the courier's trade, stuns, Charge, Smithing levels from Superheat, Magic 99)"
+      "the run host’s screen recording of attempt 5, 25 Oct 09:18:44-09:20:06Z, cropped to the game canvas (the courier's trade, stuns, Charge, Smithing levels from Superheat, Magic 99)",
+      "the run host’s screen recording of attempt 5, 25 Oct 09:18:44-09:18:59Z, cropped to the game canvas (the clip: Magic 82 to 84, Smithing 4 to 7)"
     ],
-    "clip": null
+    "clip": "stun-pack"
   },
   {
     "id": "charge",
@@ -117,9 +119,10 @@
       "cairn://p/rs/32 (the Magic 80-99 route)",
       "cairn://p/rs/466 (demo probe: five sent, four landed in one tick; read as relay straddling)",
       "rs-sdk docs/speedrun/RUN-ORDER.md line 111",
-      "cairn://p/rs/main, correction, 26 Oct 14:08 PDT (publish the rate, not a per-tick count)"
+      "cairn://p/rs/main, correction, 26 Oct 14:08 PDT (publish the rate, not a per-tick count)",
+      "the run host’s screen recording of attempt 5, 25 Oct 09:19:01-09:19:16Z, cropped to the game canvas (the clip: Magic 85 to 90)"
     ],
-    "clip": null
+    "clip": "charge-stuns"
   },
   {
     "id": "protect-from-melee",
@@ -127,7 +130,7 @@
     "kind": "game-mechanic exploit",
     "group": "game",
     "what_normally": "Protect from Melee is a prayer that blocks close-combat hits, and it drains prayer points for every tick it stays on.",
-    "what_instead": "Flicked on and off, it drained nothing in the lab, and in ten lab runs of the Grand Tree fights it cost 5 prayer points in all. In the recovery’s cannon set-up the recording shows its icon over the account’s head and the spiders’ hits landing as zeros.",
+    "what_instead": "Flicked on and off, it drained nothing in the lab, and in ten lab runs of the Grand Tree fights it cost 5 prayer points in all. Through the recovery’s cannon session, from the set-up to Ranged 99, the recording shows its icon over the account’s head and the spiders’ hits landing as zeros.",
     "why_allowed": "Switching a prayer is an ordinary click.",
     "saving": null,
     "steps_plain": ["the Grand Tree quests", "the cannon step", "the fights in the other quests"],
@@ -137,9 +140,10 @@
       "cairn://posts/373",
       "rs-sdk docs/speedrun/RUN-ORDER.md, the Grand Tree chain row (5 points, n = 10 bench runs)",
       "the run host’s screen recording of attempt 5, 26 Oct 10:28:41-10:28:55Z, cropped to the game canvas (the prayer icon and the zero hits)",
+      "the run host’s screen recording of attempt 5, 26 Oct 10:40:32-10:40:47Z, cropped to the game canvas (the clip: the icon and the zero hits to the end of the session, Ranged 99)",
       "data/attempts-timeline.json, attempt 5, 26 Oct 03:25Z to 03:40Z"
     ],
-    "clip": null
+    "clip": "protect-from-melee"
   },
   {
     "id": "logged-out-time",

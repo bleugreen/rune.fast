@@ -189,6 +189,18 @@ describe('what the page adds to the draft', () => {
     expect(rekitBlock.kind === 'p' && rekitBlock.text.startsWith('Overnight the helpers rebuilt the lost kit')).toBe(true);
   });
 
+  test('the twenty-eight hours section sets the Dragon Slayer stop after its paragraph, and the stop at the spiders after the quotation its paragraph introduces', () => {
+    const s = sections.find((x) => x.id === 'twenty-eight-hours')!;
+    const placed = [...s.figuresAt].sort(([a], [b]) => a - b).flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
+    expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['timeline', 'dragon-slayer-stop', 'spider-stop']);
+    const [, elvarg, spiders] = placed;
+    const elvargBlock = s.blocks[elvarg!.at]!;
+    expect(elvargBlock.kind === 'p' && elvargBlock.text.includes('Five minutes later Elvarg was dead and the run had stopped')).toBe(true);
+    expect(quotes(s.blocks[spiders!.at]!, 'wall clock is free, ticks are not')).toBe(true);
+    const narrated = s.blocks[spiders!.at - 1]!;
+    expect(narrated.kind === 'p' && narrated.text.startsWith('At 2:34 PM, with the cannon delivered, the last stop came at the spiders')).toBe(true);
+  });
+
   test('the attempts section sets attempt 4’s death after the quotation its paragraph introduces', () => {
     const s = sections.find((x) => x.id === 'four-attempts')!;
     const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
