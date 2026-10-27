@@ -6,7 +6,8 @@
  *
  * It reads the run order as it stood when attempt 5 logged in, the file's last revision on main
  * before 23:56:33 PDT on 24 October, and fails unless that revision's priced rows are exactly the
- * run commit's: the revision after the run commit restated only the headline for it. Nothing is
+ * run commit's: the revisions after the run commit restated the headline for it and added notes
+ * beside the rows (the knights' top-ups among them), without moving a row's figure. Nothing is
  * written to the fork. Any row it cannot parse fails the import.
  */
 import { execFileSync } from 'node:child_process';
@@ -51,7 +52,8 @@ try {
 const NUMBER = /(\d[\d,]*(?:\.\d+)?)/;
 const num = (s: string) => Number(s.replace(/,/g, ''));
 
-function table(rev: string): { rows: PlanRow[]; text: string } {
+/** The rev's priced rows; the scenario words are checked only where `scenario` is set, the revision read. */
+function table(rev: string, scenarioChecked: boolean): { rows: PlanRow[]; text: string } {
   const text = git('show', `${rev}:${FILE}`);
   const lines = text.split('\n');
   const head = lines.findIndex((l) => l.startsWith('| ID | Kind | Where (tiles) | Step | Levels | Expected | Best |'));
@@ -66,7 +68,7 @@ function table(rev: string): { rows: PlanRow[]; text: string } {
     const e = /^[^\d]{0,12}?(\d[\d,]*(?:\.\d+)?)\**\s*((?:[mier](?:-demo)?)(?:\/[mier])*)?(?![\w])/.exec(c[6]!);
     if (!e) fail(`${rev}:${i + 1} ${id}: no expected figure in '${c[6]!.slice(0, 60)}'`);
     const b = NUMBER.exec(c[7]!);
-    const scenario = SCENARIO[id] ?? [];
+    const scenario = scenarioChecked ? (SCENARIO[id] ?? []) : [];
     for (const s of scenario) if (!line.includes(s.says)) fail(`${rev}:${i + 1} ${id} no longer says '${s.says}'`);
     rows.push({
       id,
@@ -83,8 +85,8 @@ function table(rev: string): { rows: PlanRow[]; text: string } {
   return { rows, text };
 }
 
-const atLogin = table(revision[0]!);
-const atRun = table(runCommit[0]!);
+const atLogin = table(revision[0]!, true);
+const atRun = table(runCommit[0]!, false);
 const figures = (rows: PlanRow[]) => JSON.stringify(rows.map((r) => [r.id, r.kind, r.expected, r.best, r.tags]));
 if (figures(atLogin.rows) !== figures(atRun.rows)) fail(`the priced rows at ${revision[0]} differ from the run commit's`);
 for (const id of Object.keys(SCENARIO)) if (!atLogin.rows.some((r) => r.id === id)) fail(`no row ${id}`);
