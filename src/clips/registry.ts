@@ -1,5 +1,6 @@
 import raw from '../../data/clips.json';
 import { fmtPacificClockRange, fmtPacificDayMonYear, pacificZone, parseUtc } from '../lib/time';
+import { WORLD_ASSET_BASE } from '../replay/assets';
 
 /** Where footage comes from, as its caption names it. */
 export type SourceLabel = 'run feed' | 'finish recording' | 'lab film';
@@ -17,7 +18,14 @@ export interface ClipSource {
   note: string;
 }
 
-interface Footage {
+/** What a caption line prints besides what is on screen: when, and from where. */
+export interface Provenance {
+  /** When it was recorded, first and last frame, in UTC as the recording stamps it; the caption prints Pacific. */
+  recorded: readonly [string, string];
+  source: ClipSource;
+}
+
+interface Footage extends Provenance {
   id: string;
   /** Under public/, as the page requests it: the still the frame shows at rest. */
   poster: string;
@@ -27,18 +35,20 @@ interface Footage {
   seconds: number;
   /** What is on screen. */
   caption: string;
-  /** When the footage was recorded, first and last frame, in UTC as the recording stamps it; the caption prints Pacific. */
-  recorded: readonly [string, string];
   /** The run step it shows, in plain words. */
   step: string;
-  source: ClipSource;
 }
 
 /** A short silent video file. */
 export interface VideoEntry extends Footage {
   kind: 'video';
-  /** Under public/, as the page requests it. */
+  /**
+   * Its key under the world assets, clips/<id>.<sha8>.mp4, the name carrying the content: R2 in
+   * production, .world/ in dev and preview (scripts/world/publish-videos.ts). Never in git.
+   */
   src: string;
+  /** The file's size, which the bucket must answer with. */
+  bytes: number;
   /** A lab clip's trace, the file its tick map was read from. */
   trace?: string;
   /** A lab clip's tick map: [ms into the clip, the server tick from that ms on], ascending, the first at 0. */
@@ -81,16 +91,21 @@ export function clipById(id: string): ClipEntry {
  * When the footage was recorded, Pacific, as its caption prints it: '26 Oct 2026, 3:27:15–3:27:27 AM'.
  * With `zone`, the Pacific zone follows, for the one clip that names its page's zone.
  */
-export function clipWhen(c: ClipEntry, zone = false): string {
+export function clipWhen(c: Pick<Provenance, 'recorded'>, zone = false): string {
   const [a, b] = c.recorded.map(parseUtc) as [number, number];
   return `${fmtPacificDayMonYear(a)}, ${fmtPacificClockRange(a, b, true)}${zone ? ` ${pacificZone(a)}` : ''}`;
 }
 
 /** The caption's source: 'Finish recording', 'Run feed', or 'Lab film, rs-sdk 3546291'. */
-export function clipSource(c: ClipEntry): string {
+export function clipSource(c: Pick<Provenance, 'source'>): string {
   const { label, commit } = c.source;
   const name = label.charAt(0).toUpperCase() + label.slice(1);
   return commit ? `${name}, rs-sdk ${commit.slice(0, 7)}` : name;
+}
+
+/** Where the page fetches a video: its key under the world assets. */
+export function clipSrc(v: VideoEntry): string {
+  return `${WORLD_ASSET_BASE}${v.src}`;
 }
 
 /** The server tick on screen at this point of the clip: the last tick that began at or before it. */

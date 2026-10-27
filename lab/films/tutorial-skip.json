@@ -1,0 +1,5 @@
+{
+  "script": "speedrun/skills/start.ts",
+  "setup": { "leaveTutorial": false, "settleTicks": 3 },
+  "seconds": 60
+}

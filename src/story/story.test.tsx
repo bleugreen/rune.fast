@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
-import { clipById, clipSource, clipWhen } from '../clips/registry';
+import { clipById, clipSource, clipSrc, clipWhen } from '../clips/registry';
 import { StoryPage } from '../pages/StoryPage';
 import { sourceTable } from './draft';
 import { SECTION_META, quotes, storySections } from './sections';
@@ -224,7 +224,7 @@ describe('what the page adds to the draft', () => {
     expect(ids.length).toBeGreaterThan(0);
     for (const id of ids) {
       const c = clipById(id);
-      if (c.kind === 'video') expect(html).toContain(`src="${c.src}"`);
+      if (c.kind === 'video') expect(html).toContain(`src="${clipSrc(c)}"`);
       for (const s of [c.caption, clipWhen(c), c.step, clipSource(c)]) expect(surface).toContain(s);
     }
   });

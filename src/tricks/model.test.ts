@@ -3,6 +3,9 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TricksPage } from '../pages/TricksPage';
 import { projectTricks } from '../../scripts/public-tricks';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { jpegSize } from '../../scripts/world/media';
 import { clipById } from '../clips/registry';
 import { GROUPS, TRICKS, cardText, headlineFacts, hi, inGroup, lo, rejected, savedShare } from './model';
 
@@ -51,6 +54,21 @@ describe('the data', () => {
 
   test('every card clip is in the clip registry', () => {
     for (const t of TRICKS) if (t.clip) expect(() => clipById(t.clip!)).not.toThrow();
+  });
+
+  test('a card has a clip or frames, not both, and its frames are in public/ at the size it says', () => {
+    for (const t of TRICKS) {
+      if (!t.stills) continue;
+      expect(t.clip).toBeNull();
+      expect(t.stills.frames.length).toBeGreaterThanOrEqual(3);
+      expect(t.stills.frames.length).toBeLessThanOrEqual(4);
+      for (const f of t.stills.frames) {
+        expect(f.alt.trim().length).toBeGreaterThan(0);
+        expect(jpegSize(readFileSync(join('public', f.src)))).toEqual({ width: t.stills.width, height: t.stills.height });
+      }
+      expect(t.stills.source.label).toBe('lab film');
+      expect(t.stills.source.commit).toMatch(/^[0-9a-f]{40}$/);
+    }
   });
 
   test('the level-up and cannon cards carry their clips', () => {

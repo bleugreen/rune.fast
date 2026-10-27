@@ -1,0 +1,6 @@
+{
+  "script": "speedrun/lab/quests/aereck-burst.ts",
+  "args": ["--lab", "--client=browser", "--talks=4"],
+  "setup": { "tele": [3243, 3208, 0], "settleTicks": 3 },
+  "seconds": 180
+}

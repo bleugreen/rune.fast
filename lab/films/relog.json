@@ -1,0 +1,6 @@
+{
+  "script": "see film.sh --script: lab/films/relog-bank.ts in this repository",
+  "args": ["--n=2"],
+  "setup": { "tele": [3185, 3436, 0], "settleTicks": 3 },
+  "seconds": 150
+}

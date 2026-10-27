@@ -1,0 +1,200 @@
+{
+  "bot": "filmaer2",
+  "script": "speedrun/lab/quests/aereck-burst.ts",
+  "kind": "script",
+  "args": [
+    "--lab",
+    "--client=browser",
+    "--talks=4"
+  ],
+  "clip": "../films/aereck.json",
+  "setup": {
+    "tele": [
+      3243,
+      3208,
+      0
+    ],
+    "settleTicks": 3
+  },
+  "staged": [
+    "off Tutorial Island",
+    "at 3243,3208,0"
+  ],
+  "git": {
+    "commit": "4f62822f0fa2a0f320abedba7fc473776c5b408d",
+    "dirty": false
+  },
+  "tickMs": {
+    "configured": 400,
+    "feedHello": 400,
+    "observed": {
+      "n": 70,
+      "median": 400,
+      "p95": 403,
+      "max": 405
+    }
+  },
+  "start": {
+    "ms": 1793063511742.747,
+    "tick": 44,
+    "clientTick": 18
+  },
+  "end": {
+    "ms": 1793063539990.238,
+    "tick": 114,
+    "clientTick": 85
+  },
+  "durationMs": 28247,
+  "run": {
+    "startVideoMs": 981,
+    "end": "exited 0 after 26.3 s"
+  },
+  "xpGained": {},
+  "levels": {},
+  "startSkills": {
+    "Attack": {
+      "level": 1,
+      "xp": 0
+    },
+    "Defence": {
+      "level": 1,
+      "xp": 0
+    },
+    "Strength": {
+      "level": 1,
+      "xp": 0
+    },
+    "Hitpoints": {
+      "level": 10,
+      "xp": 980
+    },
+    "Ranged": {
+      "level": 1,
+      "xp": 0
+    },
+    "Prayer": {
+      "level": 1,
+      "xp": 0
+    },
+    "Magic": {
+      "level": 1,
+      "xp": 0
+    },
+    "Cooking": {
+      "level": 1,
+      "xp": 0
+    },
+    "Woodcutting": {
+      "level": 1,
+      "xp": 0
+    },
+    "Fletching": {
+      "level": 1,
+      "xp": 0
+    },
+    "Fishing": {
+      "level": 1,
+      "xp": 0
+    },
+    "Firemaking": {
+      "level": 1,
+      "xp": 0
+    },
+    "Crafting": {
+      "level": 1,
+      "xp": 0
+    },
+    "Smithing": {
+      "level": 1,
+      "xp": 0
+    },
+    "Mining": {
+      "level": 1,
+      "xp": 0
+    },
+    "Herblore": {
+      "level": 1,
+      "xp": 0
+    },
+    "Agility": {
+      "level": 1,
+      "xp": 0
+    },
+    "Thieving": {
+      "level": 1,
+      "xp": 0
+    },
+    "Stat18": {
+      "level": 1,
+      "xp": 0
+    },
+    "Stat19": {
+      "level": 1,
+      "xp": 0
+    },
+    "Runecraft": {
+      "level": 1,
+      "xp": 0
+    }
+  },
+  "video": {
+    "file": "clip.mp4",
+    "encoder": "libopenh264",
+    "crf": 26,
+    "bytes": 1549533,
+    "fps": 25,
+    "width": 764,
+    "height": 502,
+    "frames": 707,
+    "method": "Chrome DevTools Page.startScreencast (JPEG q90, chrome-headless-shell, the bot page's ?minimal canvas at 765x503), each frame stamped with its compositor time, re-timed to a constant rate (the latest frame at each output frame), encoded by ffmpeg libopenh264",
+    "captured": 1422,
+    "captureFps": 50.3,
+    "intervalMs": {
+      "n": 1421,
+      "median": 16.8,
+      "p95": 35.7,
+      "max": 266.6
+    },
+    "staleMs": {
+      "n": 707,
+      "median": 10.5,
+      "p95": 34.7,
+      "max": 242.6
+    },
+    "receiveLagMs": {
+      "n": 1422,
+      "median": 6.9,
+      "p95": 9.2,
+      "max": 17.5
+    },
+    "crop": {
+      "x": 0,
+      "y": 0,
+      "w": 764,
+      "h": 502
+    }
+  },
+  "feed": {
+    "file": "feed.jsonl",
+    "url": "ws://localhost:9700/worldfeed",
+    "protocol": 1,
+    "frames": 79,
+    "ticks": 71,
+    "areas": [
+      {
+        "x": 3147,
+        "z": 3112,
+        "w": 192,
+        "h": 192
+      }
+    ],
+    "followedSlot": 1
+  },
+  "trace": {
+    "file": "trace.jsonl",
+    "start": 1,
+    "pos": 67,
+    "action": 69
+  },
+  "clock": "ms fields are wall-clock epoch ms on the lab machine; videoMs = ms - start.ms; tick is the server tick from the feed, clientTick the browser client's own tick count"
+}

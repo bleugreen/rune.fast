@@ -29,6 +29,7 @@ import {
 import { cutChunks } from '@rune/world/replay/cut';
 import { Playhead } from '@rune/world/replay/Playhead';
 import { CLIPS } from './clips';
+import { IMMUTABLE, R2_ENV, putObject, r2Client } from './r2';
 import { RecordingError, StreamSource, headlessController, openChain, recordedFrames, type StreamStats } from './recordings';
 import { RedactionError, Redactor, scanEmitted, slotName } from './redact';
 
@@ -239,22 +240,15 @@ console.log(`wrote ${relative('.', outDir)}/ (${chunks.length} chunks + manifest
 // --- R2 ---
 
 if (args.upload || args['upload-cache']) {
-  const env = ['R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET'] as const;
-  const missing = env.filter((k) => !process.env[k]);
+  const missing = R2_ENV.filter((k) => !process.env[k]);
   if (missing.length) fail(`--upload needs ${missing.join(', ')}`);
-  const s3 = new Bun.S3Client({
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    bucket: process.env.R2_BUCKET,
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  });
-  const IMMUTABLE = 'public, max-age=31536000, immutable';
+  const s3 = r2Client();
   if (args['upload-cache']) {
     // The store goes up as files, streamed from disk; keys.json is never read into memory here.
     const cacheDir = args.cache;
     // Streamed from disk; the store's directory is named by content, so its files are immutable.
     const put = (rel: string, type: string, cacheControl: string) =>
-      fetchPut(s3, `world/cache/${rel}`, Bun.file(join(cacheDir, rel)), statSync(join(cacheDir, rel)).size, { type, cacheControl });
+      putObject(s3, `world/cache/${rel}`, Bun.file(join(cacheDir, rel)), statSync(join(cacheDir, rel)).size, { type, cacheControl });
     for (const name of readdirSync(join(cacheDir, cacheName))) {
       await put(`${cacheName}/${name}`, name.endsWith('.json') ? 'application/json' : 'application/octet-stream', IMMUTABLE);
     }
@@ -264,28 +258,12 @@ if (args.upload || args['upload-cache']) {
     if (scanOut() > 0) fail('the scan failed on the bytes about to be uploaded');
     for (const w of written) {
       const br = readFileSync(join(outDir, w.file + '.br'));
-      await fetchPut(s3, `world/replays/${clipId}/${w.file}`, new Uint8Array(br), br.length, { type: 'application/x-ndjson', contentEncoding: 'br', cacheControl: IMMUTABLE });
+      await putObject(s3, `world/replays/${clipId}/${w.file}`, new Uint8Array(br), br.length, { type: 'application/x-ndjson', contentEncoding: 'br', cacheControl: IMMUTABLE });
     }
     const manifestBytes = readFileSync(join(outDir, 'manifest.json'));
-    await fetchPut(s3, `world/replays/${clipId}/manifest.json`, new Uint8Array(manifestBytes), manifestBytes.length, { type: 'application/json', cacheControl: 'public, max-age=300' });
+    await putObject(s3, `world/replays/${clipId}/manifest.json`, new Uint8Array(manifestBytes), manifestBytes.length, { type: 'application/json', cacheControl: 'public, max-age=300' });
     console.log(`uploaded ${written.length} chunks and the manifest to world/replays/${clipId}/`);
   }
-}
-
-async function fetchPut(
-  s3: Bun.S3Client,
-  key: string,
-  body: Uint8Array<ArrayBuffer> | Blob,
-  size: number,
-  meta: { type: string; cacheControl: string; contentEncoding?: string },
-): Promise<void> {
-  // Bun's S3 writer sets Content-Type; Cache-Control and Content-Encoding go through a presigned PUT.
-  const url = s3.presign(key, { method: 'PUT', expiresIn: 600 });
-  const headers: Record<string, string> = { 'Content-Type': meta.type, 'Cache-Control': meta.cacheControl };
-  if (meta.contentEncoding) headers['Content-Encoding'] = meta.contentEncoding;
-  const resp = await fetch(url, { method: 'PUT', body, headers });
-  if (!resp.ok) fail(`upload of ${key} failed: HTTP ${resp.status}`);
-  console.log(`uploaded ${key} (${size} bytes)`);
 }
 
 if (!existsSync(join(outDir, 'manifest.json'))) fail('manifest missing after write');

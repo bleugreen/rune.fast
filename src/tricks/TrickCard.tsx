@@ -2,6 +2,7 @@ import { Clip } from '../clips/Clip';
 import { clipById } from '../clips/registry';
 import { listJoin, type Trick } from './model';
 import { SavingChart } from './SavingChart';
+import { StillStrip } from './StillStrip';
 import styles from './TrickCard.module.css';
 
 export function Sources({ sources }: { sources: readonly string[] }) {
@@ -38,6 +39,8 @@ export function TrickCard({ trick: t, zone }: { trick: Trick; zone?: boolean }) 
       <div className={styles.media}>
         {t.clip ? (
           <Clip clip={clipById(t.clip)} zone={zone} />
+        ) : t.stills ? (
+          <StillStrip strip={t.stills} zone={zone} />
         ) : (
           <div className={styles.noClip}>
             <span>Clip to come</span>

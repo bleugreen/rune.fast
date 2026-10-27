@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { Contained } from '../components/Contained';
 import { fmtInt } from '../lib/numbers';
-import { clipSource, clipTickAt, clipWhen, type ClipEntry, type ReplayEntry, type VideoEntry } from './registry';
+import { clipSource, clipSrc, clipTickAt, clipWhen, type ClipEntry, type ReplayEntry, type VideoEntry } from './registry';
 import styles from './Clip.module.css';
 
 /** rest: the poster; loading: asked to play, no frame yet; then playing or paused. */
@@ -283,7 +283,7 @@ const VideoMedia = forwardRef<MediaHandle, MediaProps<VideoEntry>>(function Vide
   return (
     <video
       ref={video}
-      src={entry.src}
+      src={clipSrc(entry)}
       poster={entry.poster}
       width={entry.width}
       height={entry.height}
