@@ -91,8 +91,11 @@ describe('the clip registry', () => {
 
     if (c.kind === 'replay') {
       test('is a window of the published recording, its length its ticks', () => {
-        expect(c.from).toBeGreaterThanOrEqual(FINISH_TICKS[0]);
-        expect(c.to).toBeLessThanOrEqual(FINISH_TICKS[1]);
+        if (c.recording === 'finish') {
+          expect(c.from).toBeGreaterThanOrEqual(FINISH_TICKS[0]);
+          expect(c.to).toBeLessThanOrEqual(FINISH_TICKS[1]);
+        }
+        expect(c.to).toBeGreaterThan(c.from);
         expect(Math.abs((c.to - c.from) * TICK_MS - c.seconds * 1000)).toBeLessThan(10);
       });
       return;

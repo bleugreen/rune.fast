@@ -1,7 +1,7 @@
 /**
  * Checks that replay embeds share the page's one 3D world, in system Chrome: plays two replay
- * embeds in turn, `--switches` times, and after each counts the WebGL2 contexts and workers the
- * page has made (by wrapping getContext and Worker before the page loads), reads the JS heap after
+ * embeds in turn, `--switches` times, and after each counts the live WebGL2 contexts and the workers
+ * the page has made (by wrapping getContext and Worker before the page loads), reads the JS heap after
  * a forced collection, and waits for the playing embed's data-replay-ready signal (the followed
  * account drawn), so a blank canvas after a switch fails. Each switch's frame is saved as a PNG.
  *
@@ -35,12 +35,13 @@ const browser = await chromium.launch({
 });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
 await page.addInitScript(() => {
-  const made = { contexts: new Set<HTMLCanvasElement>(), workers: 0 };
+  const made = { contexts: new Set<WebGL2RenderingContext>(), workers: 0 };
   (window as unknown as { __made: typeof made }).__made = made;
   const getContext = HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, kind: string, ...rest: unknown[]) {
-    if (kind === 'webgl2') made.contexts.add(this);
-    return (getContext as (...a: unknown[]) => unknown).call(this, kind, ...rest);
+    const ctx = (getContext as (...a: unknown[]) => unknown).call(this, kind, ...rest);
+    if (kind === 'webgl2' && ctx) made.contexts.add(ctx as WebGL2RenderingContext);
+    return ctx;
   } as typeof getContext;
   const NativeWorker = window.Worker;
   window.Worker = class extends NativeWorker {
@@ -74,9 +75,11 @@ for (let step = 0; step < Number(args.switches) * embeds.length; step++) {
   await figure.locator('[role="button"]').screenshot({ path: join(args.out, `${step}-${id}.png`) });
   const m = await page.evaluate(() => {
     (window as unknown as { gc?: () => void }).gc?.();
-    const made = (window as unknown as { __made: { contexts: Set<unknown>; workers: number } }).__made;
+    const made = (window as unknown as { __made: { contexts: Set<WebGL2RenderingContext>; workers: number } }).__made;
     const heap = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize ?? 0;
-    return { contexts: made.contexts.size, workers: made.workers, heapMb: Math.round(heap / 1e5) / 10 };
+    // Live contexts only: the engine's WebGL2 probe makes one and releases it at once.
+    const live = [...made.contexts].filter((c) => !c.isContextLost()).length;
+    return { contexts: live, workers: made.workers, heapMb: Math.round(heap / 1e5) / 10 };
   });
   rows.push({ step, embed: id, ...m, readyMs });
   console.log(`switch ${step}: ${id} drawn ${readyMs === null ? 'NEVER' : `${readyMs} ms`} after the click; ${m.contexts} WebGL2 context(s), ${m.workers} worker(s), JS heap ${m.heapMb} MB`);

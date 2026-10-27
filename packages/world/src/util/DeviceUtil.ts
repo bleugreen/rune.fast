@@ -22,6 +22,14 @@ export const isSharedMemorySupported =
 export const isTouchDevice =
     hasDom && !!(navigator.maxTouchPoints || "ontouchstart" in document.documentElement);
 
-export const isWebGL2Supported = hasDom && !!document.createElement("canvas").getContext("webgl2");
+// The probe's context is released at once rather than left for collection, so a page that draws the
+// world holds exactly one live context.
+function probeWebGL2(): boolean {
+    const gl = document.createElement("canvas").getContext("webgl2");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return !!gl;
+}
+
+export const isWebGL2Supported = hasDom && probeWebGL2();
 
 export const pixelRatio = hasDom ? window.devicePixelRatio || 1 : 1;
