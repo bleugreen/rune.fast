@@ -1,6 +1,7 @@
 /* The replay inside a clip frame: the whole frame, under its poster and play mark. */
 .media,
-.stage {
+.stage,
+.overlay {
   position: absolute;
   inset: 0;
 }
@@ -8,9 +9,9 @@
   background: var(--ink);
   pointer-events: none;
 }
-.overlay {
-  position: absolute;
-  inset: 0;
+/* The shared world's canvas, moved in while this embed holds the stage. */
+.stage :global(canvas) {
+  display: block;
 }
 .overlay :global(.live-overlay) {
   position: absolute;

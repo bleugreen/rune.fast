@@ -164,7 +164,10 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
     })(),
   };
   tenant = { ticket, host, overlay, evict };
-  if (previous) previous.evict();
+  if (previous) {
+    drivers.get(previous.ticket.entry.id)?.pause();
+    previous.evict();
+  }
   return ticket;
 }
 
