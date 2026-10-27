@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router-dom';
 import './styles/tokens.css';
 import './styles/base.css';
-import { Layout } from './components/Layout';
+import { siteRoutes } from './components/Layout';
+import { recovery } from './lib/deploy';
 import { StoryPage } from './pages/StoryPage';
 import { AttemptsPage } from './pages/AttemptsPage';
 import { TricksPage } from './pages/TricksPage';
@@ -22,7 +23,11 @@ const pages: RouteObject[] = [
   { path: '*', element: <NotFound /> },
 ];
 
-const router = createBrowserRouter([{ element: <Layout />, children: pages }]);
+// Vite's preload helper fires this when a lazily loaded chunk or its stylesheet does not load,
+// which after a deploy is a chunk name the new deploy no longer has.
+window.addEventListener('vite:preloadError', () => recovery.reload());
+
+const router = createBrowserRouter(siteRoutes(pages));
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

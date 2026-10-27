@@ -1,6 +1,15 @@
-import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router-dom';
+import { Link, NavLink, Outlet, ScrollRestoration, type RouteObject } from 'react-router-dom';
 import { fmtCalendarDate } from '../lib/time';
+import { RouteError } from '../pages/LoadFailed';
 import styles from './Layout.module.css';
+
+/**
+ * The site's route tree: every page inside the Layout. A page that fails shows the error page in
+ * its place, under the masthead; only a failure of the Layout itself loses the masthead.
+ */
+export function siteRoutes(pages: RouteObject[]): RouteObject[] {
+  return [{ element: <Layout />, errorElement: <RouteError />, children: [{ errorElement: <RouteError />, children: pages }] }];
+}
 
 const LIVE = [
   { to: '/', label: 'Story' },
