@@ -21,7 +21,8 @@
  * stylesheets and fonts are in and its scripts, held back, are not.
  * Exits 1 on any failure.
  */
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { chromium, type Browser, type Page } from 'playwright-core';
@@ -148,8 +149,16 @@ async function beforeScript(browser: Browser, base: string): Promise<void> {
   await context.close();
 }
 
-/** 3. The app hydrates every page in place, with React's development build watching. */
-async function hydrates(browser: Browser): Promise<void> {
+/** A desktop and a phone: either side of every layout switch the pages make by width. */
+const WIDTHS = [1440, 390] as const;
+/**
+ * The reader's zone, never the build's: package.json `check` builds under TZ=UTC, as Cloudflare
+ * Pages does, and every time the site shows is Pacific whatever zone either side is in.
+ */
+const READER_ZONE = 'Australia/Perth';
+
+/** The site built as `bun run build` builds it, with React's development build; returns its dist. */
+async function developmentBuild(): Promise<string> {
   const out = resolve('node_modules/.cache/rune-prerender');
   const [client, server] = [join(out, 'client'), join(out, 'server')];
   const before = { NODE_ENV: process.env.NODE_ENV, VITE_WORLD_ASSET_BASE: process.env.VITE_WORLD_ASSET_BASE };
@@ -172,10 +181,42 @@ async function hydrates(browser: Browser): Promise<void> {
   await writePages(client, server);
   const entry = readFileSync(join(client, 'index.html'), 'utf8').match(/src="(\/assets\/[^"]+\.js)"/)![1]!;
   check(readFileSync(join(client, entry), 'utf8').includes('did not match. Server:'), 'the hydration build is not React’s development build');
+  return client;
+}
 
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-  for (const p of PATHS) {
-    const page = await context.newPage();
+/**
+ * dist/ in Pages' own server, functions/ and _routes.json included, at a free port. Its logs go to
+ * a scratch directory: wrangler's default is under the user's preferences, not always writable.
+ */
+async function pagesDev(dir: string): Promise<{ base: string; stop(): void }> {
+  const probe = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch: () => new Response() });
+  const port = probe.port;
+  probe.stop(true);
+  const proc = Bun.spawn(['node_modules/.bin/wrangler', 'pages', 'dev', dir, '--ip', '127.0.0.1', '--port', String(port)], {
+    env: { ...process.env, WRANGLER_SEND_METRICS: 'false', WRANGLER_LOG_PATH: mkdtempSync(join(tmpdir(), 'rune-wrangler-')) },
+    stdout: 'ignore',
+    stderr: 'pipe',
+  });
+  const base = `http://127.0.0.1:${port}`;
+  for (const until = Date.now() + 60_000; Date.now() < until; await Bun.sleep(250)) {
+    if (proc.exitCode !== null) throw new Error(`wrangler pages dev exited ${proc.exitCode}: ${await new Response(proc.stderr).text()}`);
+    if ((await fetch(`${base}/`).catch(() => null))?.ok) return { base, stop: () => proc.kill() };
+  }
+  proc.kill();
+  throw new Error('wrangler pages dev did not answer within a minute');
+}
+
+/**
+ * 3. The app hydrates every page in place, opened at each width in the reader's zone: the console
+ * logs no error or warning, the app keeps the server's DOM rather than drawing its own, and from
+ * the story each nav link routes client-side. `serve`, if given, answers the tab's requests.
+ */
+async function hydrates(browser: Browser, what: string, base: string, serve?: (page: Page) => Promise<void>): Promise<void> {
+  for (const width of WIDTHS) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, timezoneId: READER_ZONE });
+    for (const p of PATHS) {
+      const where = `${p} at ${width} px, ${what}`;
+      const page = await context.newPage();
     const said: string[] = [];
     // A failed request is reported by its address below; the console's own line for it names none.
     page.on('console', (m) => {
@@ -194,8 +235,8 @@ async function hydrates(browser: Browser): Promise<void> {
         w.__served = [document.querySelector('#root > *'), document.querySelector('main h1'), document.querySelector('footer')];
       });
     });
-    await servedFrom(page, client);
-    await page.goto(ORIGIN + p, { waitUntil: 'networkidle' });
+    if (serve) await serve(page);
+    await page.goto(base + p, { waitUntil: 'networkidle' });
     await page.waitForFunction(() => Object.keys(document.getElementById('root')!).some((k) => k.startsWith('__reactContainer')));
     await page.waitForTimeout(500);
     const kept = await page.evaluate(() => {
@@ -203,31 +244,43 @@ async function hydrates(browser: Browser): Promise<void> {
       const now = [document.querySelector('#root > *'), document.querySelector('main h1'), document.querySelector('footer')];
       return served.every((el, i) => el !== null && el === now[i]);
     });
-    check(said.length === 0, `${p}: the console said\n    ${said.join('\n    ')}`);
-    check(kept, `${p}: the app replaced the server's HTML instead of hydrating it`);
+    check(said.length === 0, `${where}: the console said\n    ${said.join('\n    ')}`);
+    check(kept, `${where}: the app replaced the server's HTML instead of hydrating it`);
 
     if (p === '/') {
       await page.evaluate(() => ((window as unknown as Record<string, unknown>).__sameTab = true));
       for (const n of NAV.slice(1)) {
-        await page.locator(`nav[aria-label="Pages"] a[href="${n.to}"]`).click();
-        await page.waitForURL(ORIGIN + n.to);
+        // The phone's nav may sit behind a menu or scroll sideways; following the link is what counts.
+        await page.locator(`nav[aria-label="Pages"] a[href="${n.to}"]`).dispatchEvent('click');
+        await page.waitForURL(base + n.to);
         await page.locator('main h1').first().waitFor();
       }
       const same = await page.evaluate(() => (window as unknown as Record<string, unknown>).__sameTab === true);
-      check(same, '/: a nav link reloaded the page instead of routing client-side');
-      check(said.length === 0, `/ → the nav: the console said\n    ${said.join('\n    ')}`);
+      check(same, `${where}: a nav link reloaded the page instead of routing client-side`);
+      check(said.length === 0, `${where} → the nav: the console said\n    ${said.join('\n    ')}`);
     }
-    await page.close();
+      await page.close();
+    }
+    await context.close();
   }
-  console.log(`Hydration, with React’s development build: ${PATHS.join(' ')} keep the server’s HTML and log nothing; the nav routes client-side`);
-  await context.close();
+  console.log(
+    `Hydration, ${what}, at ${WIDTHS.join(' and ')} px in ${READER_ZONE}: ${PATHS.join(' ')} keep the server’s HTML and log nothing; the nav routes client-side`,
+  );
 }
 
 const browser = await chromium.launch({ channel: 'chrome' });
 try {
   await withoutScript(browser);
   if (shots && args.base) await beforeScript(browser, args.base);
-  await hydrates(browser);
+  const development = await developmentBuild();
+  await hydrates(browser, 'React’s development build', ORIGIN, (page) => servedFrom(page, development));
+  // The site as it ships: dist/ as the build left it, in the server Pages runs it on.
+  const pages = await pagesDev('dist');
+  try {
+    await hydrates(browser, 'the production build in wrangler pages dev', pages.base);
+  } finally {
+    pages.stop();
+  }
 } finally {
   await browser.close();
 }
