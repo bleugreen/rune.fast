@@ -1,6 +1,6 @@
 /*
- * Prose, its chart and its sources down the first column; the clip beside them
- * takes the second column's full width.
+ * Prose, its chart and its sources down the first column; the clip or frames beside
+ * them take the second column's full width.
  */
 .card {
   display: grid;
@@ -97,15 +97,20 @@
   overflow-wrap: anywhere;
 }
 
-/* A card with no clip yet keeps a one-line slot, not a frame-sized hole. */
-.noClip {
-  display: flex;
-  align-items: center;
-  padding: var(--space-2) var(--space-3);
-  border: var(--stroke-hair) solid var(--hairline);
-  font-family: var(--font-sans);
-  font-size: var(--label-sm);
-  color: var(--ink-faint);
+.routeLink a {
+  color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/*
+ * A technique with nothing on screen to film has no media cell. Its chart moves into that column,
+ * level with the first line of the prose under the name; with no chart either, the prose keeps its
+ * reading measure and the card is text alone.
+ */
+.unfilmed .chart {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  margin-top: calc(1.375rem * var(--leading-snug) + var(--space-3));
 }
 
 @media (max-width: 56rem) {
@@ -116,10 +121,14 @@
   }
   .text,
   .chart,
+  .unfilmed .chart,
   .media,
   .sourcesCell {
     grid-column: 1;
     grid-row: auto;
+  }
+  .unfilmed .chart {
+    margin-top: var(--space-3);
   }
   .sourcesCell {
     margin-top: calc(-1 * var(--space-3));

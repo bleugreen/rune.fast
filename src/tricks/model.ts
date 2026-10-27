@@ -51,6 +51,8 @@ export interface Trick {
   clip: string | null;
   /** Frames in place of a clip, where the moment is too short for one (10 to 15 s). */
   stills?: StillStrip;
+  /** A line under the prose linking to the place on the Route page that shows the idea: an element id there, and the words. */
+  route?: { anchor: string; text: string };
 }
 
 /** A few frames of a lab film, in order, captioned like a clip. Images, not footage. */
@@ -127,6 +129,7 @@ export function cardText(t: Trick): string[] {
     ...(s ? [s.label, s.before_label, s.after_label, s.note] : []),
     ...(t.clip ? [clipById(t.clip).caption, clipById(t.clip).step] : []),
     ...(t.stills ? [t.stills.caption, t.stills.step] : []),
+    t.route?.text ?? null,
   ].filter((x): x is string => x !== null);
 }
 

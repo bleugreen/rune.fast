@@ -16,7 +16,8 @@ interface Props {
 /**
  * A logged-out break, one line for each logged-out stretch and each short login inside it. Every
  * line carries the ticks it covers (data-from, data-to): a logged-out line holds the clock, so the
- * spine breaks there, and a login line moves it on by the ticks the hiscore counted for it.
+ * spine breaks there, and a login line moves it on by the ticks the hiscore counted for it. Its id
+ * counts the run's breaks from one, so another page can link to a logout.
  */
 export function Break({ brk, route, story, planned }: Props) {
   let cursor = brk.tick;
@@ -48,7 +49,7 @@ export function Break({ brk, route, story, planned }: Props) {
   });
 
   return (
-    <aside className={styles.break} aria-label="Logged out">
+    <aside id={`logged-out-${brk.index + 1}`} className={styles.break} aria-label="Logged out">
       {lines}
       {!planned && (
         <p className={styles.breakLink}>

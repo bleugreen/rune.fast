@@ -6,6 +6,8 @@
 .page {
   --axis: 6.25rem;
   --axis-gap: var(--space-5);
+  /* How far below the window's top a link to a step or a break lands. */
+  --land: var(--space-6);
   max-width: calc(var(--axis) + var(--axis-gap) + 36rem + 2.5rem + 16rem + 2 * var(--gutter));
   margin: 0 auto;
   padding: var(--space-7) var(--gutter) var(--space-9);
@@ -97,6 +99,8 @@
   .page {
     --axis: 1.75rem;
     --axis-gap: var(--space-3);
+    /* Clear of the sticky strip, which stands about 4.3rem tall below the safe area. */
+    --land: calc(4.5rem + env(safe-area-inset-top, 0px) + var(--space-3));
     max-width: calc(var(--axis) + var(--axis-gap) + 38rem + 2 * var(--gutter));
     padding-top: 0;
   }
