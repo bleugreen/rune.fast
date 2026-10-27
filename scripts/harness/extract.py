@@ -37,6 +37,9 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data" / "harness.json"
 PACIFIC = ZoneInfo("America/Los_Angeles")
 
+sys.path.insert(0, str(ROOT / "scripts"))
+from issue_filer import filer, issues_filed, record  # noqa: E402
+
 # ---------------------------------------------------------------------------
 # The public rules, read from their one home in the TypeScript tree.
 
@@ -226,11 +229,6 @@ def extract(x: Export) -> dict:
     totals = {
         "threads": x.val("select count(*) from threads"),
         "issues": x.val("select count(*) from issues"),
-        "topLevelIssues": x.val("select count(*) from issues where parent_issue_id is null"),
-        "childIssues": x.val("select count(*) from issues where parent_issue_id is not null"),
-        "coordinatorFiled": x.val(
-            "select count(*) from issues i join jobs j on j.id=i.parent_job_id where j.node_name='Coordinator'"
-        ),
         "jobs": x.val("select count(*) from jobs"),
         "executions": x.val("select count(*) from executions"),
         "reviewJobs": x.val("select count(*) from jobs where node_name='Review'"),
@@ -242,7 +240,6 @@ def extract(x: Export) -> dict:
         "verbs": verbs,
         "operators": 1,
         "operatorMessages": len(typed),
-        "operatorToThreads": sum(1 for r in typed if r[1]),
         "appUserEvents": len(user_rows) - len(typed),
         "carets": sum(1 for r in typed if (r[0] or "").strip() == "^"),
         "caretsToThreads": sum(1 for r in typed if r[1] and (r[0] or "").strip() == "^"),
@@ -304,34 +301,60 @@ def extract(x: Export) -> dict:
     src("address", "jobs", str(bj), f"issue rs/843, its builder, {when(b_start)} to {clock(b_end)}")
     src("address", "merge_requests", pr_no, f"issue rs/843, pull request #{pr_no}, merged {when(pr_merged)}")
 
-    # --- Fig 2: lifelines ------------------------------------------------------
+    # --- Fig 2: lifelines, to the #1 -------------------------------------------
+    # Filed means authored (scripts/issue_filer.py), not parented, and the figure ends at the #1:
+    # the same definition and the same cut as the home page's tree.
+    cut = record()
+    filings = issues_filed(x.con, cut)
+    by_filer: dict[str, list[int]] = collections.defaultdict(list)
+    for _, created, f in filings:
+        by_filer[f.thread if f.kind == "thread" else f.kind].append(created)
     threads = []
     for tid, name, created in x.all("select id, name, created_at from threads order by created_at"):
         threads.append(
             {
                 "name": name,
                 "created": created,
-                "operator": sorted(r[2] for r in typed if r[3] == tid),
-                "filed": [
-                    r[0] for r in x.all("select created_at from issues where parent_thread_id=? order by 1", tid)
-                ],
+                "operator": sorted(r[2] for r in typed if r[3] == tid and r[2] <= cut),
+                "filed": by_filer.pop(name, []),
             }
         )
         src("lifelines", "threads", name, f"the {name} thread, created {when(created)}")
-    coord_filed = [
-        r[0]
-        for r in x.all(
-            "select i.created_at from issues i join jobs j on j.id=i.parent_job_id "
-            "where j.node_name='Coordinator' order by 1"
-        )
-    ]
-    rs3_created = x.val("select created_at from issues where number=3")
+    groups = {k: by_filer.pop(k, []) for k in ("coordinator", "builder", "harness")}
+    if by_filer:
+        sys.exit(f"extract: issues filed by threads the export does not list: {sorted(by_filer)}")
+
+    def row_of(number: int) -> dict:
+        """Where Fig 2 marks an issue's filing: on its filer's row."""
+        t, author = x.one("select created_at, author_principal_json from issues where number=?", number)
+        f = filer(author)
+        if f.kind not in ("thread", "coordinator"):
+            sys.exit(f"extract: Fig 2 draws no row for rs/{number}'s filer, {f.plain}")
+        return {"t": t, "row": f.thread if f.kind == "thread" else "coordinators"}
+
+    crossed_filer = filer(x.val("select author_principal_json from issues where number=?", ISSUE))
+    crossed_parent = x.val(
+        "select t.name from issues i join threads t on t.id=i.parent_thread_id where i.number=?", ISSUE
+    )
+    if crossed_filer.kind == "thread":
+        sys.exit("extract: rs/843 is no longer filed by one issue and parented to a thread")
     lifelines = {
+        "cut": cut,
+        "issues": x.val("select count(*) from issues where created_at <= ?", cut),
+        "operatorTyped": sum(1 for r in typed if r[2] <= cut),
         "threads": threads,
-        "coordinators": coord_filed,
-        "marks": {"rs3": rs3_created, "rs843": filed},
+        "coordinators": groups["coordinator"],
+        "builders": groups["builder"],
+        "harness": groups["harness"],
+        "marks": {"rs3": row_of(3), "rs843": row_of(ISSUE)},
+        "crossed": {"issue": ISSUE, "filer": crossed_filer.plain, "parent": crossed_parent},
     }
-    src("lifelines", "issues", 3, f"issue rs/3, the quest-route coordinator, filed under main {when(rs3_created)}")
+    src(
+        "lifelines", "export", "issues",
+        f"the {lifelines['issues']} issues filed up to the #1, {when(cut)}, each counted by its author, the agent that filed it",
+    )
+    src("lifelines", "issues", 3, f"issue rs/3, the quest-route coordinator, filed by main {when(lifelines['marks']['rs3']['t'])}")
+    src("lifelines", "issues", ISSUE, f"issue rs/843, filed by {crossed_filer.plain} under the {crossed_parent} thread {when(filed)}")
 
     # --- Fig 3: rs/843 from filing to merge ------------------------------------
     comments = x.all("select id, seq, created_at from comments where issue_id=? order by seq", iid)
@@ -396,9 +419,7 @@ def extract(x: Export) -> dict:
         "calls": calls,
         "versions": [v[2] for v in versions],
         "review": review[2],
-        "reviewer": plain_id(
-            json.loads(x.val("select author_principal_json from issues where id=?", iid)).get("node")
-        ),
+        "reviewer": filer(x.val("select author_principal_json from issues where id=?", iid)).plain,
         "prOpened": pr_opened,
         "merged": pr_merged,
         "mergedBy": merger,
@@ -732,6 +753,13 @@ def verify(x: Export, data: dict) -> int:
             if n != 1:
                 missing += 1
                 print(f"verify: {fig}: {table} {key} resolves to {n} rows ({s['plain']})", file=sys.stderr)
+    lf = data["lifelines"]
+    counted = collections.Counter(f.thread if f.kind == "thread" else f.kind for _, _, f in issues_filed(x.con, lf["cut"]))
+    drawn = {th["name"]: len(th["filed"]) for th in lf["threads"]}
+    drawn |= {"coordinator": len(lf["coordinators"]), "builder": len(lf["builders"]), "harness": len(lf["harness"])}
+    if {k: v for k, v in drawn.items() if v} != dict(counted):
+        missing += 1
+        print(f"verify: Fig 2's filings {drawn} are not the export's authors {dict(counted)}", file=sys.stderr)
     print(f"verify: {checked} sources checked, {missing} unresolved")
     return 1 if missing else 0
 
