@@ -1,11 +1,13 @@
 /**
  * Scans the built site for identifiers that must never be published (the patterns, cairn
- * addresses among them, live in forbidden.ts, shared with the replay clip scan), and checks that the licences the 3D replay
+ * addresses among them, live in forbidden.ts, shared with the replay clip scan; the harness
+ * page's taught addresses in src/harness/addresses.ts are the one exemption), and checks that the licences the 3D replay
  * ships under are in it. Run after `vite build`; exits non-zero on any hit.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { FORBIDDEN } from './forbidden';
+import { TAUGHT } from '../src/harness/addresses';
+import { FORBIDDEN, withoutAddresses } from './forbidden';
 import { filesUnder, pagesRoutes } from './pages-routes';
 
 function* files(dir: string): Generator<string> {
@@ -18,7 +20,8 @@ function* files(dir: string): Generator<string> {
 
 let hits = 0;
 for (const f of files('dist')) {
-  const text = readFileSync(f, 'utf8');
+  // The harness page's taught addresses are subject matter; any other address still fails.
+  const text = withoutAddresses(readFileSync(f, 'utf8'), TAUGHT);
   for (const [what, re] of FORBIDDEN) {
     const m = re.exec(text);
     if (m) {
