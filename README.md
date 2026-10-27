@@ -87,9 +87,9 @@ The bucket is set up in the Cloudflare dashboard: the custom domain; a CORS poli
 
 ## Fonts
 
-Self-hosted under `public/fonts/`, both under the SIL Open Font License 1.1 (licences and `FONTLOG.txt` alongside):
+Self-hosted from `src/fonts/`, which the CSS and `src/lib/fonts.ts` import, so the build names each file by its content under `/assets/` and it can be cached for good (see Deploying). Both are under the SIL Open Font License 1.1; the licences and `FONTLOG.txt` are served from `public/fonts/`.
 
-- **Rune Serif**, a Latin subset of Source Serif 4 (Adobe, variable weight and optical size). The licence reserves the name "Source" for unmodified fonts, so the subset carries its own name.
+- **Rune Serif**, a Latin subset of Source Serif 4 (Adobe, variable weight and optical size). The licence reserves the name "Source" for unmodified fonts, so the subset carries its own name. `src/fonts/full/` holds that subset with every OpenType feature; `uv run scripts/fonts/subset.py` writes the files served, which keep every character and both axes but only the layout features in `src/fonts/subset.json`, the defaults and the four figure styles the CSS asks for (roman 196 KB to 129 KB, italic 167 KB to 139 KB). `src/fonts/subset.test.ts` fails if the CSS turns on a feature the served files lack, or a face lacks `font-display: swap`.
 - **IBM Plex Sans**, IBM's own unmodified Latin1 files at weights 400, 500 and 600.
 
 ## Titles and link previews
@@ -118,6 +118,8 @@ Cloudflare Pages builds the site from `main`. The project is configured in the C
 - Build output directory: `dist`
 - No `404.html` is emitted, so Pages serves `index.html` for unknown paths and the client router handles them with the 'Nothing here' page. Each page has its own HTML file (see Titles and link previews), so `/route` and the rest are served their own head and the client router takes over from there.
 - The root directory is the repository root, so Pages also builds the Function in `functions/`.
+- Caching: everything under `/assets/` is named by its content, so `public/_headers` lets browsers keep it a year without asking again (`immutable`); the pages' HTML keeps Pages' `max-age=0, must-revalidate`, so a deploy shows at once, and unhashed files (posters, figures, icons) keep Pages' default. Nothing whose name does not change with its content may be marked immutable.
+- Web Analytics: the dashboard's automatic setup (Pages project rune-fast, Metrics, Web Analytics) is off; the app adds the beacon itself (see First load).
 
 **Surviving a deploy.** Pages serves only the current deployment's files, so a tab opened before a deploy asks for chunks, workers and stylesheets by hashed names that no longer exist. Left to Pages, such a request gets the app shell, `index.html` with status 200, and the browser fails to run HTML as a module. Three parts handle this:
 
