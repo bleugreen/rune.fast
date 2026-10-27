@@ -14,10 +14,11 @@
  * Chrome is served the documents as Pages serves them: each page from its own file, any other
  * path from 404.html with status 404.
  *
- *   bun run build && bun run check:prerender [--shots <dir>]
+ *   bun run build && bun run check:prerender [--shots <dir> [--base http://127.0.0.1:8791]]
  *
- * `--shots` also saves each page with JavaScript off, and the story page on a 300 ms, 1.6 Mbps
- * link at the moment its HTML, stylesheet and fonts are in and its script is not.
+ * `--shots` also saves each page with JavaScript off, and with `--base` (the built site served by
+ * `wrangler pages dev dist`), the story page on a 300 ms, 1.6 Mbps link at the moment its HTML,
+ * stylesheets and fonts are in and its scripts, held back, are not.
  * Exits 1 on any failure.
  */
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
@@ -31,7 +32,7 @@ import { inlineTokens } from '../src/story/draft';
 import { story } from '../src/story/story';
 import { writePages } from './page-heads';
 
-const { values: args } = parseArgs({ options: { shots: { type: 'string' } } });
+const { values: args } = parseArgs({ options: { shots: { type: 'string' }, base: { type: 'string' } } });
 
 (globalThis as Record<string, unknown>).__BUILD_DATE__ = '2026-10-26';
 
@@ -121,8 +122,8 @@ async function withoutScript(browser: Browser): Promise<void> {
   await context.close();
 }
 
-/** The story page on the slow link, its HTML in and its script held back. */
-async function beforeScript(browser: Browser): Promise<void> {
+/** The story page from `base` on the slow link, its HTML in and its scripts held back. */
+async function beforeScript(browser: Browser, base: string): Promise<void> {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
@@ -134,13 +135,14 @@ async function beforeScript(browser: Browser): Promise<void> {
     await held;
     await route.fallback();
   });
-  await servedFrom(page, 'dist');
-  await page.goto(ORIGIN + '/', { waitUntil: 'commit' });
+  await page.goto(`${base}/`, { waitUntil: 'commit' });
   await page.locator('main h1').first().waitFor();
   await page.evaluate(() => document.fonts.ready);
   const at = await page.evaluate(() => performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? null);
+  const hydrated = await page.evaluate(() => Object.keys(document.getElementById('root')!).some((k) => k.startsWith('__reactContainer')));
+  check(!hydrated, 'the story before its scripts: the app ran');
   await page.screenshot({ path: join(shots!, 'story-before-js.png') });
-  console.log(`The story page before its script, painted at ${at === null ? '?' : (at / 1000).toFixed(2)} s on 300 ms RTT, 1.6 Mbps`);
+  console.log(`The story page before its scripts, first painted at ${at === null ? '?' : (at / 1000).toFixed(2)} s on 300 ms RTT, 1.6 Mbps`);
   release();
   await context.close();
 }
@@ -153,7 +155,13 @@ async function hydrates(browser: Browser): Promise<void> {
   process.env.NODE_ENV = 'development';
   try {
     const { createBuilder } = await import('vite');
-    const builder = await createBuilder({ logLevel: 'warn', build: { outDir: client }, environments: { ssr: { build: { outDir: server } } } });
+    // The production mode, and with it .env.production's asset host, with React's development build.
+    const builder = await createBuilder({
+      mode: 'production',
+      logLevel: 'error',
+      build: { outDir: client },
+      environments: { ssr: { build: { outDir: server } } },
+    });
     await builder.buildApp();
   } finally {
     process.env.NODE_ENV = before;
@@ -215,7 +223,7 @@ async function hydrates(browser: Browser): Promise<void> {
 const browser = await chromium.launch({ channel: 'chrome' });
 try {
   await withoutScript(browser);
-  if (shots) await beforeScript(browser);
+  if (shots && args.base) await beforeScript(browser, args.base);
   await hydrates(browser);
 } finally {
   await browser.close();
