@@ -28,9 +28,9 @@ export function openingFacts(t: Timeline): OpeningFacts {
 }
 
 /**
- * The page's first clip, as its step and id. The opening prints no clock time and a break's lines
- * come after the step's first clip, so this clip's caption is the first clock time on the open page
- * (source lines wait behind their disclosures), and it names the zone.
+ * The page's first clip, as its step and id. The opening prints no clock time and no break comes
+ * before it, so its caption is the first clock time on the open page (source lines wait behind
+ * their disclosures), and it names the zone.
  */
 function firstClip(): { step: string; clip: string } | undefined {
   for (const s of route.steps) {

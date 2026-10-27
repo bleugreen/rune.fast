@@ -83,11 +83,10 @@ function allowed(): Set<string> {
     ((route.record - route.finish) * route.tickMs) / 1000,
     Math.floor((f.last99 - f.start) / HOUR),
     route.tickMs / 1000,
-    route.stamps.length,
     ...route.steps.map((s) => Math.round(Math.abs(s.took - s.planned))),
     ...route.breaks.map((b) => b.logins.reduce((s, l) => s + l.ticks + l.unassigned, 0)),
   ];
-  const out = renderings([steps, route.finish, route.record, f.start, f.last99, derived, Object.values(GAME_FACTS), MAX_LEVEL]);
+  const out = renderings([steps, route.finish, route.record, derived, Object.values(GAME_FACTS), MAX_LEVEL]);
   // Durations as fmtDuration writes them, '9 h 09 min': the rail's at rest, and each logged-out stretch.
   for (const ms of [0, ...outs]) for (const d of fmtDuration(ms).match(/\d+/g) ?? []) out.add(d);
   // The attempt's own name, 'Attempt 5'.
@@ -128,6 +127,15 @@ describe('the Route page', () => {
     for (const s of route.steps) expect(WORDS[s.spec.id]).toBeDefined();
     expect(text).toContain('Agility 99, and the record');
     expect(text).toContain('129 ticks (51.6 seconds) under the record of 35,916');
+  });
+
+  test('opens with the operator’s three paragraphs', () => {
+    const opening = [...html.matchAll(/<p class="prose">([\s\S]*?)<\/p>/g)].slice(0, 3).map((m) => m[1]!.replace(/&#x27;/g, "'"));
+    expect(opening).toEqual([
+      'The hiscore doesn’t time a run by the clock on the wall. It counts game ticks, 0.4 seconds each, and only while the account is logged in. Attempt 5 took 28 hours from logging in to its last 99. The hiscore counted 35,787 ticks, just under four hours.',
+      '“Wall clock is free, ticks are not,” as the operator put it, so the route spent ticks only on training. When something went wrong, the account logged out and waited for free. Helpers brought its supplies, and where one skill left it idle, another filled the gap.',
+      'This page follows those ticks in order. The line on the left is the hiscore’s clock. It moves as you scroll and breaks wherever the account was logged out, however long the wait. Each stretch says what the account did, why it came then, and what it cost against the plan.',
+    ]);
   });
 
   test('prints no ledger and no account of where the two clocks disagree (the operator’s ruling)', () => {
