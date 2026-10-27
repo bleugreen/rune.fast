@@ -8,14 +8,16 @@ operator's checkout). Each film writes `clip.mp4`, `trace.jsonl`, `feed.jsonl` a
 | spec | script | what it shows |
 | --- | --- | --- |
 | `aereck.json` | `speedrun/lab/quests/aereck-burst.ts --lab --client=browser --talks=4` | Father Aereck's default conversation, alternating read page by page (1 tick a page) and in bursts of blind continues |
-| `relog.json` + `relog-page.ts` | `speedrun/tools/relog-probe.ts --via=page --bank`, through the wrapper | the same-page relog: logout button, in-page login, the new session's first tick |
+| `relog.json` + `relog-bank.ts` | `speedrun/lib/session.ts` `relog`, then `speedrun/helpers/wine-receive.ts` `openBankThroughPages`, as the Cooking step makes them | the same-page relog: logout button, in-page login, back in the world, the bank opening |
 | `tutorial-skip.json` | `speedrun/skills/start.ts` (step module), setup `leaveTutorial: false` | a fresh account skipping Tutorial Island |
 | `willow-knife.json` | `speedrun/skills/woodcutting.ts` (step module), `technique: knife`, Woodcutting 73 at the Taverley willows | the knife-on-logs reset: a log knifed and the tree clicked in the same tick, inventory tab open |
 
 `aereck-burst.ts` attaches to the film tool's tab when given `--client=browser` without `--launch`.
-`relog-page.ts` stands in for `speedrun/lab/measure-relog.ts`, which starts a Chrome of its own: it
-starts only the page server (`proxy.ts`, which an in-page login needs for its one-time token) on the
-web port + 6, and keeps the film tool's `minimal` page through the probe's navigation.
+`relog-bank.ts` acts the way the run's steps do, after `relog` has returned. (A film of
+`speedrun/tools/relog-probe.ts --bank` showed its first-tick booth click cancelled by the run toggle
+that `login` sends in the same tick, so its bank never opens.) It starts only the page server
+(`proxy.ts`, which an in-page login needs for its one-time token) on the web port + 6, and keeps the
+film tool's `minimal` page through the navigation onto it.
 
 ## Shooting
 
@@ -28,7 +30,8 @@ bun install --frozen-lockfile
 (cd server/webclient && bun install --frozen-lockfile && bun run build)
 (cd server/engine && bun install --frozen-lockfile && BUILD_VERIFY=false bun run build)
 film/film.sh filmaer2 --clip=$FILMS/aereck.json --out=film/out/aereck
-film/film.sh filmrelog3 --clip=$FILMS/relog.json --script=$FILMS/relog-page.ts --out=film/out/relog
+film/film.sh filmrelog4 --clip=$FILMS/relog.json --script=$FILMS/relog-bank.ts --out=film/out/relog
+film/film.sh filmwillow1 --clip=$FILMS/willow-knife.json --out=film/out/willow-knife
 film/film.sh filmtut2 --clip=$FILMS/tutorial-skip.json --out=film/out/tutorial-skip
 ```
 
