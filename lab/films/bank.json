@@ -1,0 +1,6 @@
+{
+  "script": "see film.sh --script: lab/films/bank-pair.ts in this repository",
+  "args": ["--rounds=2"],
+  "setup": { "clearInventory": true, "tele": [3185, 3436, 0], "settleTicks": 3 },
+  "seconds": 150
+}
