@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { clipById, clipSource, clipSrc, clipWhen } from '../clips/registry';
+import { AUTHOR } from '../lib/site';
 import { StoryPage } from '../pages/StoryPage';
 import { inlineTokens, sourceTable } from './draft';
 import { SECTION_META, quotes, storySections } from './sections';
@@ -95,6 +96,12 @@ describe('the draft, placed verbatim', () => {
     const headings = lines.slice(0, receiptsAt).filter((l) => /^#( |# \d+\. )/.test(l));
     expect(headings.length).toBe(1 + SECTION_META.length);
     for (const h of headings) expect(surface.includes(h.replace(/^#+ (\d+\. )?/, ''))).toBe(true);
+  });
+
+  test('the operator narrates: the byline names the site’s author first and credits the documenting thread in code style', () => {
+    expect(story.byline.startsWith(`By ${AUTHOR.name}.`)).toBe(true);
+    expect(story.byline).toContain('`rune/main`');
+    expect(html).toContain('<code>rune/main</code>');
   });
 
   test('the reader line above the rule is not page copy', () => {
@@ -199,7 +206,7 @@ describe('what the page adds to the draft', () => {
     expect(hero.match(/<figure/g)?.length).toBe(1);
   });
 
-  test('the death section sets the body among the spiders after the death, its timeline before the recovery paragraph, then the re-kit, the Agility clip and the hiscore board after it', () => {
+  test('the death section sets the body among the spiders after the death, its timeline before the recovery, the re-kit after it, then the Agility clip and the hiscore board after host’s #1', () => {
     const s = sections.find((x) => x.id === 'the-death')!;
     const placed = [...s.figuresAt].sort(([a], [b]) => a - b).flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
     expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['spider-death', 'timeline', 'finish-rekit', 'finish-agility99', 'image']);
@@ -207,30 +214,29 @@ describe('what the page adds to the draft', () => {
     // The replay follows the death, not the sentence that first stands the body among the spiders:
     // the ruling and the logout order come between, and the replay starts after both.
     const died = s.blocks[spiders!.at]!;
-    expect(died.kind === 'p' && died.text.includes('Under a minute later the account was dead')).toBe(true);
+    expect(died.kind === 'p' && died.text.includes('In less than a minute, `cairnmax20x` was dead')).toBe(true);
     expect(quotes(s.blocks[spiders!.at + 1]!, 'Welp there goes the run')).toBe(true);
-    // Not between the operator's "I WANT A #1" and main's reply to it.
-    const wanted = s.blocks.findIndex((b) => quotes(b, 'I WANT A #1'));
-    const reply = s.blocks[wanted + 1]!;
-    expect(reply.kind === 'p' && reply.text.startsWith('`main`: "What it lost is kit, not time."')).toBe(true);
-    expect(s.figuresAt.has(wanted)).toBe(false);
     expect(quotes(s.blocks[death!.at]!, 'we’re not done until #1')).toBe(true);
-    expect(death!.at + 1).toBe(rekit!.at);
     expect(death!.f).toEqual({ kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] });
-    expect(new Set([rekit!.at, agility!.at, board!.at]).size).toBe(1);
+    expect(death!.at + 1).toBe(rekit!.at);
     const recovery = s.blocks[rekit!.at]!;
-    expect(recovery.kind === 'p' && recovery.text.startsWith('Overnight the helpers rebuilt everything the death had cost')).toBe(true);
-    expect(recovery.kind === 'p' && recovery.text.includes('Agility 99 landed at 4:07 AM')).toBe(true);
+    expect(recovery.kind === 'p' && recovery.text.startsWith('Overnight the helpers rebuilt the lost kit')).toBe(true);
+    // Agility 99 is in the paragraph that closes on a colon before host's verification, so its clip
+    // follows that quotation, ahead of the board.
+    const climb = s.blocks[agility!.at - 1]!;
+    expect(climb.kind === 'p' && climb.text.includes('reached Agility 99, the final skill, at 4:07 AM')).toBe(true);
+    expect(quotes(s.blocks[agility!.at]!, 'OFFICIAL #1 VERIFIED')).toBe(true);
+    expect(board!.at).toBe(agility!.at);
   });
 
-  test('the twenty-eight hours section sets the stop at the spiders after the quotation its paragraph introduces, and no Dragon Slayer stop, which it no longer narrates', () => {
+  test('the final run section sets the stop at the spiders after the quotation its paragraph introduces, and no Dragon Slayer stop, which it does not narrate', () => {
     const s = sections.find((x) => x.id === 'twenty-eight-hours')!;
     const placed = [...s.figuresAt].sort(([a], [b]) => a - b).flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
     expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['timeline', 'spider-stop']);
     const [, spiders] = placed;
     expect(quotes(s.blocks[spiders!.at]!, 'wall clock is free, ticks are not')).toBe(true);
     const narrated = s.blocks[spiders!.at - 1]!;
-    expect(narrated.kind === 'p' && narrated.text.includes('at the spiders where the account was to finish its combat skills, it stopped once more')).toBe(true);
+    expect(narrated.kind === 'p' && narrated.text.includes('just before the spiders where it was supposed to finish combat skills, it stopped again')).toBe(true);
   });
 
   test('the attempts section sets attempt 4’s death after the quotation its paragraph introduces', () => {
@@ -242,13 +248,12 @@ describe('what the page adds to the draft', () => {
     expect(narrated.kind === 'p' && narrated.text.includes('It died at the door of the Grand Tree')).toBe(true);
   });
 
-  test('the hiscore board follows the #1 sentence, last of its paragraph’s figures, its files match it, and its caption reads in Pacific with no zone', () => {
+  test('the hiscore board follows host’s #1 verification, last of its figures, its files match it, and its caption reads in Pacific with no zone', () => {
     const s = sections.find((x) => x.id === 'the-death')!;
     const [at, fs] = [...s.figuresAt].find(([, f]) => f.some((x) => x.kind === 'image'))!;
     const image = fs.at(-1)!;
-    if (image.kind !== 'image') throw new Error('the board is not the last figure after its paragraph');
-    const anchor = s.blocks[at]!;
-    expect(anchor.kind === 'p' && anchor.text.includes('At 4:15 AM `host` wrote: "OFFICIAL #1 VERIFIED')).toBe(true);
+    if (image.kind !== 'image') throw new Error('the board is not the last figure after its block');
+    expect(quotes(s.blocks[at]!, 'OFFICIAL #1 VERIFIED on BOTH playerpage')).toBe(true);
     expect(quotes(s.blocks[at + 1]!, 'we did it!!!!')).toBe(true);
 
     const pub = new URL('../../public', import.meta.url).pathname;
