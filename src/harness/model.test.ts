@@ -32,22 +32,36 @@ describe('the counts reconcile', () => {
     expect(sum(m.verbs.rows.map((r) => r.total)) + m.verbs.rest).toBe(83_193);
   });
 
-  test('issues: 367 with no issue above them and 533 children make the 900', () => {
-    expect(m.totals.topLevelIssues + m.totals.childIssues).toBe(m.totals.issues);
-    expect([m.totals.topLevelIssues, m.totals.childIssues, m.totals.issues]).toEqual([367, 533, 900]);
-    expect(m.mainFiled).toBe(275);
-    expect(m.totals.coordinatorFiled).toBe(529);
-    // Thread-filed and coordinator-filed issues are disjoint, and together leave only a few to anyone else.
-    expect(m.threadFiled + m.totals.coordinatorFiled).toBeLessThanOrEqual(m.totals.issues);
+  test('filing, up to the record: by author, the threads, coordinators, builders and the harness make the 862', () => {
+    const f = m.filing;
+    expect(f.threads + f.coordinators + f.builders + f.harness).toBe(f.issues);
+    expect([f.issues, f.threads, f.main, f.coordinators, f.builders, f.harness]).toEqual([862, 119, 97, 719, 22, 2]);
+    // The home page's tree counts the same issues, filed by the same agents, to the same moment.
+    expect(data.lifelines.cut).toBe(summary.cut);
+    expect(f.issues).toBeLessThan(m.totals.issues);
   });
 
-  test('the lifelines bin every message and filing they are given', () => {
-    for (const [r, th] of m.lifelines.rows.slice(0, -1).map((r, k) => [r, data.lifelines.threads[k]!] as const)) {
+  test('the lifelines hold nothing after the record, and bin every message and filing they are given', () => {
+    const L = data.lifelines;
+    const times = [...L.threads.flatMap((th) => [...th.operator, ...th.filed]), ...L.coordinators, ...L.builders, ...L.harness];
+    expect(Math.max(...times)).toBeLessThanOrEqual(L.cut);
+    expect(m.lifelines.to).toBe(m.filing.cut);
+    for (const [r, th] of m.lifelines.rows.slice(0, -1).map((r, k) => [r, L.threads[k]!] as const)) {
       expect(sum(r.operator!)).toBe(th.operator.length);
       expect(sum(r.filed)).toBe(th.filed.length);
     }
-    expect(sum(m.lifelines.rows.at(-1)!.filed)).toBe(data.lifelines.coordinators.length);
-    expect(sum(m.lifelines.rows.slice(0, -1).map((r) => r.operatorTotal))).toBe(m.totals.operatorToThreads);
+    expect(sum(m.lifelines.rows.at(-1)!.filed)).toBe(L.coordinators.length);
+    expect(m.filing.operatorToThreads).toBe(526);
+    expect(m.filing.operatorTyped).toBe(737);
+    expect(m.filing.operatorTyped).toBeLessThanOrEqual(m.totals.operatorMessages);
+  });
+
+  test('each mark sits on its filer’s row: rs/3 on main’s, rs/843 on the coordinators’, though main is its parent', () => {
+    const rowOf = (key: string) => m.lifelines.rows[m.lifelines.marks.find((mk) => mk.key === key)!.row]!.name;
+    expect([rowOf('rs3'), rowOf('rs843')]).toEqual(['main', 'coordinators']);
+    expect(m.filing.crossed).toEqual({ issue: 843, filer: 158, filerRole: 'coordinator', parent: 'main' });
+    // The coordinator that filed rs/843 is the one that reviewed it.
+    expect(m.filing.crossed.filer).toBe(m.issue.reviewerIssue);
   });
 
   test('wakes: the kinds drawn, the message notices, the catch-up pointers and the rest sum to every briefing item', () => {
@@ -318,7 +332,10 @@ describe('every number on the page comes from the data', () => {
 
   test('the page says what the run did, in its own counts', () => {
     expect(text).toContain('910 of the 962 executions ran the one-stage build recipe');
-    expect(text).toContain('Coordinators filed 529 of the 900 issues');
+    expect(text).toContain('Of the 862 issues filed before the record, coordinators filed 719 and the threads 119');
+    expect(text).toContain('Most of what the operator typed before the run took the record, at 4:15 AM on Monday, went to them: 526 of 737 messages.');
+    expect(text).toContain('Not drawn: 22 issues filed by builders and two by the harness itself.');
+    expect(text).toContain('a report travels up as a message to the issue’s parent');
     expect(text).toContain('The operator answers “Start both”, 39 seconds later.');
     expect(text).toContain('main had merged 212 pull requests by write call, coordinators 203 and the integration thread 19');
     expect(text).toContain('Thursday brought 1,467 branch notices; 899 needed an agent');
