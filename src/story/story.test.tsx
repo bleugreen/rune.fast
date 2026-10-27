@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { clipById, clipSource, clipSrc, clipWhen } from '../clips/registry';
 import { StoryPage } from '../pages/StoryPage';
-import { sourceTable } from './draft';
+import { inlineTokens, sourceTable } from './draft';
 import { SECTION_META, quotes, storySections } from './sections';
 import { plainReceiptLines, plainSourceLines } from './sources';
 import { story } from './story';
@@ -83,6 +83,12 @@ describe('the draft, placed verbatim', () => {
       expect(html).toContain(`<em>${em}</em>`);
     }
     expect(surface).not.toContain('`');
+  });
+
+  test('an editorial bracket in a quotation is set as written, and a markdown link is still refused', () => {
+    const corrected = 'The record is [3 hours 59 minutes], held by stunbaron…';
+    expect(inlineTokens(corrected)).toEqual([{ kind: 'text', text: corrected }]);
+    expect(() => inlineTokens('the [talk](https://example.com)')).toThrow();
   });
 
   test('the title and every section title', () => {

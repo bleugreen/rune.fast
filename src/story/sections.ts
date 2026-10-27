@@ -49,10 +49,7 @@ export const SECTION_META: readonly SectionMeta[] = [
     id: 'the-number',
     dates: '20 Oct 2026',
     figures: [{ figure: { kind: 'ladder' }, after: 'The record stood at 35,916 ticks' }],
-    pulled: [
-      'I played RuneScape a lot as a kid, before getting into botting RuneScape and quickly getting banned. ‘RuneScape but for bots specifically’ was incredibly up my alley.',
-      'absolutely! Swarm out my guy :)',
-    ],
+    pulled: ['absolutely! Swarm out my guy :)'],
     links: [{ text: 'RuneScape Bench: MMOs for Agents', href: 'https://www.youtube.com/watch?v=cNm4zyUtWj0' }],
   },
   {
