@@ -65,14 +65,15 @@ export interface Break {
   story: string;
 }
 
-/** A relog inside one runner launch: logged out for seconds or minutes, by plan. */
+/**
+ * A relog inside one runner launch, by plan: the account logs out and straight back in, which
+ * costs no ticks. (The log's records around a relog are not in wall-clock order, so it gives no
+ * reliable length; the page gives none.)
+ */
 export interface Relog {
   tick: number;
   run: number;
   session: number;
-  /** UTC ms: the session's closing record and the next one's first. */
-  from: number;
-  to: number;
 }
 
 export interface Step {
@@ -304,9 +305,7 @@ export function buildRoute(log: RouteLog, plan: RoutePlan, timeline: Timeline): 
   }
   const relogs: Relog[] = log.sessions.flatMap((s) => {
     const next = sessionsOf(s.run).find((x) => x.start === s.end && x.session !== s.session);
-    return s.ended === 'relog' && next
-      ? [{ tick: clock.runAt[s.run]! + s.end, run: s.run, session: s.session, from: ms(s.endAt), to: ms(next.startAt) }]
-      : [];
+    return s.ended === 'relog' && next ? [{ tick: clock.runAt[s.run]! + s.end, run: s.run, session: s.session }] : [];
   });
 
   /* Steps. */
