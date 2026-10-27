@@ -198,7 +198,7 @@ function ReplayStage({ moment, viewer, pool, driver, controller, manifest, reque
   }, [driver, play, pause, seek]);
 
   // Ready for a screenshot: at the requested tick, the followed account drawn, and no map
-  // squares or entity bakes outstanding, for three checks in a row.
+  // squares or entity bakes outstanding, for eight checks in a row (0.8 s).
   useEffect(() => {
     let streak = 0;
     const once = new Set<string>();
@@ -227,11 +227,11 @@ function ReplayStage({ moment, viewer, pool, driver, controller, manifest, reque
         pool.pendingTasks === 0;
       streak = settled ? streak + 1 : 0;
       mark('settled', streak === 1);
-      if (streak >= 3) {
+      if (streak >= 8) {
         mark('ready', true);
         host.current?.setAttribute('data-replay-ready', '');
       }
-    }, 250);
+    }, 100);
     return () => clearInterval(timer);
   }, [driver, controller, renderer, pool, requested]);
 

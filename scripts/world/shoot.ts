@@ -18,6 +18,10 @@ const { values: args } = parseArgs({
     out: { type: 'string', default: '.world/shots' },
     shot: { type: 'string', multiple: true, default: ['rekit@12:rekit', 'cannon@232:cannon', 'agility-99@6095:agility-99'] },
     headed: { type: 'boolean', default: false },
+    // Print the load stages (the page's replay:* marks), network and worker timings.
+    timings: { type: 'boolean', default: false },
+    // After the first load, reload once with the browser's caches warm and measure again.
+    reload: { type: 'boolean', default: false },
     timeout: { type: 'string', default: '180000' },
   },
 });
@@ -35,8 +39,10 @@ try {
     const [moment, tick] = where.split('@') as [string, string];
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
     const errors: string[] = [];
+    const logs: string[] = [];
     page.on('console', (m) => {
       if (m.type() === 'error') errors.push(m.text());
+      logs.push(m.text());
     });
     page.on('pageerror', (e) => errors.push(e.message));
     const url = `${args.base}/replay/${moment}?t=${tick}&paused`;
@@ -61,9 +67,38 @@ try {
     await (await replay.count() ? replay : page.locator('main')).screenshot({ path: file });
     console.log(`${name}: tick ${tick}, ready in ${((Date.now() - started) / 1000).toFixed(1)} s, renderer ${webgl}, ${file}`);
     for (const e of errors.slice(0, 10)) console.error(`${name}: console error: ${e}`);
+    if (args.timings) await report(page, `${name} (cold)`, logs);
+    if (args.reload) {
+      logs.length = 0;
+      await page.reload();
+      await page.locator('[data-replay-ready]').waitFor({ timeout: Number(args.timeout) }).catch(() => console.error(`${name}: not ready after reload`));
+      await report(page, `${name} (warm)`, logs);
+    }
     await page.close();
   }
 } finally {
   await browser.close();
 }
 process.exit(failed ? 1 : 0);
+
+/** The page's replay:* marks against navigation start, its cache and chunk fetches, and the workers' own timings. */
+async function report(page: import('playwright-core').Page, label: string, logs: string[]): Promise<void> {
+  const t = await page.evaluate(() => ({
+    marks: performance.getEntriesByType('mark').filter((m) => m.name.startsWith('replay:')).map((m) => [m.name.slice(7), Math.round(m.startTime)] as const),
+    fetches: performance
+      .getEntriesByType('resource')
+      .map((r) => r as PerformanceResourceTiming)
+      .filter((r) => /main_file_cache|chunk-|manifest\.json|keys\.json|RenderDataWorker|ReplayPage|MomentPage/.test(r.name))
+      .map((r) => [r.name.split('/').pop()!, Math.round(r.startTime), Math.round(r.responseEnd), r.transferSize] as const),
+  }));
+  console.log(`--- ${label}`);
+  for (const [stage, at] of t.marks) console.log(`  ${String(at).padStart(6)} ms  ${stage}`);
+  for (const [file, start, end, bytes] of t.fetches) console.log(`  fetch ${file}: ${start}-${end} ms (${end - start} ms, ${bytes} bytes over the wire)`);
+  const workers = logs.filter((l) => l.includes('worker ready')).map((l) => l.replace('[world] ', ''));
+  if (workers.length) console.log(`  workers: ${workers.join('; ')}`);
+  const maps = logs.map((l) => /^load map (\d+,\d+): ([\d.]+) ?ms/.exec(l)).filter((m): m is RegExpExecArray => !!m).map((m) => Number(m[2]));
+  if (maps.length) {
+    maps.sort((a, b) => a - b);
+    console.log(`  map squares built in workers: ${maps.length}, median ${Math.round(maps[maps.length >> 1]!)} ms, max ${Math.round(maps[maps.length - 1]!)} ms, sum ${Math.round(maps.reduce((a, b) => a + b, 0))} ms`);
+  }
+}
