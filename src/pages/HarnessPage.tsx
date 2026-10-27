@@ -146,8 +146,8 @@ export function HarnessPage() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Threads talk, issues work</h2>
         <p className={styles.prose}>
-          A thread is the closest thing in Cairn to your own Claude Code session: a long-lived agent you talk to. It has
-          a name where an issue has a number, and it has no end. The run had {countWord(t.threads)}. main held the
+          A thread is a long-lived agent that a person talks to. It has a name where an issue has a number, and it has
+          no end. The run had {countWord(t.threads)}. main held the
           speedrun itself, and {listWords(m.otherThreads)} each held one part of the project. Most of what the operator
           typed went to them: {fmtInt(o.toThreads)} of {fmtInt(o.messages)} messages.
         </p>
@@ -164,9 +164,9 @@ export function HarnessPage() {
         <p className={styles.prose}>
           Most issues, though, were filed by other issues. A coordinator is an issue whose agent’s job is to file
           issues: it splits a mission into child issues, reviews what each child sends back, and puts the results
-          together. Coordinators filed {fmtInt(t.coordinatorFiled)} of the {fmtInt(t.issues)} issues. In Claude Code
-          your sessions sit side by side and you are what connects them. Here the work forms a tree, with the operator
-          at the top, the threads below, coordinators below the threads, and the agents doing the work at the leaves.
+          together. Coordinators filed {fmtInt(t.coordinatorFiled)} of the {fmtInt(t.issues)} issues, so the work
+          forms a tree: the operator at the top, the threads below, coordinators below the threads, and the agents
+          doing the work at the leaves.
           The first red mark on main’s line is rs/{r.coordinator}, a coordinator for quest routes that main filed at{' '}
           {at(m.lifelines.marks.rs3)}. The section on asking and answering comes back to it.
         </p>
@@ -191,9 +191,8 @@ export function HarnessPage() {
         </p>
         <p className={styles.prose}>
           Work on an issue starts with an execution, and an execution runs a recipe: a small, fixed graph of nodes,
-          each one an agent or an artifact. rs/{a.issue}’s execution started at {at(i.start)} and ran the {i.recipe
-            .length && m.build.id}{' '}
-          recipe, which has three nodes: a trigger, a builder agent and a pull request.
+          each one an agent or an artifact. rs/{a.issue}’s execution started at {at(i.start)} and ran the {a.recipe} recipe,
+          which has {countWord(i.recipe.length)} nodes: a trigger, a builder agent and a pull request.
         </p>
         <p className={styles.prose}>
           The builder worked in turns. A turn is one stretch of an agent working, and it ends when the agent has
@@ -202,8 +201,7 @@ export function HarnessPage() {
           idle, and {countWord(i.testWakes)} of its later turns began when a test run finished.{' '}
           {capitalize(countWord(i.messageWakes))} began with a message from rs/{i.reviewerIssue}, the coordinator
           reviewing its work, and {countWord(i.bothWakes)} with a finished command and {countWord(i.bothMessages)}{' '}
-          messages from rs/{i.reviewerIssue} at once. In Claude Code, a long test run means a session held open, or you
-          coming back later to look.
+          messages from rs/{i.reviewerIssue} at once. Nobody had to check on it.
         </p>
         <Figure
           title={titles.issue}
@@ -233,8 +231,8 @@ export function HarnessPage() {
         <p className={styles.prose}>
           An issue can have more than one execution. Starting a new one supersedes the one before, and nothing is
           deleted: rs/{m.rs302.issue} has {countWord(m.rs302.executions)} executions on record, and the first{' '}
-          {countWord(m.rs302.superseded)} are marked superseded. In Claude Code a second attempt is a new session, and
-          remembering how it relates to the first is up to you.
+          {countWord(m.rs302.superseded)} are marked superseded. A retry and the attempts it replaced stay side by side
+          on the issue.
         </p>
         <Sources lines={[...s.issue843!, ...s.recipes!]} />
       </section>
@@ -242,8 +240,7 @@ export function HarnessPage() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Three verbs</h2>
         <p className={styles.prose}>
-          In Claude Code an agent has a tool for each kind of job: Read, Edit, Bash, Grep, Task and more. A Cairn agent
-          has three verbs. read fetches and searches anything with an address. write changes things: it edits files,
+          Agents act on all of these objects with three verbs. read fetches and searches anything with an address. write changes things: it edits files,
           and it also files issues, sends messages, writes artifacts and subscribes to wakes. run executes commands.
           Each call carries a batch of items, and each item names its target by address, so one call can reach a file,
           a terminal and the issue tracker together.
@@ -294,8 +291,8 @@ export function HarnessPage() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Asking, answering, reporting up</h2>
         <p className={styles.prose}>
-          In Claude Code, getting the right attention to the right place is your job too. An agent that needs a
-          decision stops, and waits until you look. In Cairn the need is itself an object. A question is an object the
+          Agents need decisions from the person, and the person needs to hear what the agents did. Cairn routes both
+          through objects. A question is an object the
           harness puts in front of the operator. A decision travels down as a message, and a report travels up as a
           message to whoever filed the work. A message wakes the agent it is addressed to.
         </p>
@@ -423,8 +420,7 @@ export function HarnessPage() {
         </Figure>
         <p className={styles.prose}>
           Many of the operator’s inputs were tiny: {fmtInt(o.carets)} messages were a single “^”, which tells an agent
-          to go on. Run from a terminal, each of the agents’ messages would have been something the person carried by
-          hand from one session to another.
+          to go on.
         </p>
         <Sources lines={s.operator!} />
       </section>
