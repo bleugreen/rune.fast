@@ -48,21 +48,21 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-number',
     dates: '20 Oct 2026',
-    figures: [{ figure: { kind: 'ladder' }, after: 'The record stood at 35,916 ticks' }],
+    figures: [{ figure: { kind: 'ladder' }, after: 'stood at 35,916 ticks' }],
     pulled: ['absolutely! Swarm out my guy :)'],
     links: [{ text: 'RuneScape Bench: MMOs for Agents', href: 'https://www.youtube.com/watch?v=cNm4zyUtWj0' }],
   },
   {
     id: 'the-tricks',
     dates: '20–21 Oct',
-    figures: [{ figure: { kind: 'clip' }, after: 'Wine left in the bank ferments on a timer' }],
+    figures: [{ figure: { kind: 'clip' }, after: 'wine left in the bank ferments on a timer' }],
     pulled: [],
     links: [],
   },
   {
     id: 'the-swarm',
     dates: '21–22 Oct',
-    figures: [{ figure: { kind: 'cost' }, after: 'came to about $256' }],
+    figures: [{ figure: { kind: 'cost' }, after: 'All this breadth took a toll on my subscription usage limits' }],
     pulled: [],
     links: [],
   },
@@ -94,13 +94,13 @@ export const SECTION_META: readonly SectionMeta[] = [
     figures: [
       // The body among the spiders as it dies. The replay starts three minutes after the script killed its client,
       // after the ruling and the logout order, so it follows the sentence that says the account died.
-      { figure: { kind: 'clip', id: 'spider-death' }, after: 'Under a minute later the account was dead' },
-      // The death gap and the recovery, ahead of the paragraph that narrates the recovery. Earlier it would part
-      // the operator's "I WANT A #1" from main's reply under it.
+      { figure: { kind: 'clip', id: 'spider-death' }, after: 'In less than a minute, `cairnmax20x` was dead' },
+      // The death gap and the recovery, ahead of the sentence that narrates the recovery.
       { figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] }, after: 'we’re not done until #1' },
-      // The recovery paragraph carries the rebuilt kit, Agility 99 and the #1, so its three figures follow it in that order.
-      { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt everything the death had cost' },
-      { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'Agility 99 landed at 4:07 AM' },
+      { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt the lost kit' },
+      // Agility 99 is narrated in the paragraph that closes on a colon before host's "OFFICIAL #1 VERIFIED", so the
+      // clip follows that quotation, and the board after it.
+      { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'OFFICIAL #1 VERIFIED' },
       // The operator texted this same screenshot at 4:30 AM, which bounds when it was taken.
       {
         figure: {
@@ -116,7 +116,7 @@ export const SECTION_META: readonly SectionMeta[] = [
         after: 'OFFICIAL #1 VERIFIED',
       },
     ],
-    pulled: ['saw it go from ‘might as well finish’ to ‘wait I think we’re gonna do it’.'],
+    pulled: [],
     links: [],
   },
 ];
