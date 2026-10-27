@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-rou
 import './styles/tokens.css';
 import './styles/base.css';
 import { siteRoutes } from './components/Layout';
+import { startAnalytics } from './lib/analytics';
 import { recovery } from './lib/deploy';
 import { StoryPage } from './pages/StoryPage';
 import { NotFound } from './pages/NotFound';
@@ -33,6 +34,8 @@ const pages: RouteObject[] = [
 window.addEventListener('vite:preloadError', () => recovery.reload());
 
 const router = createBrowserRouter(siteRoutes(pages));
+
+startAnalytics();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
