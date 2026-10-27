@@ -127,10 +127,16 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
     });
   }, [shown, state.started, state.via, reduced]);
 
+  // An arrival ring waits for its dot only when one is travelling, and leaves at once.
+  const travelling = state.started && !reduced && (state.via === 'play' || state.via === 'step');
+  const ring = (k: NodeKey) => ({
+    opacity: arrived.has(k) ? 1 : 0,
+    style: { transitionDelay: arrived.has(k) && travelling ? `${TRAVEL_MS - 40}ms` : '0ms' },
+  });
   const node = (k: NodeKey, r0: number, cls: string) => (
     <g key={k}>
       <circle className={cls} cx={pt(k)[0]} cy={pt(k)[1]} r={r0} />
-      <circle className={`${styles.accentLine} ${styles.arrive}`} cx={pt(k)[0]} cy={pt(k)[1]} r={r0 + 4} opacity={arrived.has(k) ? 1 : 0} />
+      <circle className={`${styles.accentLine} ${styles.fade}`} cx={pt(k)[0]} cy={pt(k)[1]} r={r0 + 4} {...ring(k)} />
     </g>
   );
 
@@ -160,7 +166,7 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
           );
         })}
         <rect className={styles.ink} x={op[0] - 6} y={op[1] - 6} width={12} height={12} />
-        <circle className={`${styles.accentLine} ${styles.arrive}`} cx={op[0]} cy={op[1]} r={11} opacity={arrived.has('operator') ? 1 : 0} />
+        <circle className={`${styles.accentLine} ${styles.fade}`} cx={op[0]} cy={op[1]} r={11} {...ring('operator')} />
         <text className={styles.row} x={op[0] + 14} y={op[1] + 4}>
           the operator
         </text>

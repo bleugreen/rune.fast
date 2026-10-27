@@ -11,6 +11,8 @@ const sub = (r: LifelineRow) =>
   r.operator === null ? `filed ${fmtInt(r.filedTotal)}` : `${fmtInt(r.operatorTotal)} in, ${fmtInt(r.filedTotal)} filed`;
 /** Tallest bar, in px, above or below a row's line. */
 const BAR = 17;
+/** Room a day's name needs. */
+const DAY_LABEL = 44;
 
 /**
  * One lifeline per thread, with the operator's messages to it above the line and the issues filed
@@ -36,14 +38,17 @@ export function Lifelines({ m, label }: { m: HarnessModel; label: string }) {
   return (
     <div ref={ref} className={styles.root}>
       <svg className={styles.svg} width={width} height={height} role="img" aria-label={label}>
-        {[L.from, ...L.midnights].map((t, j) => (
-          <g key={t}>
-            {j !== 0 && <line className={styles.hair} x1={x(t)} x2={x(t)} y1={TOP - 8} y2={height} />}
-            <text className={styles.tick} x={x(t) + 3} y={TOP - 12}>
+        {L.midnights.map((t) => (
+          <line key={t} className={styles.hair} x1={x(t)} x2={x(t)} y1={TOP - 8} y2={height} />
+        ))}
+        {/* The first day's name only where it has room before the first midnight. */}
+        {[L.from, ...L.midnights]
+          .filter((t, j) => j !== 0 || x(L.midnights[0]!) - x(t) > DAY_LABEL)
+          .map((t) => (
+            <text key={t} className={styles.tick} x={x(t) + 3} y={TOP - 12}>
               {fmtPacificWeekdayDay(t)}
             </text>
-          </g>
-        ))}
+          ))}
         {L.rows.map((r, i) => {
           const y = yOf(i);
           const coordinators = r.operator === null;
@@ -75,7 +80,8 @@ export function Lifelines({ m, label }: { m: HarnessModel; label: string }) {
         {marks.map((mk) => (
           <g key={mk.key}>
             <circle className={styles.accent} cx={x(mk.t)} cy={yOf(main)} r={3} />
-            <text className={styles.note} x={x(mk.t) + 5} y={yOf(main) - 6}>
+            <line className={styles.accentLine} x1={x(mk.t)} x2={x(mk.t)} y1={yOf(main) + 3} y2={yOf(main) + BAR + 2} />
+            <text className={styles.note} x={x(mk.t) + 3} y={yOf(main) + BAR + 12}>
               {mk.text}
             </text>
           </g>

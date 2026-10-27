@@ -76,10 +76,10 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
   const work = seg.work!;
   const wait = seg.wait!;
   const workX = (t: number) => at(t);
-  const heldLabelY = narrow ? Y.axis + 28 : Y.axis + 15;
   const axisLabels: { x: number; text: string; anchor: 'start' | 'middle' | 'end'; y?: number }[] = [
     { x: X(held.offset), text: `${fmtPacificWeekday(i.filed).slice(0, 3)} ${fmtPacificHm(i.filed)}`, anchor: 'start' },
-    { x: X(held.offset + held.share), text: `held ${fmtDuration(i.heldMs)}`, anchor: 'end', y: heldLabelY },
+    // The held span is named above its own stretch of axis, clear of the clock times below it.
+    { x: X(held.offset + held.share / 2), text: `held ${fmtDuration(i.heldMs)}`, anchor: 'middle', y: Y.axis - 6 },
     { x: X(work.offset), text: `${fmtPacificWeekday(i.start).slice(0, 3)} ${fmtPacificHm(i.start)}`, anchor: 'start' },
     { x: workX(i.prOpened), text: fmtPacificHm(i.prOpened), anchor: 'middle' },
     { x: workX(i.end), text: fmtPacificHm(i.end), anchor: 'middle' },
@@ -127,7 +127,7 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
               <circle className={`${styles.ink} ${styles.fade}`} cx={recipeX(k)} cy={Y.recipe} r={6.5} opacity={done ? 1 : 0} />
               <circle className={`${styles.accent} ${styles.fade}`} cx={recipeX(k)} cy={Y.recipe} r={6.5} opacity={on ? 1 : 0} />
               <text className={styles.lane} x={recipeX(k)} y={Y.recipe + 22} textAnchor="middle">
-                {n.name.toLowerCase()}
+                {n.type === 'pr' ? 'pull request' : n.name.toLowerCase()}
               </text>
             </g>
           );

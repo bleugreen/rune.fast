@@ -59,10 +59,12 @@
 .baseline {
   stroke: var(--rule);
   stroke-width: var(--stroke-thin);
+  fill: none;
 }
 .hair {
   stroke: var(--hairline);
   stroke-width: var(--stroke-thin);
+  fill: none;
 }
 .inkLine {
   stroke: var(--ink);
@@ -106,12 +108,8 @@
 .fade {
   transition: opacity 160ms ease-out;
 }
-.arrive {
-  transition: opacity 160ms ease-out 560ms;
-}
 @media (prefers-reduced-motion: reduce) {
-  .fade,
-  .arrive {
+  .fade {
     transition: opacity 120ms ease-out 0s !important;
   }
 }
@@ -201,7 +199,7 @@
   text-transform: uppercase;
 }
 .meaning {
-  width: 14ch;
+  width: 11.5ch;
   padding: 3px 2px 0;
   font-size: var(--text-small);
   line-height: var(--leading-snug);
@@ -231,19 +229,18 @@
     row-gap: var(--space-2);
   }
   .seg {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 6.75rem 5.5rem 1fr;
     align-items: baseline;
-    gap: var(--space-3);
+    column-gap: var(--space-2);
   }
   .sep,
   .bracket {
     display: none;
   }
-  .concept {
-    flex: 0 0 6.5rem;
-  }
   .meaning {
     width: auto;
+    padding-top: 0;
   }
   .shapes {
     grid-template-columns: 1fr;
