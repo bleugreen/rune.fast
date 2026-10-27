@@ -91,6 +91,29 @@ export function fmtCalendarDate(key: string): string {
   return `${Number(m[3])} ${month} ${m[1]}`;
 }
 
+const pacClock12 = new Intl.DateTimeFormat('en-US', {
+  timeZone: PACIFIC,
+  hour: 'numeric',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: true,
+});
+const pacDayMonYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'short', year: 'numeric' });
+
+/** '3:27:15' and 'AM', Pacific, from parts so the engine's choice of space before the period never shows. */
+function clock12(t: number): [string, string] {
+  const parts = pacClock12.formatToParts(t);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
+  return [`${part('hour')}:${part('minute')}:${part('second')}`, part('dayPeriod').toUpperCase()];
+}
+
+/** '26 Oct 2026, 3:27:15–3:27:27 AM PDT': a span of seconds, Pacific, 12-hour, dated by its start. */
+export function fmtPacificClockRange(a: number, b: number): string {
+  const [ta, pa] = clock12(a);
+  const [tb, pb] = clock12(b);
+  return `${pacDayMonYear.format(a)}, ${pa === pb ? ta : `${ta} ${pa}`}–${tb} ${pb} ${pacificZone(b)}`;
+}
+
 /** Pacific zone abbreviation in force at t (PDT or PST). */
 export function pacificZone(t: number): string {
   return pacZone.formatToParts(t).find((p) => p.type === 'timeZoneName')?.value ?? '';
