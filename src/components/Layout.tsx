@@ -1,16 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation, type RouteObject } from 'react-router-dom';
+import { registerItalic } from '../lib/fonts';
+import { AUTHOR } from '../lib/site';
 import { fmtCalendarDate } from '../lib/time';
-import { AUTHOR, applyPageMeta, metaFor } from '../meta';
 import { RouteError } from '../pages/LoadFailed';
 import styles from './Layout.module.css';
 
 /**
  * The site's route tree: every page inside the Layout. A page that fails shows the error page in
- * its place, under the masthead; only a failure of the Layout itself loses the masthead.
+ * its place, under the masthead; only a failure of the Layout itself loses the masthead. On a tab's
+ * first load of a page in its own chunk, nothing shows until the chunk is in, so the masthead and
+ * the page appear together.
  */
 export function siteRoutes(pages: RouteObject[]): RouteObject[] {
-  return [{ element: <Layout />, errorElement: <LayoutError />, children: [{ errorElement: <RouteError />, children: pages }] }];
+  return [
+    {
+      element: <Layout />,
+      errorElement: <LayoutError />,
+      HydrateFallback: Blank,
+      children: [{ errorElement: <RouteError />, children: pages }],
+    },
+  ];
+}
+
+function Blank() {
+  return null;
 }
 
 function Byline() {
@@ -59,11 +73,29 @@ export function Nav() {
 
 export function Layout() {
   // The page's title and description, as its built HTML carries them, on every navigation. A path
-  // that is no page (Nothing here, the dev screens) sets its own title.
+  // that is no page (Nothing here, the dev screens) sets its own title. Loaded apart from the
+  // entry: the first page's are already in its HTML, and the cost page's description is worked
+  // out from the cost model, which no other page needs.
   const { pathname } = useLocation();
+  const landing = useRef(true);
   useEffect(() => {
-    const meta = metaFor(pathname);
-    if (meta) applyPageMeta(document, meta);
+    // The story page registers the italic itself, once its first screen is drawn.
+    if (pathname !== '/') registerItalic();
+    const first = landing.current;
+    landing.current = false;
+    // The built HTML carries the landing page's head (scripts/page-heads.ts); the dev server's does not.
+    if (first && document.querySelector('meta[name="description"]')) return;
+    let live = true;
+    import('../meta').then(
+      ({ applyPageMeta, metaFor }) => {
+        const meta = metaFor(pathname);
+        if (live && meta) applyPageMeta(document, meta);
+      },
+      (e: unknown) => console.warn('Page title not updated', e),
+    );
+    return () => {
+      live = false;
+    };
   }, [pathname]);
 
   return (

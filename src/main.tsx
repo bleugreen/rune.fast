@@ -6,22 +6,23 @@ import './styles/base.css';
 import { siteRoutes } from './components/Layout';
 import { recovery } from './lib/deploy';
 import { StoryPage } from './pages/StoryPage';
-import { TricksPage } from './pages/TricksPage';
-import { CostPage } from './pages/CostPage';
-import { HarnessPage } from './pages/HarnessPage';
-import { RoutePage } from './pages/RoutePage';
 import { NotFound } from './pages/NotFound';
 
 /* The tokens and share-image screens exist only in development; the production build drops them. */
 const Tokens = import.meta.env.DEV ? lazy(() => import('./dev/Tokens')) : null;
 const Share = import.meta.env.DEV ? lazy(() => import('./dev/Share')) : null;
 
+/*
+ * The story is where most readers land, so it is in the entry. Every other page is its own chunk
+ * with its data, loaded when it is visited; one that fails to load (a deploy since the tab opened)
+ * reaches the routes' errorElement, which reloads once.
+ */
 const pages: RouteObject[] = [
   { index: true, element: <StoryPage /> },
-  { path: 'route', element: <RoutePage /> },
-  { path: 'tricks', element: <TricksPage /> },
-  { path: 'cost', element: <CostPage /> },
-  { path: 'harness', element: <HarnessPage /> },
+  { path: 'route', lazy: async () => ({ Component: (await import('./pages/RoutePage')).RoutePage }) },
+  { path: 'tricks', lazy: async () => ({ Component: (await import('./pages/TricksPage')).TricksPage }) },
+  { path: 'cost', lazy: async () => ({ Component: (await import('./pages/CostPage')).CostPage }) },
+  { path: 'harness', lazy: async () => ({ Component: (await import('./pages/HarnessPage')).HarnessPage }) },
   ...(Tokens ? [{ path: 'tokens', element: <Suspense><Tokens /></Suspense> }] : []),
   ...(Share ? [{ path: 'share', element: <Suspense><Share /></Suspense> }] : []),
   { path: '*', element: <NotFound /> },
