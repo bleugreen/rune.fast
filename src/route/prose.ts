@@ -155,7 +155,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
     ],
   },
   mining: {
-    body: (s, r) => [
+    body: (s) => [
       p(
         'Mining works like the axe: a knife on a log between swings brings the next swing sooner. The account mined iron at the six rocks south of the Ardougne zoo, a short teleport from where Plague City ends.',
       ),
@@ -163,12 +163,12 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
         `Other bots wanted the same rocks. Soon after the step began another group crowded the cluster, the account’s script tried two other sites, found them taken too, and logged out. The swarm’s lead agent ruled that it should wait rather than walk back into the same contest, since a wait logged out costs nothing, and ${fmtDuration(s.breaks[0]!.to - s.breaks[0]!.from)} later the account logged back in and finished the band.`,
       ),
       brk(0),
-      p(`The step ran ${priceNote(s)}. Mining was the run’s fourth 99, at tick ${n(r.stamps.find((x) => x.skill === 'Mining')!.tick)}.`),
+      p(`The step ran ${priceNote(s)}.`),
     ],
     sources: (s) => [
       'The knife on the log between swings: the tricks page, The knife-on-logs reset.',
       'The six rocks south of the zoo: the run order’s Mining row.',
-      'The contest, the two other sites and the ruling to wait: attempt 5’s timeline, 12:33 and 12:36 AM.',
+      'The contest, the two other sites and the ruling to wait: attempt 5’s timeline, the stop at the iron rocks and the lead agent’s ruling after it.',
       priced(s),
     ],
   },
@@ -196,7 +196,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
     ],
     sources: (s) => [
       'The climb’s Agility, the laps to reach it, and the reward: the run order’s rows for the gnome course and The Grand Tree.',
-      'The cupboard search sent once: attempt 5’s timeline, 1:12 AM, and its resume.',
+      'The cupboard search sent once, and the search passing on the first try after the resume: attempt 5’s timeline.',
       priced(s),
     ],
   },
@@ -252,7 +252,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
     sources: (s) => [
       'The reward’s four skills: the run order’s Monkey Madness row.',
       'One tick a page: the tricks page, One tick per dialogue page, not two.',
-      'The refused hand-off and the greegree login: attempt 5’s timeline, 2:06 and 2:11 AM.',
+      'The refused hand-off, the sharks left over, and the greegree login: attempt 5’s timeline.',
       'The run order’s row for the quest notes that its price was due to be measured again; it is the figure as it stood.',
       priced(s),
     ],
@@ -262,11 +262,11 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
       p(
         'The Mage Arena is here for one spell. Beating Kolodion, the battle mage who keeps the arena, earns the right to cast Charge, and Charge is what the next step trains Magic with. The account fought him in the deep Wilderness with Fire Wave, under Protect from Magic.',
       ),
-      p(`It came out at Magic ${to(s, 'Magic')}. The step ran ${priceNote(s)}, most of it in the two hand-offs at either end.`),
+      p(`It came out at Magic ${to(s, 'Magic')}. The step ran ${priceNote(s)}, most of it in the arena itself.`),
     ],
     sources: (s) => [
       'Kolodion under Protect from Magic with Fire Wave, and Charge as the reward: the run order’s Mage Arena row.',
-      'The hand-offs before and after: the step log’s two hand-off intervals.',
+      'The arena against its row: the step log’s intervals for the fight and the arena’s other segments.',
       HANDOFFS,
       priced(s),
     ],
@@ -329,7 +329,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
     sources: (s) => [
       `The body altar in force, and the ${fmtInt(s.rows[0]!.scenario[0]!.ticks)} ticks it adds to the nature altar’s ${fmtInt(s.rows[0]!.expected)}: the run order’s altar row.`,
       'The relog before the altar, so the helpers can log in first: the run order’s altar row, and the tricks page, A relog that sees the world on its first tick.',
-      'The refusal, the wrong walk and the arrow login: attempt 5’s timeline, 11:52 AM and 12:35 PM.',
+      'The refusal, the wrong walk and the arrow login: attempt 5’s timeline.',
       priced(s),
     ],
   },
@@ -368,7 +368,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
     ],
     sources: (s) => [
       'The bars traded at the anvil, and the price net of the Superheat casts at the knights: the run order’s anvil row.',
-      'The courier that served no top-up: attempt 5’s timeline, the knights’ stop at 2:33 AM.',
+      'The courier that served no top-up: attempt 5’s timeline, the stop at the knights.',
       priced(s),
     ],
   },
@@ -403,7 +403,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
     ],
     sources: (s) => [
       'The reward, the armour from the guild’s shop, and the quest’s segments: the run order’s Dragon Slayer row.',
-      'The page left open, and the resume: attempt 5’s timeline, 1:35 and 1:40 PM.',
+      'The page left open, and the resume: attempt 5’s timeline.',
       priced(s),
     ],
   },
@@ -425,7 +425,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
     ],
     sources: (s) => [
       'Defence with the scimitar, then the bow from Defence 99, and Hitpoints as a by-product: the run order’s row for the spiders.',
-      'The stops, the short logins and the death: attempt 5’s timeline, 1:41 PM to 8:40 PM, and the story’s sixth section.',
+      'The stops, the short logins and the death: attempt 5’s timeline, and the story’s fifth and sixth sections.',
       'The hatched ticks: what the hiscore counted between Strength 99 and Defence 99 beyond the sessions and short logins, drawn where the body stood.',
       priced(s),
     ],
@@ -502,3 +502,68 @@ export function groupWords(logins: readonly ShortLogin[], r: Route): string {
 }
 
 export const clockTime = fmtPacificHm;
+
+/* ------------------------------------------------------------------------- */
+/* The opening and the finish                                                */
+/* ------------------------------------------------------------------------- */
+
+const HOURS_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const MINUTE_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+
+/** The shortest and the longest logged-out stretch, as words: 'four minutes', 'nine hours'. */
+export function stretchWords(r: Route): [string, string] {
+  const outs = r.breaks.flatMap((b) => b.parts.flatMap((x) => (x.kind === 'out' ? [x.to - x.from] : [])));
+  const min = Math.floor(Math.min(...outs) / 60_000);
+  const max = Math.floor(Math.max(...outs) / 3_600_000);
+  return [`${MINUTE_WORDS[min] ?? min} minutes`, `${HOURS_WORDS[max] ?? max} hours`];
+}
+
+export interface OpeningFacts {
+  start: number;
+  last99: number;
+  /** The operator's words, as the timeline quotes them. */
+  quote: string;
+}
+
+export function opening(r: Route, f: OpeningFacts, days: { start: string; end: string }, zone: string): string[] {
+  const wallHours = Math.floor((f.last99 - f.start) / 3_600_000);
+  const scoredHours = (r.finish * r.tickMs) / 3_600_000;
+  const under = Math.ceil(scoredHours);
+  const [shortest, longest] = stretchWords(r);
+  return [
+    `The hiscore this record stands on does not time an account by the wall clock. It counts the game ticks the account spends logged in, ${r.tickMs / 1000} seconds each, up to the tick of its last level-up, and while the account is logged out the count stands still. Attempt 5 logged in at ${clockTime(f.start)} ${zone} on ${days.start} and reached its last 99 at ${clockTime(f.last99)} on ${days.end}, ${wallHours} hours later. The hiscore counted ${n(r.finish)} ticks, just under ${HOURS_WORDS[under]} of those hours.`,
+    `The swarm planned the route around that rule, and the operator put it plainly on the Sunday afternoon: “${f.quote}”. When something went wrong, the account logged out and waited, and the wait cost nothing. It fetched almost nothing for itself, because helper accounts met it with supplies at nearly every step, so its logged-in ticks went to training. Where one skill left it standing idle, the route put another skill in the gap.`,
+    `This page follows the ${n(r.finish)} ticks in order. The line down the left is the hiscore’s clock. Scrolling moves the run forward, and where the account was logged out the line breaks, and the break takes the same small room whether the wait was ${shortest} or ${longest}. As you go, the ${r.stamps.length} skills climb to 99 as the run’s own log recorded them. Before the attempt, the swarm’s run order priced every step in ticks; I have grouped its steps into ${HOURS_WORDS[r.stretches.length]} stretches, and for each I say what the account did, why it came at that point, what the plan expected it to cost and what it took. The stops, the death and the recovery show here only as breaks in the line, each linked to the story, which tells them.`,
+  ];
+}
+
+export function finishWords(r: Route): { before: string[]; middle: string[]; after: string[] } {
+  const margin = r.record - r.finish;
+  const drift = [...new Set(r.stampDrift.map((s) => s.drift))].filter((d) => d > 0);
+  const firstAt = (d: number) => r.stampDrift.find((s) => s.drift === d)!.skill;
+  const lastEven = [...r.stampDrift].reverse().find((s) => s.drift === 0)!.skill;
+  const death = r.segments.find((g) => g.kind === 'unassigned' && g.login === 'return')!;
+  const deathLogin = r.logins.find((l) => l.id === 'return')!;
+  const [a, b] = death.kind === 'unassigned' ? death.bracket : [null, null];
+  return {
+    before: [
+      `Agility reached 99 on tick ${n(r.finish)} of the hiscore’s clock, and the account logged out in the same tick. The record it beat was ${n(r.record)}, so the margin was ${n(margin)} ticks, about ${n((margin * r.tickMs) / 1000)} seconds.`,
+      `The run order, as it stood when the attempt logged in, expected ${n(r.planTotal)} ticks for the whole route. The run took ${n(r.finish - r.planTotal)} more, and still beat the record.`,
+      `The swarm kept its own count as the run went, from the runner’s sessions and the short logins it knew of, and it came to ${n(r.ledger.swarm)}, which is ${n(r.ledger.residual)} fewer than the hiscore. The hiscore’s own stamps show where the difference lies. Up to ${lastEven} 99 the two clocks agree to the tick. The greegree login puts the hiscore ${n(drift[0]!)} ahead by ${firstAt(drift[0]!)} 99, the next morning’s logins ${n(drift[1]!)} by ${firstAt(drift[1]!)} 99, and the window around the death ${n(drift[2]!)} by ${firstAt(drift[2]!)} 99; after that the two never move apart again.`,
+    ],
+    middle: [
+      `Of the ${n(r.ledger.residual)}, ${n(r.ledger.unassigned)} are ticks no log holds. The stamps bracket them, and ${n(death.to - death.from)} fall between ${a} 99 and ${b} 99: the window in which the account’s body stood at the spiders after its controller had been stopped, long enough by the wall clock for about ${n(Math.round(deathWallTicks(deathLogin, r) / 10) * 10)} ticks. That fits, but it is a bracket and not a measurement, so the page draws those ticks hatched and calls them unassigned.`,
+    ],
+    after: [],
+  };
+}
+
+/** The ledger's rows, in words, as the finish's table prints them. */
+export const LEDGER_WORDS: Readonly<Record<string, string>> = {
+  swarm: 'The swarm’s ledger: its runner sessions and the short logins it counted',
+  unassigned: 'Ticks no log holds, in three brackets of the hiscore’s stamps',
+  'short-logins': 'Short-login ticks the timeline gives and the ledger did not count',
+  'after-finish': 'The last session tick, after Agility 99, which the hiscore does not count',
+  residual: 'Not accounted for',
+  hiscore: 'The hiscore',
+};
