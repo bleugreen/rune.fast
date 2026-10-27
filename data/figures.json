@@ -1,0 +1,18 @@
+[
+  {
+    "id": "operator-screen",
+    "alt": "A dark screen divided into eighteen panes, three rows of six. Each pane is one agent’s live session in Cairn: its issue number and title along the top, its role in a tab beneath, then its thinking, the calls it made, and the messages it sent and received. Two panes show an open pull request with its checks. In the main thread’s pane, a message from the operator is half-typed in the box at the foot.",
+    "source": {
+      "file": "cairn-panes-operator-view.png",
+      "sha256": "86d8c6a5190903e8ec147c00fe1eda90e9113af14a8c82f7dc847cc1b5e136be",
+      "width": 4842,
+      "height": 3018
+    },
+    "masks": [
+      { "x": 1058, "y": 2886, "width": 228, "height": 26, "what": "rs/149’s pane, its comment on itself: the rehearsal machine’s instance ID" },
+      { "x": 1411, "y": 2886, "width": 123, "height": 26, "what": "the same line: the machine’s public IP address" },
+      { "x": 1477, "y": 2958, "width": 55, "height": 23, "what": "its message to rs/147 two lines down: the start of the same instance ID" }
+    ],
+    "renditions": []
+  }
+]

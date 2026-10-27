@@ -443,6 +443,7 @@ export function buildHarnessModel(d: HarnessData) {
   };
 
   const quoted = tenets.quoted;
+  const screen = { t: ms(d.screen.t), panes: d.screen.panes };
   return {
     window: { start, end, days: Math.round((end - start) / (24 * HOUR)) },
     totals: t,
@@ -469,6 +470,7 @@ export function buildHarnessModel(d: HarnessData) {
     git,
     operator,
     quotes,
+    screen,
     sources,
   };
 }

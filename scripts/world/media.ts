@@ -45,6 +45,26 @@ export function jpegSize(buf: Buffer): { width: number; height: number } {
   throw new Error('no start-of-frame marker');
 }
 
+/** A WebP's canvas size, from its VP8X, lossless (VP8L) or lossy (VP8) header. */
+export function webpSize(buf: Buffer): { width: number; height: number } {
+  if (buf.toString('latin1', 0, 4) !== 'RIFF' || buf.toString('latin1', 8, 12) !== 'WEBP') throw new Error('not a WebP');
+  const chunk = buf.toString('latin1', 12, 16);
+  if (chunk === 'VP8X') return { width: 1 + buf.readUIntLE(24, 3), height: 1 + buf.readUIntLE(27, 3) };
+  if (chunk === 'VP8L') {
+    const bits = buf.readUInt32LE(21);
+    return { width: 1 + (bits & 0x3fff), height: 1 + ((bits >>> 14) & 0x3fff) };
+  }
+  if (chunk === 'VP8 ') return { width: buf.readUInt16LE(26) & 0x3fff, height: buf.readUInt16LE(28) & 0x3fff };
+  throw new Error(`unknown WebP chunk ${chunk}`);
+}
+
+/** An AVIF's image size, from its image spatial extents property (`ispe`). */
+export function avifSize(buf: Buffer): { width: number; height: number } {
+  const at = buf.indexOf('ispe', 0, 'latin1');
+  if (at < 0) throw new Error('no ispe property');
+  return { width: buf.readUInt32BE(at + 8), height: buf.readUInt32BE(at + 12) };
+}
+
 /** The eight hex digits of a file's SHA-256 that its published name carries. */
 export function contentTag(buf: Uint8Array): string {
   return createHash('sha256').update(buf).digest('hex').slice(0, 8);
