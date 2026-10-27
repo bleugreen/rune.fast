@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { avifSize, contentTag, jpegSize, mp4Facts } from '../../scripts/world/media';
 import { TOKENS_CLIPS } from '../dev/Tokens';
 import { parseUtc } from '../lib/time';
+import { STEPS } from '../route/plan';
 import { SECTION_META } from '../story/sections';
 import { TRICKS } from '../tricks/model';
 import { CLIPS, TICK_MS, clipById, clipSource, clipWhen, posterAvif, tickAt } from './registry';
@@ -103,6 +104,7 @@ describe('the clip registry', () => {
   test('every registered clip is placed on a page, and every placed clip is registered', () => {
     const placed = [
       ...TRICKS.flatMap((t) => (t.clip ? [t.clip] : [])),
+      ...STEPS.flatMap((s) => s.clips),
       ...SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' && f.figure.id ? [f.figure.id] : []))),
       ...TOKENS_CLIPS,
     ];

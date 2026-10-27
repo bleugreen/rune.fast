@@ -281,7 +281,7 @@ export const STEPS: readonly StepSpec[] = [
     rows: ['T25-26', 'S26'],
     trains: ['Strength', 'Defence'],
     tricks: ['level-up-dismissal', 'quest-order'],
-    clips: [],
+    clips: ['dragon-slayer-stop'],
   },
   {
     id: 'spiders',
