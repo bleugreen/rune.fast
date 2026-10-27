@@ -42,6 +42,7 @@ export function AttemptsPage() {
             model={model}
             anchors={anchors}
             finishTicks={record.final}
+            zone
             interaction={{ shown, onPreview: setPreview, onSelect: setPinned }}
           />
         </figure>

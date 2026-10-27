@@ -2,7 +2,7 @@ import { useRef, useState, type PointerEvent } from 'react';
 import type { ClipManifest } from '@rune/world/replay/clip';
 import type { ReplaySpeed, ReplayState } from '@rune/world/replay/ReplayDriver';
 import { fmtInt } from '../lib/numbers';
-import { pacificZone } from '../lib/time';
+import { fmtPacificHms, pacificZone } from '../lib/time';
 import type { ReplayMark } from './moments';
 import styles from './Timeline.module.css';
 
@@ -15,15 +15,6 @@ export function recvOfTick(manifest: ClipManifest, k: number): number {
   const f = Math.min(Math.max((k - chunk.k0) / (chunk.k1 - chunk.k0), 0), 1);
   return chunk.recv0 + f * (chunk.recv1 - chunk.recv0);
 }
-
-/** The site shows Pacific time; UTC stays in the clip's data. */
-const pacificClock = new Intl.DateTimeFormat('en-GB', {
-  timeZone: 'America/Los_Angeles',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-  hourCycle: 'h23',
-});
 
 export type TimelineProps = {
   manifest: ClipManifest;
@@ -88,7 +79,8 @@ export function Timeline({ manifest, range, state, marks, onSeek, onPlay, onPaus
         <span className={styles.readout} aria-live="off">
           <span>tick {fmtInt(shown - kOffset)}</span>
           <span className={styles.clock}>
-            {pacificClock.format(clock)} {pacificZone(clock)}
+            {/* The readout is the page's only clock time, so it names the zone; UTC stays in the clip's data. */}
+            {fmtPacificHms(clock)} {pacificZone(clock)}
           </span>
           {state.loading && <span className={styles.clock}>loading</span>}
         </span>

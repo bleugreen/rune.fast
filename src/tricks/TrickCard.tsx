@@ -17,8 +17,11 @@ export function Sources({ sources }: { sources: readonly string[] }) {
   );
 }
 
-/** One technique: what the game does and what the run did instead, its chart under the prose, and its clip beside them. */
-export function TrickCard({ trick: t }: { trick: Trick }) {
+/**
+ * One technique: what the game does and what the run did instead, its chart under the prose, and its clip beside them.
+ * `zone` names the Pacific zone on the clip's time, for the card whose clip carries the page's first clock time.
+ */
+export function TrickCard({ trick: t, zone }: { trick: Trick; zone?: boolean }) {
   return (
     <article className={styles.card} id={t.id}>
       <div className={styles.text}>
@@ -34,7 +37,7 @@ export function TrickCard({ trick: t }: { trick: Trick }) {
       )}
       <div className={styles.media}>
         {t.clip ? (
-          <Clip clip={clipById(t.clip)} />
+          <Clip clip={clipById(t.clip)} zone={zone} />
         ) : (
           <div className={styles.noClip}>
             <span>Clip to come</span>

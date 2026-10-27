@@ -7,6 +7,8 @@ import styles from './TricksPage.module.css';
 export function TricksPage() {
   const h = headlineFacts(TRICKS);
   const left = rejected(TRICKS);
+  // The first clip's caption is the first clock time on the open page (source lines wait behind their disclosures), so it names the zone.
+  const firstClip = GROUPS.flatMap((g) => inGroup(TRICKS, g.id)).find((t) => t.clip)?.id;
 
   useEffect(() => {
     document.title = 'Tricks · rune.fast';
@@ -24,7 +26,7 @@ export function TricksPage() {
           <h2 className={styles.groupTitle}>{g.title}</h2>
           <div className={styles.cards}>
             {inGroup(TRICKS, g.id).map((t) => (
-              <TrickCard key={t.id} trick={t} />
+              <TrickCard key={t.id} trick={t} zone={t.id === firstClip} />
             ))}
           </div>
         </section>

@@ -77,8 +77,8 @@ export function CostPage() {
           subscriptions
         </h1>
         <p className={styles.dek}>
-          {capitalize(span)} of an agent swarm, from {fmtPacificHm(w.from)} on {fmtPacificDayLong(w.from)} to{' '}
-          {fmtPacificHm(w.to)} on {fmtPacificDayLong(w.to)}. Times and days on this page are Pacific ({pacificZone(w.from)}).
+          {capitalize(span)} of an agent swarm, from {fmtPacificHm(w.from)} {pacificZone(w.from)} on{' '}
+          {fmtPacificDayLong(w.from)} to {fmtPacificHm(w.to)} on {fmtPacificDayLong(w.to)}.
         </p>
       </header>
 
