@@ -21,12 +21,12 @@
  *
  * Exits 1 if any budget is exceeded.
  */
-import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { brotliCompressSync, constants } from 'node:zlib';
 import { chromium, type Browser, type BrowserContextOptions } from 'playwright-core';
+import { preview } from 'vite';
 import { BEACON_SRC } from '../src/lib/analytics';
 
 const { values: args } = parseArgs({ options: { measure: { type: 'boolean', default: false } } });
@@ -65,19 +65,15 @@ function initialScripts(): string[] {
   return [...entry, ...preloads];
 }
 
-async function startPreview(port: number): Promise<() => void> {
-  const args = ['preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'];
-  const child = spawn('node_modules/.bin/vite', args, { stdio: 'ignore' });
-  for (let i = 0; i < 100; i++) {
-    try {
-      if ((await fetch(`http://127.0.0.1:${port}/`)).ok) return () => child.kill();
-    } catch {
-      // not listening yet
-    }
-    await new Promise((r) => setTimeout(r, 200));
-  }
-  child.kill();
-  throw new Error(`vite preview did not answer on port ${port}`);
+/** `vite preview` of dist/, answering for rune.fast, which Chrome is told is this machine. */
+async function startPreview(): Promise<{ port: number; stop(): Promise<void> }> {
+  const server = await preview({
+    logLevel: 'warn',
+    preview: { host: '127.0.0.1', port: 0, allowedHosts: ['rune.fast'] },
+  });
+  const address = server.httpServer.address();
+  if (!address || typeof address === 'string') throw new Error('vite preview has no port');
+  return { port: address.port, stop: () => server.close() };
 }
 
 interface Request {
@@ -162,10 +158,9 @@ console.log(
   `${entryBytes > ENTRY_BUDGET ? 'FAIL' : 'ok'}: initial JavaScript ${kb(entryBytes)} brotli (budget ${kb(ENTRY_BUDGET)}): ${scripts.join(', ')}`,
 );
 
-const port = 4300 + Math.floor(Math.random() * 600);
-const stopPreview = await startPreview(port);
+const server = await startPreview();
 const browser = await chromium.launch({ channel: 'chrome', args: [`--host-resolver-rules=MAP rune.fast 127.0.0.1`] });
-const home = `http://rune.fast:${port}/`;
+const home = `http://rune.fast:${server.port}/`;
 try {
   for (const [name, options] of Object.entries(VIEWPORTS)) {
     const found = problems(await load(browser, home, options, false));
@@ -190,7 +185,7 @@ try {
   }
 } finally {
   await browser.close();
-  stopPreview();
+  await server.stop();
 }
 
 process.exit(failed ? 1 : 0);
