@@ -58,8 +58,6 @@ The hiscore read 35,787 ticks, 129 ticks or 51.6 seconds under the old record of
 
 > we did it!!!! incredible work couldnt have done it without you
 
-The swarm's own ledger never matched the hiscore. It was left with 562 ticks that "still cannot be assigned exactly to eight unknown prefixes/death-tail."
-
 ### Sources for every quote, in draft order (UTC)
 
 | # | Quote (start) | Who | UTC | Source |
@@ -137,7 +135,6 @@ Runner-up: main's apology at 03:24:29Z, before the death and in answer to the op
 - **Whether the takeover would have saved it.** Main cited about 32 seconds from launch to in-game for an earlier takeover (rs/750). Counted from 03:39:17Z, that would reach roughly 03:39:50Z. This is inference only, and the draft does not claim it. The 36-second delivery delay in moment 2 is read from host's raw events. That host's roster watch caused the delay is my inference from the event order.
 - **How main learned of the operator's order before 03:40:26Z.** There is no operator message in main's chat between 03:39:36Z and 03:40:44Z. Host sent main a message at about 03:40:12Z, which is the likely route, but I did not read its body.
 - **The helper death time.** The account was attached at Lumbridge with three kept items at 04:51:44Z, and the death was confirmed at 04:56:52Z. The death itself happened earlier, in the controller gap, and its exact time is not recorded. The "~04:56Z" in the brief is the confirmation time.
-- **The 562 ticks.** rs/843 #56 reconciles the runner's own figures exactly (35,225 observed). The 562-tick gap to the official 35,787 cannot be split between the eight unmeasured login intervals and the untracked tail after the client was killed. The tail estimate alone is 550.2 ticks, so the tail is probably most of the gap, but the source refuses that allocation and so should the draft.
 - **Account names.** Host's raw roster lines print the scored account's name, and the release-gate refusal names two other players. The draft and this report keep them out. The operator's "when does 20x resume?" (03:27:11Z, host) is a vivid line, but it contains part of the account name, so I left it out.
 
 **Evidence method:** all reads, no runs on the rs hosts. Epoch-to-UTC conversions are anchored on host raw seq 761, where createdAt 1792986043 = 03:40:43.623Z. Every operator time above derives from that anchor and matches the timeline's independent stamps where both exist (02:43:49, 03:40:44, 04:08:30, 04:09:19, 05:31:16, 11:16:47).

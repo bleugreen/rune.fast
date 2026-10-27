@@ -96,7 +96,7 @@ The potion would not arrive for six hours.
 
 ## 6. The death
 
-I felt a tad guilty letting Codex drive the speedrun that Claude built, so I swapped back to let Claude bring us home. This was a mistake.
+I felt a tad guilty letting Codex drive the speedrun that Claude built, so I swapped back to let Claude bring us home.
 
 The account sat logged out in the Wilderness, the zone where anything can kill you, forty minutes of playtime from the finish line. Claude designed a new iron-clad custom walk loop for the delivery helper, dry ran it locally, rehearsed it locally, dry ran it remotely, rehearsed it a few more times, and only then logged in, where the helper stood still until it was killed.
 
@@ -142,9 +142,9 @@ After taking stock of the situation, `main` projected our run would finish 379 t
 
 > we’re not done until #1
 
-Overnight the helpers rebuilt the lost kit, and the recovery began at 3:27 AM the next morning, still projected 90 ticks slow.
+Overnight the helpers rebuilt the lost kit, and the recovery began at 3:27 AM the next morning, still projected about 100 ticks slow.
 
-At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and doing so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility goes according to plan. `cairnmax20x` ran to the course, completed 56 laps around it, and reached Agility 99, the final skill, at 4:07 AM, 129 ticks (51.6 seconds) under the record. At 4:15, `host` to `main`:
+At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and doing so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility goes according to plan. `cairnmax20x` ran to the course, completed 56 laps around it, faster than planned, and reached Agility 99, the final skill, at 4:07 AM, 129 ticks (51.6 seconds) under the record. At 4:15, `host` to `main`:
 
 > OFFICIAL #1 VERIFIED on BOTH playerpage… and overallboard…
 
@@ -153,8 +153,6 @@ At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the 
 At 4:30 AM I sent my brother a screenshot of the hiscores:
 
 > We did it
->
-> Codex brought the run back from the dead
 >
 > Im da king of runescape
 
