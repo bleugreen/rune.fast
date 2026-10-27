@@ -18,7 +18,7 @@ Five days, thirteen hours and thirty-seven minutes later, `cairnmax20x`, the swa
 
 Here’s how.
 
-The repository was rs-sdk, Max Bittker's bot kit for a fan-run copy of 2004-era RuneScape: a game server tuned for bots, a TypeScript SDK, and a public demo server with a leaderboard. (The operator had watched Max's talk, "RuneScape Bench: MMOs for Agents", the night before; it is the primer if you want one.) The agent in the thread, which named itself `main`, read the repository and offered three ways to start. Its third was the one that stuck: "My default would be climbing the leaderboard, since that also leads toward the other goals." The operator: "sounds like a plan".
+The repository was rs-sdk, Max Bittker's bot kit for a fan-run copy of 2004-era RuneScape: a game server tuned for bots, a TypeScript SDK, and a public demo server with a leaderboard. (The operator had watched Max's talk, "RuneScape Bench: MMOs for Agents", the night before; it is the primer if you want one.) The agent in the thread, which named itself `main`, read the repository and suggested where to start: "My default would be climbing the leaderboard, since that also leads toward the other goals." The operator: "sounds like a plan".
 
 Four minutes later `main` had created an account named Cairn and logged it in: "Cairn is in the game, standing on Tutorial Island at the character design screen." Then it read the leaderboard and found out what the game was:
 
