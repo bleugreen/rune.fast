@@ -12,6 +12,7 @@ import { fmtPacificClockRange, fmtPacificDayMon, fmtPacificHm, fmtPacificHms, pa
 const FORMS: ReadonlyArray<readonly [RegExp, string]> = [
   [/^rs-sdk /, 'rs-sdk fork, '],
   [/^data\/attempts-timeline\.json\b/, 'the attempts timeline'],
+  [/^data\/route-log\.json\b/, 'attempt 5’s step log, from the swarm’s post-run export'],
   [/^DuckDB rs-\d{8}\.duckdb$/, "the rs project's database export"],
 ];
 

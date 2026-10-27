@@ -278,7 +278,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
       ),
       clip('stun-pack'),
       p(
-        `Magic went first. Charge, a spell that can be cast again on the very next tick, took it to ${to(s, 'Magic')} at one or two casts a stun. Then the stuns went to Fletching, which climbed from nothing by putting heads on arrows. Stuns also went to Superheat, two casts on iron ore at a time, which lifted Smithing to ${to(s, 'Smithing')} and saved that much work at the anvil later. A courier account stood on the next tile with ore, food and arrowheads, so the account never walked to a bank.`,
+        `Magic went first. Charge, a spell that can be cast again on the very next tick, took it to ${to(s, 'Magic')} at one or two casts a stun. Then the stuns went to Fletching, which climbed from nothing by putting heads on arrows. Stuns also went to Superheat, two casts on iron ore at a time, which lifted Smithing to ${to(s, 'Smithing')} and saved that much work at the anvil later. A courier account on the next tile traded in the first load of runes and ore, so the account never walked to a bank; the top-ups it was there to bring never came, and Superheat ran out of ore.`,
       ),
       clip('charge-stuns'),
       p(
@@ -293,6 +293,7 @@ export const WORDS: Readonly<Record<string, StepWords>> = {
       'The stun, the lab comparison and the courier: the tricks page, Working through the Thieving stun.',
       'Charge recast with no wait, one or two casts a stun: the tricks page, Charge, recast with no cooldown.',
       'Charge first, then the arrows; Superheat for Smithing; the rune arrows kept for the spiders: the run order’s rows for the knights and the spiders.',
+      'The courier’s one hand-off and no top-up after it, and Smithing’s last level-up in the step: the step log, and attempt 5’s timeline, the stop at the knights.',
       `The run order priced the knights at ${fmtInt(s.rows[0]!.expected)} ticks in the step’s own row, and ${fmtInt(s.rows[0]!.scenario[0]!.ticks)} more for the courier’s top-ups, which the row leaves to its scenario table.`,
       'Two pickpockets short, and the three logins: attempt 5’s timeline and the story’s fifth section.',
       priced(s),
