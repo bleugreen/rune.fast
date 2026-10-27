@@ -2,7 +2,7 @@ import { recordFacts } from './attempts/model';
 import { buildCostModel } from './cost/model';
 import { costInputs } from './data/cost';
 import { timeline } from './data/timeline';
-import { AUTHOR, NOT_FOUND, PAGE_ONLY, PAGE_PATHS, pageAt, type PagePath, type PrerenderedPath } from './lib/site';
+import { AUTHOR, NOT_FOUND, NOT_FOUND_TITLE, PAGE_ONLY, PAGE_PATHS, SITE_NAME, pageAt, type PagePath, type PrerenderedPath } from './lib/site';
 import { fmtInt, fmtUsd } from './lib/numbers';
 import { inlineTokens } from './story/draft';
 import { story } from './story/story';
@@ -14,13 +14,9 @@ import { story } from './story/story';
  * unfurler runs no JavaScript and reads only the HTML it is served.
  */
 
-export { PAGE_PATHS, type PagePath };
+export { PAGE_PATHS, SITE_NAME, type PagePath };
 
 export const ORIGIN = 'https://rune.fast';
-export const SITE_NAME = 'rune.fast';
-
-/** The 'Nothing here' page's title, which the page sets and its built HTML (404.html) carries. */
-export const NOT_FOUND_TITLE = `Nothing here · ${SITE_NAME}`;
 
 /** One preview image for every page: public/share.png, shot from the dev-only /share screen by scripts/render-share.ts. */
 export const SHARE_IMAGE = {

@@ -136,7 +136,14 @@ const site: UserConfig = {
           outDir: 'dist-server',
           emptyOutDir: true,
           copyPublicDir: false,
-          rollupOptions: { input: { server: 'src/server.tsx' } },
+          rollupOptions: {
+            input: { server: 'src/server.tsx' },
+            onwarn(warning, warn) {
+              // The server entry imports src/meta.ts outright; only the client's chunks care that the Layout loads it lazily.
+              if (warning.code === 'MODULE_LEVEL_DIRECTIVE' || warning.code === 'INEFFECTIVE_DYNAMIC_IMPORT') return;
+              warn(warning);
+            },
+          },
         },
       },
     },

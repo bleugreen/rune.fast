@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { NOT_FOUND_TITLE } from '../meta';
+import { NOT_FOUND_TITLE } from '../lib/site';
 import styles from './StoryPage.module.css';
 
 export function NotFound() {

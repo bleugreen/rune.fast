@@ -3,6 +3,11 @@
  * page's description from the data and models (the cost model among them).
  */
 
+export const SITE_NAME = 'rune.fast';
+
+/** The 'Nothing here' page's title, which the page sets and its built HTML (404.html) carries. */
+export const NOT_FOUND_TITLE = `Nothing here · ${SITE_NAME}`;
+
 /** Who runs the site: named in every page's footer and head. */
 export const AUTHOR = { name: 'bleugreen', url: 'https://bleu.green' } as const;
 
