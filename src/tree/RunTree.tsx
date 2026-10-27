@@ -6,6 +6,8 @@ import styles from './RunTree.module.css';
 
 /** Below this width the figure is the phone's: thinner marks and narrower margins (RunTree.module.css agrees). */
 const PHONE = '(max-width: 599px)';
+/** From this width the story's title sits to the figure's left (StoryPage.module.css), so the days go right. */
+const BESIDE = '(min-width: 64rem)';
 const RESIZE_DEBOUNCE = 150;
 /** A mono label's width per character, as a share of its size, to keep it inside the figure. */
 const MONO_ADVANCE = 0.6;
@@ -55,10 +57,11 @@ function draw(ctx: CanvasRenderingContext2D, tree: Tree, L: Layout, c: Colours):
   ctx.strokeStyle = rgba(c.ink, 0.16);
   ctx.lineWidth = 0.5;
   ctx.beginPath();
+  const [r0, r1] = L.axis === 'left' ? [L.left - 6, L.width] : [0, L.width - L.right + 6];
   for (const d of L.days) {
     if (!d.rule) continue;
-    ctx.moveTo(L.left - 6, d.y);
-    ctx.lineTo(L.width, d.y);
+    ctx.moveTo(r0, d.y);
+    ctx.lineTo(r1, d.y);
   }
   ctx.stroke();
 
@@ -153,13 +156,14 @@ interface Size {
   width: number;
   height: number;
   compact: boolean;
+  axis: 'left' | 'right';
 }
 
 /**
  * The story page's hero: the whole run as a tree, from main's creation at the top to the #1 at the
  * foot. Drawn once on mount and again only when the figure's size changes; never on scroll.
  */
-export function RunTree() {
+export function RunTree({ className }: { className?: string }) {
   const tree = useMemo(() => buildTree(treeData), []);
   const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -170,8 +174,17 @@ export function RunTree() {
     const el = frameRef.current!;
     const measure = () => {
       const r = el.getBoundingClientRect();
-      const next = { width: Math.round(r.width), height: Math.round(r.height), compact: matchMedia(PHONE).matches };
-      setSize((prev) => (prev && prev.width === next.width && prev.height === next.height && prev.compact === next.compact ? prev : next));
+      const next: Size = {
+        width: Math.round(r.width),
+        height: Math.round(r.height),
+        compact: matchMedia(PHONE).matches,
+        axis: matchMedia(BESIDE).matches ? 'right' : 'left',
+      };
+      setSize((prev) =>
+        prev && prev.width === next.width && prev.height === next.height && prev.compact === next.compact && prev.axis === next.axis
+          ? prev
+          : next,
+      );
     };
     measure();
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -207,21 +220,23 @@ export function RunTree() {
   const monoPx = L?.compact ? 10 : 11;
 
   return (
-    <figure className={styles.hero}>
+    <figure className={className ? `${styles.hero} ${className}` : styles.hero}>
       <div ref={frameRef} className={styles.frame} role="img" aria-label={description}>
         <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
         {L && (
           <div className={styles.labels} aria-hidden="true">
             {L.days.map((d) => (
-              <span key={d.t} className={styles.day} style={{ top: d.y }}>
+              <span key={d.t} className={styles.day} style={{ top: d.y, left: L.axis === 'left' ? 0 : L.width - L.right + 10 }}>
                 {d.label}
               </span>
             ))}
             {L.labels.map((l) => {
               const w = l.text.length * monoPx * MONO_ADVANCE;
               const x = l.side === 'left' ? l.x - w - 6 : l.side === 'right' ? l.x + 6 : l.x - w / 2;
+              // Clear of the day labels' gutter, on whichever side it is.
+              const hi = L.axis === 'left' ? L.width : L.width - L.right;
               return (
-                <code key={l.unit} className={styles.thread} style={{ left: Math.max(L.left, Math.min(L.width - w - 2, x)), top: l.y }}>
+                <code key={l.unit} className={styles.thread} style={{ left: Math.max(L.left, Math.min(hi - w - 2, x)), top: l.y }}>
                   {l.text}
                 </code>
               );
