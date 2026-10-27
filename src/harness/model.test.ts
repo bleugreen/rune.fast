@@ -50,10 +50,25 @@ describe('the counts reconcile', () => {
     expect(sum(m.lifelines.rows.slice(0, -1).map((r) => r.operatorTotal))).toBe(m.totals.operatorToThreads);
   });
 
-  test('wakes: the kinds drawn, the catch-up pointers and the rest sum to every briefing item', () => {
-    expect(m.wakes.shown + m.wakes.catchUp + m.wakes.other).toBe(m.wakes.total);
-    expect(sum(data.wakes.kinds.map((k) => k.n))).toBe(m.wakes.total);
-    expect(m.wakes.rows[0]).toMatchObject({ kind: 'message', n: 31_189 });
+  test('wakes: the kinds drawn, the message notices, the catch-up pointers and the rest sum to every briefing item', () => {
+    expect(m.wakes.kindItems + m.wakes.messageItems + m.wakes.catchUp + m.wakes.other).toBe(m.wakes.items);
+    expect(sum(data.wakes.kinds.map((k) => k.n))).toBe(m.wakes.items);
+  });
+
+  test('wakes: messages are split by the sender each briefing names, agents from the harness', () => {
+    const w = data.wakes.messages;
+    expect([w.agents, w.harness, w.other]).toEqual([27_449, 4_222, 0]);
+    expect(m.wakes.messages).toBe(w.agents + w.harness + w.other);
+    // One notice can deliver several messages, never fewer than one.
+    expect(m.wakes.messages).toBeGreaterThanOrEqual(m.wakes.messageItems);
+    // The agents sent no more messages than the export holds from agents; the harness delivered at least its backstops.
+    expect(w.agents).toBeLessThanOrEqual(m.totals.agentMessages);
+    expect(w.harness).toBeGreaterThanOrEqual(m.totals.backstops);
+    expect(m.wakes.rows.slice(0, 2).map((r) => [r.kind, r.n])).toEqual([
+      ['agent-message', 27_449],
+      ['harness-message', 4_222],
+    ]);
+    expect(Math.round(m.wakes.messageShare * 100)).toBe(81);
   });
 
   test('git notices: two classes per day, all of them harness messages', () => {
@@ -173,6 +188,11 @@ describe('tenets', () => {
     expect(T.arcs.length).toBeGreaterThan(0);
     for (const a of T.arcs) expect(a.from).toBeLessThan(a.to);
     expect(m.mergeChain).toEqual([5, 14, 19]);
+  });
+
+  test('half of the answers came within a minute, counted', () => {
+    expect(T.withinMinute).toBe(17);
+    expect(T.withinMinute * 2).toBeGreaterThanOrEqual(T.answered);
   });
 
   test('three were filing gates; the rest were standing rules', () => {

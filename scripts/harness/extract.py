@@ -530,6 +530,9 @@ def extract(x: Export) -> dict:
     kinds = collections.Counter()
     heads = {}
     briefings = 0
+    # A message item names its recipient, not its sender; the briefing's text names each delivered
+    # message's sender ('[Direct message from X]'), and one item can carry several messages.
+    senders = collections.Counter()
     for (content,) in x.all(
         "select content from ev where event_type in ('attention:briefing','system:message') and content like '{%'"
     ):
@@ -540,11 +543,14 @@ def extract(x: Export) -> dict:
         for item in b.get("active", []) + b.get("catchup", []):
             kinds[item.get("kind")] += 1
             heads.setdefault(item.get("kind"), item.get("headline"))
+        for s in re.findall(r"\[Direct message from (\S+?)\]", b.get("resolved", "")):
+            senders["harness" if s == "system" else "agents" if s.startswith("cairn://") else "other"] += 1
     wakes = {
         "briefings": briefings,
         "kinds": [{"kind": k, "headline": heads[k], "n": n} for k, n in kinds.most_common()],
+        "messages": {k: senders[k] for k in ("agents", "harness", "other")},
     }
-    src("wakes", "export", "ev", f"the {briefings:,} attention briefings the harness opened turns with, and the items in each")
+    src("wakes", "export", "ev", f"the {briefings:,} attention briefings the harness opened turns with, the items in each, and the sender each names")
     src("wakes", "export", "messages", "the harness's terminal-exit and terminal-output notices")
 
     # --- Fig 9: tenets ------------------------------------------------------------

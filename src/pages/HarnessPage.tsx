@@ -83,7 +83,7 @@ export function HarnessPage() {
     write: `One write carried ${countWord(m.write.items.length)} changes: replace a terminal, wake on its output, and file an issue`,
     verbs: 'Builders used run more than any other verb; coordinators and threads used write',
     routing: `A question went up to the operator, the answer came down, and the reports went up, in under ${countWord(r.spanMinutes)} minutes`,
-    wakes: `${fmtPercent(m.wakes.messageShare)} percent of what woke an agent was a message from another agent`,
+    wakes: `${fmtPercent(m.wakes.messageShare)} percent of what woke an agent was a message from another agent; the harness’s own messages came next`,
     tenets: `The threads proposed ${fmtInt(T.total)} tenets; the operator answered ${fmtInt(T.answered)}, ${fmtInt(T.withinHour)} of them within the hour`,
     git: `${fmtPacificWeekday(peak.t)} brought ${fmtInt(peak.total)} branch notices; ${fmtInt(peak.blocking)} needed an agent`,
     operator: `For every input from the operator, the agents sent each other about ${fmtInt(o.ratio)} messages`,
@@ -318,13 +318,15 @@ export function HarnessPage() {
         </p>
         <p className={styles.prose}>
           Every turn an agent takes opens with a briefing from the harness that says what woke it. Counted over the
-          whole run, nearly all of those wakes were messages from other agents.
+          whole run, most of those wakes were messages from other agents. The next largest group was messages from
+          the harness itself, among them the branch notices and the check-ins this page comes to below.
         </p>
         <Figure title={titles.wakes} sub="What the harness’s briefing named when it opened an agent’s turn, over the run">
           <Wakes m={m} />
           <p className={styles.note}>
-            Not shown: {fmtInt(m.wakes.catchUp)} pointers to unread chat and {fmtInt(m.wakes.other)} notices about the
-            harness itself. Terminals woke agents too: {fmtInt(m.wakes.terminalExit)} exits and{' '}
+            Messages are counted by the sender each briefing names: {fmtInt(m.wakes.messages)} messages in{' '}
+            {fmtInt(m.wakes.messageItems)} notices. Not shown: {fmtInt(m.wakes.catchUp)} pointers to unread chat and{' '}
+            {fmtInt(m.wakes.other)} notices about the harness itself. Terminals woke agents too: {fmtInt(m.wakes.terminalExit)} exits and{' '}
             {fmtInt(m.wakes.terminalOutput)} watched phrases.
           </p>
         </Figure>
@@ -343,8 +345,8 @@ export function HarnessPage() {
           Some decisions have to reach every agent, including agents that do not exist yet. In Claude Code you would
           write them into a CLAUDE.md file. In Cairn they are tenets. A thread proposes a tenet, a statement of how the
           project does something. Only the operator can answer it, and once approved it binds every agent that comes
-          after. The operator answered quickly, half the time within{' '}
-          {T.medianWaitMinutes <= 1 ? 'a minute' : `${fmtInt(T.medianWaitMinutes)} minutes`}, and one tenet, #
+          after. The operator answered quickly,{' '}
+          {T.withinMinute * 2 >= T.answered ? 'half the time within a minute' : `${countWord(T.withinMinute)} times within a minute`}, and one tenet, #
           {awaiting?.n}, is still waiting.
         </p>
         <Figure

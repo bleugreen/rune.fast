@@ -142,7 +142,12 @@ export interface HarnessData<S = Source> {
     steps: RawStep[];
     executions: Record<string, { seq: number; t: number; lifecycle: string }[]>;
   };
-  wakes: { briefings: number; kinds: { kind: string; headline: string; n: number }[] };
+  wakes: {
+    briefings: number;
+    kinds: { kind: string; headline: string; n: number }[];
+    /** The messages the briefings delivered, by the sender each names: another agent, or the harness itself. */
+    messages: { agents: number; harness: number; other: number };
+  };
   tenets: RawTenet[];
   git: { days: { day: string; t: number; auto: number; blocking: number }[] };
   quotes: { key: string; t: number; from: string; words: string }[];

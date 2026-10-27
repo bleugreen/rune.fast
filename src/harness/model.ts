@@ -138,8 +138,8 @@ export function edgeKey(a: NodeKey, b: NodeKey): string {
 
 /* ------------------------------------------------------------------------- */
 
+/** Briefing kinds drawn as they are; messages are drawn by sender instead (see the wakes block). */
 const WAKE_LABEL: Readonly<Record<string, string>> = {
-  message: 'Direct message',
   resolved: 'Issue resolved',
   schedule: 'Scheduled wake',
   review: 'Work ready for review',
@@ -332,16 +332,29 @@ export function buildHarnessModel(d: HarnessData) {
 
   /* Fig 8 ---------------------------------------------------------------- */
   const kinds = d.wakes.kinds;
-  const wakeRows = kinds.filter((k) => WAKE_LABEL[k.kind]).map((k) => ({ kind: k.kind, label: WAKE_LABEL[k.kind]!, n: k.n }));
-  const wakesTotal = sum(kinds.map((k) => k.n));
+  const sent = d.wakes.messages;
+  const kindRows = kinds.filter((k) => WAKE_LABEL[k.kind]).map((k) => ({ kind: k.kind, label: WAKE_LABEL[k.kind]!, n: k.n }));
+  // A message wakes its recipient whoever sent it: drawn by sender, because the harness's own notices are messages too.
+  const wakeRows = [
+    { kind: 'agent-message', label: 'A message from another agent', n: sent.agents },
+    { kind: 'harness-message', label: 'A message from the harness', n: sent.harness },
+    ...kindRows,
+  ];
+  const messageItems = kinds.find((k) => k.kind === 'message')?.n ?? 0;
   const wakes = {
     rows: wakeRows,
-    total: wakesTotal,
-    shown: sum(wakeRows.map((r) => r.n)),
+    /** Briefing items: notices, each naming its recipient. */
+    items: sum(kinds.map((k) => k.n)),
+    messageItems,
+    kindItems: sum(kindRows.map((r) => r.n)),
+    /** The messages those notices delivered, counted by the sender each names. */
+    messages: sent.agents + sent.harness + sent.other,
+    fromAgents: sent.agents,
+    fromHarness: sent.harness,
     catchUp: kinds.find((k) => k.kind === CATCH_UP)?.n ?? 0,
-    other: sum(kinds.filter((k) => !WAKE_LABEL[k.kind] && k.kind !== CATCH_UP).map((k) => k.n)),
+    other: sum(kinds.filter((k) => !WAKE_LABEL[k.kind] && k.kind !== CATCH_UP && k.kind !== 'message').map((k) => k.n)),
     briefings: d.wakes.briefings,
-    messageShare: (kinds.find((k) => k.kind === 'message')?.n ?? 0) / sum(wakeRows.map((r) => r.n)),
+    messageShare: sent.agents / sum(wakeRows.map((r) => r.n)),
     terminalExit: t.terminalExit,
     terminalOutput: t.terminalOutput,
     backstops: t.backstops,
@@ -369,7 +382,7 @@ export function buildHarnessModel(d: HarnessData) {
     gates: tenetRows.filter((r) => r.origin === 'filing-gate').map((r) => r.n),
     /** Answered within the hour. */
     withinHour: waits.filter((w) => w <= HOUR).length,
-    medianWaitMinutes: Math.round(waits[Math.floor(waits.length / 2)]! / MINUTE),
+    withinMinute: waits.filter((w) => w <= MINUTE).length,
     quoted: tenetRows.find((r) => r.n === 39)!,
     research: tenetRows.find((r) => r.n === 3)!,
     /** The part of tenet 3 that says why research is not a sub-agent's job, as the statement words it. */
