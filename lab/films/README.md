@@ -10,7 +10,7 @@ operator's checkout). Each film writes `clip.mp4`, `trace.jsonl`, `feed.jsonl` a
 | `aereck.json` | `speedrun/lab/quests/aereck-burst.ts --lab --client=browser --talks=4` | Father Aereck's default conversation, alternating read page by page (1 tick a page) and in bursts of blind continues |
 | `relog.json` + `relog-bank.ts` | `speedrun/lib/session.ts` `relog`, then `speedrun/helpers/wine-receive.ts` `openBankThroughPages`, as the Cooking step makes them | the same-page relog: logout button, in-page login, back in the world, the bank opening |
 | `tutorial-skip.json` | `speedrun/skills/start.ts` (step module), setup `leaveTutorial: false` | a fresh account skipping Tutorial Island |
-| `willow-knife.json` | `speedrun/skills/woodcutting.ts` (step module), `technique: knife`, Woodcutting 73 at the Taverley willows | the knife-on-logs reset: a log knifed and the tree clicked in the same tick, inventory tab open |
+| `willow-knife.json` | `speedrun/skills/woodcutting.ts` (step module), `technique: knife`, Woodcutting 73 at the Taverley willows | the knife-on-logs reset, inventory tab open. Not placed: in two takes (26 Oct) the fletching menu never draws, frame by frame at 12.5 fps, because the knife and the tree click land in the same tick; only the chop rhythm shows. This lab engine also pays about 25 times the xp a log, so level-up pages come often |
 
 `aereck-burst.ts` attaches to the film tool's tab when given `--client=browser` without `--launch`.
 `relog-bank.ts` acts the way the run's steps do, after `relog` has returned. (A film of
