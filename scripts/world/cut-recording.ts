@@ -23,7 +23,7 @@ const ZERO_MS = Date.parse('2026-10-25T06:42:26Z');
 const FPS = 30;
 /** The game client's canvas inside the 1920x1080 screen: viewport, sidebar and chatbox. */
 const CANVAS = 'crop=1380:904:265:55';
-const X264 = ['-c:v', 'libx264', '-crf', '22', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an'];
+const x264 = (crf = 22) => ['-c:v', 'libx264', '-crf', String(crf), '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an'];
 /** Frames of the dip to black on each side of a cut-out span, so the reader sees where time was taken out. */
 const DIP_FRAMES = 9;
 
@@ -34,8 +34,12 @@ interface Cut {
   to: string;
   /** UTC of the frame the poster shows. */
   poster: string;
+  /** A region of the canvas the poster shows instead of the whole, scaled to the clip's frame (an ffmpeg filter). */
+  posterDetail?: string;
   /** A span (UTC, from inclusive, to exclusive) cut out of the window, marked by a dip to black. */
   skip?: readonly [string, string];
+  /** x264's quality, where 22 would take the file over the registry's 3 MB. */
+  crf?: number;
 }
 
 const CUTS: readonly Cut[] = [
@@ -56,6 +60,8 @@ const CUTS: readonly Cut[] = [
     from: '2026-10-25T09:18:44.000Z',
     to: '2026-10-25T09:18:59.000Z',
     poster: '2026-10-25T09:18:48.500Z',
+    // A crowd of knights and level-up pages: at 22 the cut is 3.35 MB.
+    crf: 23,
   },
   {
     // Charge cast between stuns; Magic 85 to 90.
@@ -78,15 +84,15 @@ const CUTS: readonly Cut[] = [
     to: '2026-10-25T21:34:56.000Z',
     poster: '2026-10-25T21:34:42.000Z',
   },
-];
-
-/** Posters for a card whose point is a detail of a clip it shares: a region of the canvas, scaled to the clip's frame. */
-const DETAIL_POSTERS = [
   {
-    // The Protect from Melee icon over the account and the spiders' hits landing as zeros, in finish-cannon.
-    file: 'finish-cannon-prayer.jpg',
-    at: '2026-10-26T10:28:48.800Z',
-    region: 'crop=552:362:192:100,scale=1380:904:flags=lanczos',
+    // The end of the recovery's cannon session: the Protect from Melee icon over the account, the spiders'
+    // hits on it landing as zeros, Ranged 99 at 10:40:44.9, and the cannon picked up.
+    id: 'protect-from-melee',
+    from: '2026-10-26T10:40:32.000Z',
+    to: '2026-10-26T10:40:47.000Z',
+    poster: '2026-10-26T10:40:34.000Z',
+    // The icon and two zeros, at two and a half times.
+    posterDetail: 'crop=552:362:194:99,scale=1380:904:flags=lanczos',
   },
 ];
 
@@ -129,17 +135,12 @@ for (const c of CUTS) {
       `[x]trim=end_frame=${a},setpts=PTS-STARTPTS,fade=t=out:start_frame=${a - DIP_FRAMES}:nb_frames=${DIP_FRAMES}[p];` +
       `[y]trim=start_frame=${b},setpts=PTS-STARTPTS,fade=t=in:start_frame=0:nb_frames=${DIP_FRAMES}[q];` +
       `[p][q]concat=n=2:v=1:a=0[v]`;
-    ff(...input, '-filter_complex', graph, '-map', '[v]', ...X264, cut);
+    ff(...input, '-filter_complex', graph, '-map', '[v]', ...x264(c.crf), cut);
   } else {
-    ff(...input, '-vf', CANVAS, ...X264, cut);
+    ff(...input, '-vf', CANVAS, ...x264(c.crf), cut);
   }
-  ff('-ss', offset(c.poster), '-i', recording, '-frames:v', '1', '-vf', CANVAS, '-q:v', '3', `public/clips/${c.id}.jpg`);
+  const still = c.posterDetail ? `${CANVAS},${c.posterDetail}` : CANVAS;
+  ff('-ss', offset(c.poster), '-i', recording, '-frames:v', '1', '-vf', still, '-q:v', '3', `public/clips/${c.id}.jpg`);
   const added = JSON.parse(run(['bun', 'scripts/world/publish-videos.ts', '--add', c.id, cut, `--dir=${args.dir}`])) as Record<string, unknown>;
   console.log(JSON.stringify({ ...added, recorded: [c.from, c.to], skip: c.skip }));
-}
-
-for (const p of DETAIL_POSTERS) {
-  if (args.only) continue;
-  ff('-ss', offset(p.at), '-i', recording, '-frames:v', '1', '-vf', `${CANVAS},${p.region}`, '-q:v', '3', `public/clips/${p.file}`);
-  console.log(JSON.stringify({ poster: `/clips/${p.file}`, at: p.at }));
 }
