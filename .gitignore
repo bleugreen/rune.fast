@@ -7,3 +7,4 @@ dist/
 # Declarations emitted by tsc -b for the site's project reference.
 packages/world/types/
 *.tsbuildinfo
+__pycache__/

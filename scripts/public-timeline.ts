@@ -3,15 +3,21 @@ import { plainArchivalSource } from './plain-source';
 
 /**
  * Identifiers that stay in the archival export but never reach the public site:
- * fleet helper accounts, lab accounts, machine hostnames, and the demo server's
+ * fleet helper and test accounts, lab accounts, machine hostnames, and the demo server's
  * game-process tokens. The scored account is already withheld upstream ('SCORED').
+ * The one list for every projection that prints the run's own words (the timeline here,
+ * the hero tree's issue titles in scripts/public-tree.ts); check:public is the backstop.
  */
 export const REDACTIONS: ReadonlyArray<readonly [RegExp, string]> = [
-  [/\bcairn_[a-z]+\d+\b/g, '[helper]'],
+  [/\bcairn_[a-z][a-z0-9]*/g, '[helper]'],
   [/\bdr\d{4}[a-z]\b/g, '[lab account]'],
   [/\bbgsrv-[a-z0-9]+\b/g, '[lab machine]'],
+  [/\brs-ashburn(?:-\w+)?/g, '[Ashburn machine]'],
   [/\bmv[a-z0-9]{6}\b/g, '[token]'],
 ];
+
+/** `s` with every identifier in REDACTIONS replaced. */
+export const redact = (s: string): string => REDACTIONS.reduce((out, [re, sub]) => out.replace(re, sub), s);
 
 const EVENT_OPTIONAL = ['cause_verbatim', 'quote', 'detail', 'by', 'offline_note', 'note', 'uncertain', 'uncertain_why'] as const;
 
@@ -49,7 +55,7 @@ function attempt(a: Attempt<ArchivalSource>): Attempt {
 }
 
 function scrub<T>(v: T): T {
-  if (typeof v === 'string') return REDACTIONS.reduce((s, [re, sub]) => s.replace(re, sub), v as string) as T;
+  if (typeof v === 'string') return redact(v) as T;
   if (Array.isArray(v)) return v.map(scrub) as T;
   if (v && typeof v === 'object') {
     return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, scrub(x)])) as T;

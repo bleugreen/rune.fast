@@ -1,0 +1,163 @@
+/* The story page's hero: the run as a tree, at the site's wide measure, above the title. */
+.hero {
+  max-width: var(--wide);
+  margin: 0 auto var(--space-8);
+}
+
+/*
+ * The height is reserved, so nothing below moves when the figure paints: 1.15 screens on a
+ * desktop, 0.6 on a phone. lvh, not vh, so a phone's collapsing toolbar never resizes it mid-scroll.
+ */
+.frame {
+  position: relative;
+  height: max(760px, 115vh);
+  height: max(760px, 115lvh);
+}
+@media (max-width: 599px) {
+  .frame {
+    height: max(420px, 60vh);
+    height: max(420px, 60lvh);
+  }
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.day {
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  font-family: var(--font-sans);
+  font-size: var(--label-sm);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A thread's name, its baseline on the point the model gives, on a wash of paper. */
+.thread {
+  position: absolute;
+  transform: translateY(calc(-100% + 0.25em));
+  padding: 0 2px;
+  margin-left: -2px;
+  font-family: var(--font-mono);
+  font-size: var(--label-sm);
+  line-height: 1.2;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  white-space: nowrap;
+}
+
+@media (max-width: 599px) {
+  .day {
+    font-size: calc(var(--label-sm) * 0.82);
+  }
+  .thread {
+    font-size: calc(var(--label-sm) - 1px);
+  }
+}
+
+.card {
+  position: absolute;
+  z-index: 3;
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper);
+  border: var(--stroke-thin) solid var(--rule);
+  box-shadow: 0 1px 0 rgb(28 26 22 / 0.06);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+/* The phone's tap card, docked at the foot of the screen. */
+.docked {
+  position: fixed;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 20;
+}
+
+.cardTitle {
+  margin: 2px 0 6px;
+  font-family: var(--font-serif);
+  font-size: var(--text-small);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.cardTitle code {
+  font-size: 0.86em;
+}
+
+.cardMeta {
+  color: var(--ink-muted);
+  font-size: var(--label-sm);
+  font-variant-numeric: tabular-nums;
+}
+.cardMeta code {
+  color: var(--ink);
+  font-size: inherit;
+}
+
+.outcome {
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  font-size: 0.95em;
+}
+
+.caption {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: var(--stroke-hair) solid var(--hairline);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+
+.dot,
+.tick {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 3px;
+}
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.tick {
+  width: 8px;
+  border-top: 1.2px solid var(--accent);
+}
+
+.sources {
+  margin-top: var(--space-2);
+}
+.sources summary {
+  width: fit-content;
+  cursor: pointer;
+  font-weight: 500;
+}
+.sources p {
+  margin-top: var(--space-1);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
