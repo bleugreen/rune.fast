@@ -145,7 +145,13 @@ def extract(x: Export, kinds: dict[str, str]) -> tuple[dict, dict]:
             o, e = "c", closed
         else:
             o, e = "o", CUT
-        issues.append({"n": n, "p": parent, "s": created - t0, "e": e - t0, "o": o, "by": by})
+        row = {"n": n, "p": parent, "s": created - t0, "e": e - t0, "o": o, "by": by}
+        # Open at the #1 but resolved since: the card says how and when, after the record.
+        if o == "o" and merged is not None:
+            row["after"] = ["m", merged - t0]
+        elif o == "o" and status == "closed" and closed is not None:
+            row["after"] = ["c", closed - t0]
+        issues.append(row)
         titles[str(n)] = title
 
     life = [(u["s"], CUT - t0) for u in threads] + [(u["s"], u["e"]) for u in issues]
