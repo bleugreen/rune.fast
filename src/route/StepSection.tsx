@@ -36,7 +36,7 @@ export function trainsLine(step: Step): string {
  * section measures itself so the spine and the rail read the same map: its top is the step's first
  * tick, its bottom the next step's, and each break line holds or moves the clock by its own ticks.
  */
-export function StepSection({ step, route, words, storyTitles, planned, zoneClip }: Props) {
+export function StepSection({ step, route, words, storyTitles, planned }: Props) {
   const ref = useRef<HTMLElement>(null);
   const clock = useContext(ClockContext);
   const [geo, setGeo] = useState<{ points: Points; height: number } | null>(null);

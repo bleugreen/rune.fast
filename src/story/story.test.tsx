@@ -239,6 +239,14 @@ describe('what the page adds to the draft', () => {
     expect(narrated.kind === 'p' && narrated.text.includes('just before the spiders where it was supposed to finish combat skills, it stopped again')).toBe(true);
   });
 
+  test('the tricks section sets the wine on screen after the sentence that tells it, then the link to the tricks page', () => {
+    const s = sections.find((x) => x.id === 'the-tricks')!;
+    const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
+    expect(placed.map(({ f }) => (f.kind === 'clip' ? (f.id ?? 'tricks link') : f.kind))).toEqual(['wine-relog', 'tricks link']);
+    const told = s.blocks[placed[0]!.at]!;
+    expect(told.kind === 'p' && told.text.includes('wine left in the bank ferments on a timer')).toBe(true);
+  });
+
   test('the attempts section sets attempt 4’s death after the quotation its paragraph introduces', () => {
     const s = sections.find((x) => x.id === 'four-attempts')!;
     const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));

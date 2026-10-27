@@ -55,7 +55,11 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-tricks',
     dates: '20–21 Oct',
-    figures: [{ figure: { kind: 'clip' }, after: 'wine left in the bank ferments on a timer' }],
+    figures: [
+      // The section's first trick on screen in the run itself, then the link to the rest of them.
+      { figure: { kind: 'clip', id: 'wine-relog' }, after: 'wine left in the bank ferments on a timer' },
+      { figure: { kind: 'clip' }, after: 'wine left in the bank ferments on a timer' },
+    ],
     pulled: [],
     links: [],
   },
