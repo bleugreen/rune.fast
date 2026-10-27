@@ -58,7 +58,7 @@ console.error = consoleError;
 const text = decode(html);
 const surface = decode(html.replace(/<details[\s\S]*?<\/details>/g, ''));
 /** The hero tree above the title (src/tree), and the draft's sections after it. */
-const HERO = /<figure class="hero">[\s\S]*?<\/figure>/;
+const HERO = /<figure class="hero[^"]*">[\s\S]*?<\/figure>/;
 const hero = html.match(HERO)?.[0] ?? '';
 const sectionsHtml = html.replace(HERO, '');
 

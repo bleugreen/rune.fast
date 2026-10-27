@@ -163,7 +163,7 @@ interface Size {
  * The story page's hero: the whole run as a tree, from main's creation at the top to the #1 at the
  * foot. Drawn once on mount and again only when the figure's size changes; never on scroll.
  */
-export function RunTree() {
+export function RunTree({ className }: { className?: string }) {
   const tree = useMemo(() => buildTree(treeData), []);
   const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -220,7 +220,7 @@ export function RunTree() {
   const monoPx = L?.compact ? 10 : 11;
 
   return (
-    <figure className={styles.hero}>
+    <figure className={className ? `${styles.hero} ${className}` : styles.hero}>
       <div ref={frameRef} className={styles.frame} role="img" aria-label={description}>
         <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
         {L && (

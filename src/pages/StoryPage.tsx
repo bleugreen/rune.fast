@@ -113,12 +113,13 @@ export function StoryPage() {
         )}
       </div>
 
-      <RunTree />
-
-      <header ref={headRef} className={styles.head}>
-        <h1 className={styles.title}>{prose(story.title)}</h1>
-        <p className={styles.byline}>{prose(story.byline)}</p>
-      </header>
+      <div className={styles.opening}>
+        <RunTree className={styles.tree} />
+        <header ref={headRef} className={styles.head}>
+          <h1 className={styles.title}>{prose(story.title)}</h1>
+          <p className={styles.byline}>{prose(story.byline)}</p>
+        </header>
+      </div>
 
       {sections.map((s) => {
         const links: Needle[] = s.links.map((l) => ({
