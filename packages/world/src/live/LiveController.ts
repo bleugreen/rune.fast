@@ -76,6 +76,9 @@ export class LiveController {
     pendingFollow?: string;
     // Orbit distance in tiles; 0 until the camera has been aimed at the player.
     private orbitDistance: number = 0;
+    // Height of the orbit pivot the camera was last placed around, in tiles; undefined until
+    // the ground under the followed player has been known.
+    private pivotY?: number;
     private lastRosterJumpTick: number = -1;
 
     // The Live panel's search. It lives here so the next/previous player keys step through the
@@ -226,6 +229,7 @@ export class LiveController {
         this.followName = player.name;
         this.followSlot = player.id;
         this.orbitDistance = 0;
+        this.pivotY = undefined;
         this.version++;
     }
 
@@ -245,6 +249,7 @@ export class LiveController {
         }
         this.followName = name;
         this.followSlot = -1;
+        this.pivotY = undefined;
         this.lastRosterJumpTick = this.world.rosterTick;
         this.version++;
     }
@@ -363,14 +368,25 @@ export class LiveController {
             return;
         }
 
+        const targetX = player.x / 128;
+        const targetZ = player.z / 128;
         const groundY = getGroundY(player);
-        if (groundY === undefined) {
-            // Terrain under them hasn't loaded yet; hold the camera.
+        let targetY: number;
+        if (groundY !== undefined) {
+            targetY = (groundY - ORBIT_PIVOT_HEIGHT) / 128;
+            this.pivotY = targetY;
+        } else if (this.pivotY !== undefined && this.orbitDistance !== 0) {
+            // The ground under them is not loaded (a seek, or a teleport within the streamed area,
+            // put them past the loaded map squares). Map squares load around the camera, so the
+            // camera must go to them for it ever to load: keep the last pivot height meanwhile.
+            targetY = this.pivotY;
+        } else {
+            // Never placed on them: aim the default view at their tile until the ground is known.
+            if (Math.hypot(targetX - camera.getPosX(), targetZ - camera.getPosZ()) > FOLLOW_DISTANCE * 2) {
+                this.flyTo(camera, targetX, targetZ);
+            }
             return;
         }
-        const targetX = player.x / 128;
-        const targetY = (groundY - ORBIT_PIVOT_HEIGHT) / 128;
-        const targetZ = player.z / 128;
 
         if (this.orbitDistance === 0) {
             // Just started following: face the player from where the camera is.
