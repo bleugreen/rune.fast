@@ -1,10 +1,59 @@
+# Pages applies every rule whose path matches, in this file's order, each rule's `! Name` detaches
+# before its sets; a header set again is appended with a comma. A path written twice keeps only its
+# later block. So /* comes first, and a rule below that sets its own Cache-Control detaches /*'s.
+
 # Cross-origin isolation for the replay's worker pool (SharedArrayBuffer). Site-wide, because a
 # client-side navigation to /replay/* never re-fetches the document that carries these headers.
+#
+# The Cache-Control here is the HTML's: every path not named below is a page or Pages' index.html for
+# an unknown path, which only a splat reaches. Pages' own max-age=0, must-revalidate, so a deploy
+# shows at once, and no-transform, so the rune.fast zone serves the HTML as built. Without it, the
+# zone injects its own Web Analytics beacon into every page, a script that holds DOMContentLoaded and
+# loads the beacon twice beside the one src/lib/analytics.ts adds after load.
 /*
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
 
 # Every file under /assets/ is named by its content (the build's hash), so a browser may keep it a
 # year without asking again: a deploy that changes a file changes its name. Nothing unhashed here.
 /assets/*
+  ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable
+
+# Everything else is a file whose name does not change with its content: Pages' default.
+/clips/*
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+
+/figures/*
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+
+/stills/*
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+
+/fonts/*
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+
+/licenses/*
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+
+/favicon.svg
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+
+/favicon-32.png
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+
+/apple-touch-icon.png
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+
+/share.png
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
