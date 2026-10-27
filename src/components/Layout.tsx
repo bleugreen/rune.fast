@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation, type RouteObject } from 'react-router-dom';
 import { fmtCalendarDate } from '../lib/time';
-import { applyPageMeta, metaFor } from '../meta';
+import { AUTHOR, applyPageMeta, metaFor } from '../meta';
 import { RouteError } from '../pages/LoadFailed';
 import styles from './Layout.module.css';
 
@@ -10,7 +10,31 @@ import styles from './Layout.module.css';
  * its place, under the masthead; only a failure of the Layout itself loses the masthead.
  */
 export function siteRoutes(pages: RouteObject[]): RouteObject[] {
-  return [{ element: <Layout />, errorElement: <RouteError />, children: [{ errorElement: <RouteError />, children: pages }] }];
+  return [{ element: <Layout />, errorElement: <LayoutError />, children: [{ errorElement: <RouteError />, children: pages }] }];
+}
+
+function Byline() {
+  return (
+    <span>
+      Operated by <a href={AUTHOR.url}>{AUTHOR.name}</a>
+    </span>
+  );
+}
+
+/** The Layout's own failure: the error page alone, with a footer of only the byline, which needs nothing that could have failed. */
+function LayoutError() {
+  return (
+    <div className={styles.shell}>
+      <main className={styles.main}>
+        <RouteError />
+      </main>
+      <footer className={styles.footer}>
+        <div className={styles.footInner}>
+          <Byline />
+        </div>
+      </footer>
+    </div>
+  );
 }
 
 export const NAV = [
@@ -57,7 +81,9 @@ export function Layout() {
       </main>
       <footer className={styles.footer}>
         <div className={styles.footInner}>
-          <span>Every number on this site traces to a source</span>
+          <span>
+            <Byline /> · <span className={styles.phrase}>Every number on this site traces to a source</span>
+          </span>
           <span>Generated {fmtCalendarDate(__BUILD_DATE__)}</span>
           <p className={styles.credits}>
             3D replays use rs-map-viewer (BSD-2-Clause) via RS World and rs-dash · Credits: rs-sdk and LostCity (MIT),

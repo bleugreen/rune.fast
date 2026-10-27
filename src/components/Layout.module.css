@@ -98,6 +98,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* On a phone the footer's first line wraps between its phrases, not inside one. */
+.phrase {
+  white-space: nowrap;
+}
+
 .credits {
   flex-basis: 100%;
   font-size: var(--label-sm);
