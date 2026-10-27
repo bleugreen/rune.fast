@@ -1,7 +1,9 @@
 /**
  * Checks the built site's pages in system Chrome, as a link unfurler and a reader meet them, against
  * src/meta.ts: each page's HTML, fetched without running anything, carries its own title,
- * description, canonical URL and preview image, with the site's isolation headers; opened from
+ * description, canonical URL and preview image, with the site's isolation headers and the HTML's
+ * Cache-Control (no-transform, so the zone does not inject its analytics beacon); every other file
+ * the build has keeps its own (immutable under /assets/, Pages' default elsewhere); opened from
  * that page, the app renders and the document's title and description are the page's; from it,
  * every nav link routes client-side to its page, with that page's title and description; each page
  * is reached from its trailing-slash and .html forms (and the story from /index.html) by Pages'
@@ -20,6 +22,11 @@ import { parseArgs } from 'node:util';
 import { chromium } from 'playwright-core';
 import { NAV } from '../src/components/Layout';
 import { ORIGIN, PAGE_PATHS, SHARE_IMAGE, siteMeta } from '../src/meta';
+import { filesUnder } from './pages-routes';
+
+const HTML_CACHE = 'public, max-age=0, must-revalidate, no-transform';
+const FILE_CACHE = 'public, max-age=0, must-revalidate';
+const ASSET_CACHE = 'public, max-age=31536000, immutable';
 
 const { values: args } = parseArgs({ options: { base: { type: 'string', default: 'http://127.0.0.1:8788' } } });
 const meta = siteMeta();
@@ -40,6 +47,7 @@ for (const p of PAGE_PATHS) {
   check(attr(html, /<meta name="twitter:description" content="([^"]*)"/) === m.description, `${p}: served twitter:description is not the page's`);
   check(res.headers.get('cross-origin-embedder-policy') === 'require-corp', `${p}: no COEP header`);
   check(res.headers.get('cross-origin-opener-policy') === 'same-origin', `${p}: no COOP header`);
+  check(res.headers.get('cache-control') === HTML_CACHE, `${p}: Cache-Control ${res.headers.get('cache-control')}`);
   check(html.includes(`<div id="root" data-prerendered="${p}"><div`), `${p}: the served HTML does not carry its page`);
 }
 
@@ -62,10 +70,22 @@ for (const unknown of ['/nope', '/attempts', '/route/deeper']) {
   );
   check(res.headers.get('cross-origin-embedder-policy') === 'require-corp', `${unknown}: no COEP header`);
 }
+// The Nothing here page through the Function (_routes.json), where _headers does not apply.
+const viaFunction = await fetch(args.base + '/clips/nope');
+const viaFunctionCache = viaFunction.headers.get('cache-control') ?? '';
+check(/\bno-transform\b/.test(viaFunctionCache), `/clips/nope: the Function's HTML has Cache-Control ${viaFunctionCache}`);
 const gone = await fetch(args.base + '/assets/index-GONE0000.js');
 check(gone.status === 404 && !!gone.headers.get('content-type')?.startsWith('text/plain'), `/assets/index-GONE0000.js: ${gone.status} ${gone.headers.get('content-type')}`);
 const image = await fetch(args.base + SHARE_IMAGE.path);
 check(image.status === 200 && image.headers.get('content-type') === 'image/png', `${SHARE_IMAGE.path}: ${image.status} ${image.headers.get('content-type')}`);
+
+const files = filesUnder('dist').filter((f) => !f.endsWith('.html') && !f.startsWith('_'));
+for (const f of files) {
+  const res = await fetch(`${args.base}/${f}`, { method: 'HEAD' });
+  const want = f.startsWith('assets/') ? ASSET_CACHE : FILE_CACHE;
+  check(res.status === 200 && res.headers.get('cache-control') === want, `/${f}: ${res.status}, Cache-Control ${res.headers.get('cache-control')}`);
+}
+console.log(`Cache-Control: the pages no-transform, ${files.length} other files as they were`);
 
 const browser = await chromium.launch({ channel: 'chrome' });
 try {
