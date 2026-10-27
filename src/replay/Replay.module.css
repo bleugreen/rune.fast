@@ -1,63 +1,20 @@
-.replay {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
-  gap: var(--space-5) var(--space-6);
-  align-items: start;
-}
-
+/* The replay inside a clip frame: the whole frame, under its poster and play mark. */
+.media,
 .stage {
-  min-width: 0;
+  position: absolute;
+  inset: 0;
 }
-
-@media (max-width: 64rem) {
-  .replay {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.pane {
-  position: relative;
-  aspect-ratio: 16 / 9;
+.media {
   background: var(--ink);
-  overflow: hidden;
-}
-.pane canvas:focus {
-  outline: none;
+  pointer-events: none;
 }
 .overlay {
   position: absolute;
   inset: 0;
-  pointer-events: none;
 }
 .overlay :global(.live-overlay) {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-}
-.message {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: var(--space-5);
-  font-family: var(--font-sans);
-  font-size: var(--label-lg);
-  color: var(--paper);
-  text-align: center;
-}
-.progress {
-  font-variant-numeric: tabular-nums;
-}
-
-.back {
-  font-family: var(--font-sans);
-  font-size: var(--label);
-  padding: 0;
-  font: inherit;
-  color: var(--accent);
-  background: none;
-  border: 0;
-  border-bottom: var(--stroke-thin) solid currentColor;
-  cursor: pointer;
 }
