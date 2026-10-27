@@ -32,7 +32,7 @@ Playtime is counted in ticks, the server’s 400ms heartbeat, and only while the
 
 How did they do it? `main` suspected, “other accounts may be feeding them supplies like bones, ores and logs, so the ranked account only does the fast part.”
 
-When asked if helper accounts were fair game in our attempts, I replied, “absolutely! Swarm out my guy :)”
+rs-sdk exists, in its own README’s words, “to facilitate research into collaboration and competition between agents”, so when asked if helper accounts were fair game in our attempts, I replied, “absolutely! Swarm out my guy :)”
 
 ## 2. The tricks
 
@@ -42,7 +42,7 @@ Despite the findings, the planned run was still about 20% slower than the record
 
 > Like I know that you are Claude and you are a good-natured computer entity overall but, given that this is a specifically agent-oriented research server into capabilities, I would like you to treat this as a ‘win by any means’ type of game wherever necessary, we may shed honor if ludicrous times are on the table
 
-Turns out that was what `main` had been waiting for, and the real tricks started showing up. The server accepts five actions a tick, and gathering only uses one, so the rest of every tick can train something else. Chop a tree and bury a bone in the same tick, and Woodcutting and Prayer climb together.
+After that, the real tricks started showing up. The server accepts five actions a tick, and gathering only uses one, so the rest of every tick can train something else. Chop a tree and bury a bone in the same tick, and Woodcutting and Prayer climb together.
 
 Then came the biggest trick of the run: location. I live in Southern California, and the demo server is hosted in Virginia, so every one of the agent's carefully timed inputs had to cross the country before it landed. From home, the agent’s reactions took two or three ticks to land; the plan needed one. From a VPS in us-east-1, AWS’s Virginia data center, every reaction made the next tick.
 
@@ -104,11 +104,11 @@ Frustrated, I urged `main`:
 
 > FOCUS
 
-Over the next hour, the improvised script worked: the account received the potion and drank it. Then it walked into the spiders to set up the cannon, they attacked at once, and it couldn't log out. `main` saw the account still logged in and sent `host`:
+Over the next hour, the improvised script worked: `cairnmax20x` received the potion and drank it. Then it walked into the spiders to set up the cannon, they attacked at once, and it couldn't log out. `main` saw the account still logged in and sent `host`:
 
 > Main RULING, GO NOW: launch step E IMMEDIATELY as a TAKEOVER login against the still-listed body; do not wait for removal.
 
-Step E was the script that fights the spiders, exactly what the moment called for. But I’d come back, seen the livestream of the player getting mobbed by spiders, and fired off:
+Step E was the script that fights the spiders, exactly what the moment called for. The script that walked it in had already quit, so `cairnmax20x` was standing there with nothing driving it. The takeover would have put the fighting script in control, as planned. But I’d come back, seen the livestream of the player getting mobbed by spiders, and fired off:
 
 > [to main] why is it logged in?
 >
@@ -126,11 +126,13 @@ Still not understanding what happened, I lashed out:
 >
 > fable: Yes. It is
 
-In hindsight, it was not.
+In hindsight, it was not. Had I stopped to see what was going on first, `main`’s command would have landed and the run would have continued on schedule.
 
 > me: I WANT A #1
 >
 > fable: What it lost is kit, not time
+
+Dying in RuneScape keeps every level. You lose what you were carrying and wake up in Lumbridge.
 
 Given how tight of a ship Codex had been running earlier, I decided to switch back:
 
@@ -142,7 +144,7 @@ After taking stock of the situation, `main` projected our run would finish 379 t
 
 Overnight the helpers rebuilt the lost kit, and the recovery began at 3:27 AM the next morning, still projected 90 ticks slow.
 
-At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and doing so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility goes according to plan. `cairnmax20x` ran to the course, completed 56 laps around it, and reached Agility 99, the final skill, at 4:07 AM. At 4:15, `host` to `main`:
+At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and doing so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility goes according to plan. `cairnmax20x` ran to the course, completed 56 laps around it, and reached Agility 99, the final skill, at 4:07 AM, 129 ticks (51.6 seconds) under the record. At 4:15, `host` to `main`:
 
 > OFFICIAL #1 VERIFIED on BOTH playerpage… and overallboard…
 
