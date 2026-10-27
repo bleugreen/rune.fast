@@ -217,6 +217,7 @@ async function pagesDev(dir: string): Promise<{ base: string; stop(): void }> {
  * the story each nav link routes client-side. `serve`, if given, answers the tab's requests.
  */
 async function hydrates(browser: Browser, what: string, base: string, serve?: (page: Page) => Promise<void>): Promise<void> {
+  const before = problems.length;
   for (const width of WIDTHS) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, timezoneId: READER_ZONE });
     for (const p of PATHS) {
@@ -267,9 +268,11 @@ async function hydrates(browser: Browser, what: string, base: string, serve?: (p
     }
     await context.close();
   }
-  console.log(
-    `Hydration, ${what}, at ${WIDTHS.join(' and ')} px in ${READER_ZONE}: ${PATHS.join(' ')} keep the server’s HTML and log nothing; the nav routes client-side`,
-  );
+  const outcome =
+    problems.length === before
+      ? `${PATHS.join(' ')} keep the server’s HTML and log nothing; the nav routes client-side`
+      : `${problems.length - before} problem(s), listed below`;
+  console.log(`Hydration, ${what}, at ${WIDTHS.join(' and ')} px in ${READER_ZONE}: ${outcome}`);
 }
 
 const browser = await chromium.launch({ channel: 'chrome' });
