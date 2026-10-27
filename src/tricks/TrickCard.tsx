@@ -30,7 +30,7 @@ function Sources({ sources }: { sources: readonly string[] }) {
 export function TrickCard({ trick: t, zone }: { trick: Trick; zone?: boolean }) {
   const media = t.clip ? <Clip clip={clipById(t.clip)} zone={zone} /> : t.stills ? <StillStrip strip={t.stills} zone={zone} /> : null;
   return (
-    <article className={media ? styles.card : `${styles.card} ${styles.unfilmed}`} id={t.id}>
+    <article className={[styles.card, !media && styles.unfilmed].filter(Boolean).join(' ')} id={t.id}>
       <div className={styles.text}>
         <h3 className={styles.name}>{t.name}</h3>
         <p className={styles.body}>{[t.what_normally, t.what_instead, t.why_allowed].filter(Boolean).join(' ')}</p>

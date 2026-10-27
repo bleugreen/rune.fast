@@ -186,7 +186,7 @@ describe('order and headline', () => {
 describe('what a card shows beside its prose', () => {
   const html = render(createElement(TricksPage));
   const shown = GROUPS.flatMap((g) => inGroup(TRICKS, g.id));
-  const card = (id: string) => html.match(new RegExp(`<article id="${id}">[\\s\\S]*?</article>`))![0];
+  const card = (id: string) => html.match(new RegExp(`<article[^>]* id="${id}"[\\s\\S]*?</article>`))![0];
 
   test.each(shown.map((t) => [t.id, t] as const))('%s: its clip, its still strip, or no media cell at all', (_, t) => {
     // The prose, the chart if it has one, then any media cell, then the sources.
