@@ -33,7 +33,8 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
   const at = (t: number) => X(axisAt(i.segments, t));
 
   const recipeGap = narrow ? 64 : 104;
-  const recipeX = (k: number) => (narrow ? x1 - 2 * recipeGap - 14 : (x0 + x1) / 2 + 40) + k * recipeGap;
+  // On a phone the last node sits in from the edge, so its centred label (“pull request”) fits.
+  const recipeX = (k: number) => (narrow ? x1 - 2 * recipeGap - 28 : (x0 + x1) / 2 + 40) + k * recipeGap;
   const seg = Object.fromEntries(i.segments.map((s) => [s.key, s]));
   const held = seg.held!;
   const work = seg.work!;
@@ -48,8 +49,9 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
     { x: X(wait.offset + wait.share), text: fmtPacificHm(i.merged), anchor: 'end' },
   ];
   const breaks = [held.offset + held.share + AXIS_GAP / 2, work.offset + work.share + AXIS_GAP / 2].map(X);
-  // Wake labels sit on one line above the turns. The first run's label ends at its last mark, into
-  // the room over the long first turn; the others start at their first mark.
+  // Wake labels sit on one line above the turns. The first run's label ends at a mark of its own,
+  // into the room over the long first turn, and the others start at their first mark. On a phone the
+  // runs are too close for it to end at its last mark: the two labels would read as one phrase.
   const bracketY = Y.source + 6;
   const markTop = Y.turn - 12;
 
@@ -146,7 +148,7 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
               ))}
               <text
                 className={styles.tick}
-                x={k === 0 ? last + 2 : first - 2}
+                x={k === 0 ? (narrow ? first : last) + 2 : first - 2}
                 y={Y.source + 2}
                 textAnchor={k === 0 ? 'end' : 'start'}
               >
