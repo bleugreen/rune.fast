@@ -104,16 +104,14 @@ export function inGroup(tricks: readonly Trick[], group: Group): Trick[] {
 export const rejected = (tricks: readonly Trick[]) => tricks.filter((t) => t.kind === 'rejected');
 
 export interface HeadlineFacts {
-  /** Techniques the run used. */
-  used: number;
-  /** Measured techniques that remove at least half the cost they target. */
+  /** Measured techniques the run used that remove at least half the cost they target. */
   halved: number;
 }
 
 export function headlineFacts(tricks: readonly Trick[]): HeadlineFacts {
   const used = tricks.filter((t) => t.kind !== 'rejected');
   const measured = used.flatMap((t) => (t.saving?.basis === 'measured' ? [t.saving] : []));
-  return { used: used.length, halved: measured.filter((s) => savedShare(s) >= 0.5).length };
+  return { halved: measured.filter((s) => savedShare(s) >= 0.5).length };
 }
 
 /** Every string a card puts on the reading surface (the sources disclosure aside). */

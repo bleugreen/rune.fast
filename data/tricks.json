@@ -329,9 +329,10 @@
       "cairn://p/rs/40",
       "cairn://p/rs/267 (openTrade)",
       "cairn://posts/399 (three X offers hung a trade)",
-      "data/attempts-timeline.json, attempt 5, 25 Oct 09:06Z"
+      "data/attempts-timeline.json, attempt 5, 25 Oct 09:06Z",
+      "the run host’s screen recording of attempt 5, 26 Oct 10:27:15-10:27:27Z, cropped to the game canvas (the clip: two hand-offs at Lumbridge after the recovery login, each offer arriving with an accept)"
     ],
-    "clip": null
+    "clip": "finish-rekit"
   },
   {
     "id": "dialogue-client-fix",
@@ -515,28 +516,6 @@
       "cairn://p/rs/85 (the latency analysis)",
       "rs tenets 12 and 17",
       "data/attempts-timeline.json, rehearsal 24 Oct 01:33Z"
-    ],
-    "clip": null
-  },
-  {
-    "id": "helper-fleet",
-    "name": "Helper accounts under the login cap",
-    "kind": "economic and swarm",
-    "group": "infrastructure",
-    "what_normally": "A player gathers their own supplies: essence, bones, runes and food.",
-    "what_instead": "Dozens of helper accounts gathered and handed them over, stood at altars and carried stock, within the server’s limit of 50 sessions per internet address; the swarm kept to 45.",
-    "why_allowed": "Trading between accounts is part of the game.",
-    "saving": null,
-    "steps_plain": ["the starting kit", "the ring enchanting", "Doric’s Quest", "Runecrafting at the air and body altars", "the cannon step"],
-    "failed_live": "Attempt 4 died at the Grand Tree waiting for a helper that never became ready.",
-    "sources": [
-      "rs tenets 2 and 25",
-      "rs-sdk docs/speedrun/HELPERS.md line 94 (60 enabled, maxOnline 34)",
-      "rs-sdk docs/speedrun/RUN-ORDER.md, the air altar and body altar rows (altar cycle 9 ticks with the receive opt-in against 31 without, lab; body restock 140-143, n = 12)",
-      "cairn://p/rs/41 (the fleet coordinator)",
-      "cairn://p/rs/117 (the trade giver)",
-      "cairn://p/rs/196 (the altar givers)",
-      "data/attempts-timeline.json, attempt 4, 24 Oct 14:23Z"
     ],
     "clip": null
   },
