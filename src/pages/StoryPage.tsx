@@ -7,6 +7,7 @@ import { inlineTokens } from '../story/draft';
 import { story } from '../story/story';
 import { storySections } from '../story/sections';
 import { StoryFigure } from '../story/StoryFigure';
+import { RunTree } from '../tree/RunTree';
 import styles from './StoryPage.module.css';
 
 /** The band near the top of the viewport whose section counts as the one being read. */
@@ -111,6 +112,8 @@ export function StoryPage() {
           </div>
         )}
       </div>
+
+      <RunTree />
 
       <header ref={headRef} className={styles.head}>
         <h1 className={styles.title}>{prose(story.title)}</h1>

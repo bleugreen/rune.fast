@@ -1,5 +1,6 @@
+/* The hero tree leads the page, just under the masthead; it keeps its own space below. */
 .page {
-  padding: var(--space-8) var(--gutter) var(--space-9);
+  padding: var(--space-5) var(--gutter) var(--space-9);
 }
 
 .head,
