@@ -113,10 +113,10 @@ describe('sources in the build', () => {
   const shipped = projectTricks(TRICKS);
   const byId = new Map(shipped.map((t) => [t.id, t]));
 
-  test('keeps every line, and prints no address or UTC time', () => {
+  test('keeps every line, and prints no address, UTC time or zone', () => {
     expect(shipped.map((t) => t.sources.length)).toEqual(TRICKS.map((t) => t.sources.length));
     const lines = shipped.flatMap((t) => t.sources);
-    expect(lines.filter((s) => /cairn:|\d{2}:\d{2}Z\b/.test(s))).toEqual([]);
+    expect(lines.filter((s) => /cairn:|\d{2}:\d{2}Z\b|\bP[DS]T\b/.test(s))).toEqual([]);
   });
 
   test('says who, where and when in plain words', () => {
@@ -125,20 +125,18 @@ describe('sources in the build', () => {
     );
     expect(byId.get('wine-fermentation')!.sources).toContain('issue rs/47 (the wine route, merged)');
     expect(byId.get('charge')!.sources).toContain(
-      "main's thread, correction, 26 Oct 14:08 PDT (publish the rate, not a per-tick count)",
+      "main's thread, correction, 26 Oct 2:08 PM (publish the rate, not a per-tick count)",
     );
     expect(byId.get('buyouts')!.sources).toContain('swarm post 369');
   });
 
-  test('UTC moments become Pacific, carrying the date across midnight', () => {
+  test('UTC moments become the Pacific 12-hour clock, carrying the date across midnight', () => {
     const lines = shipped.flatMap((t) => t.sources);
     expect(lines).toContain(
-      'the run host’s screen recording of attempt 5, 26 Oct 03:28:39-03:28:53 PDT, cropped to the game canvas (the clip)',
+      'the run host’s screen recording of attempt 5, 26 Oct 3:28:39–3:28:53 AM, cropped to the game canvas (the clip)',
     );
-    expect(lines).toContain('the attempts timeline, attempt 5, 25 Oct 13:35 PDT');
-    expect(lines).toContain('the attempts timeline, attempt 5, 25 Oct 20:25 PDT to 25 Oct 20:40 PDT');
-    expect(lines).toContain(
-      'the attempts timeline, rehearsal 23 Oct 21:38 PDT and 23 Oct 23:28 PDT; attempt 5, 25 Oct 20:40 PDT',
-    );
+    expect(lines).toContain('the attempts timeline, attempt 5, 25 Oct 1:35 PM');
+    expect(lines).toContain('the attempts timeline, attempt 5, 25 Oct 8:25 PM to 25 Oct 8:40 PM');
+    expect(lines).toContain('the attempts timeline, rehearsal 23 Oct 9:38 PM and 23 Oct 11:28 PM; attempt 5, 25 Oct 8:40 PM');
   });
 });

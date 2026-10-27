@@ -33,11 +33,11 @@ describe('public projection', () => {
     ['the swarm’s addresses', /cairn:/],
   ])('drops %s', (_, re) => expect(text).not.toMatch(re));
 
-  test('prints each source as who, where and when, in Pacific time', () => {
+  test('prints each source as who, where and when, on the Pacific 12-hour clock with no zone', () => {
     const lines = new Set(timeline.attempts.flatMap((a) => [a.start, a.end, ...a.events].flatMap((x) => x.sources)));
-    expect(lines).toContain("host's messages, 23 Oct 10:41 PDT");
-    expect(lines).toContain('issue rs/843, comment 54, 26 Oct 04:16 PDT');
-    expect(lines).toContain('the rs project (tenet 39), 25 Oct 21:09 PDT');
+    expect(lines).toContain("host's messages, 23 Oct 10:41 AM");
+    expect(lines).toContain('issue rs/843, comment 54, 26 Oct 4:16 AM');
+    expect(lines).toContain('the rs project (tenet 39), 25 Oct 9:09 PM');
   });
 
   test('keeps every event', () => {

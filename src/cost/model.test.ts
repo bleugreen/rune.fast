@@ -142,10 +142,10 @@ describe('the page claims', () => {
     expect(usd(m.status.unattributed)).toBe(68);
     expect(fmtUsdCents(m.status.median)).toBe('$5.38');
   });
-  test('agents producing output: 87 at 15:07 on Friday; 61 at most on Thursday, the costliest day', () => {
+  test('agents producing output: 87 at 3:07 PM on Friday; 61 at most on Thursday, the costliest day', () => {
     const { peak, peakOnCostliest } = m.activity;
     expect(peak.v).toBe(87);
-    expect([pacificDayKey(peak.t), fmtPacificHm(peak.t)]).toEqual(['2026-10-23', '15:07']);
+    expect([pacificDayKey(peak.t), fmtPacificHm(peak.t)]).toEqual(['2026-10-23', '3:07 PM']);
     expect(peakOnCostliest.v).toBe(61);
     expect(pacificDayKey(peakOnCostliest.t)).toBe(m.peakDay.key);
     const dayPeaks = new Map<string, number>();
@@ -207,8 +207,8 @@ function pageText(): string {
     .replace(/&[#\w]+;/g, (e) => ENTITIES[e] ?? e);
 }
 
-/** Numbers as a reader would pick them out: '$17,679', '5.38', '17:47', '79'; not the '6' of 'GPT-6'. */
-const NUMBER = /(?<![\w.\-])(?:\d{1,2}:\d{2}|\$?\d[\d,]*(?:\.\d+)?)/g;
+/** Numbers as a reader would pick them out: '$17,679', '5.38', '5:47 PM', '79'; not the '6' of 'GPT-6'. */
+const NUMBER = /(?<![\w.\-])(?:\d{1,2}:\d{2}(?: [AP]M)?|\$?\d[\d,]*(?:\.\d+)?)/g;
 
 describe('every number on the page comes from the data', () => {
   const text = pageText();
@@ -231,9 +231,6 @@ describe('every number on the page comes from the data', () => {
     expect(text).toContain('six Claude Max plans and one ChatGPT Pro plan, $1,400 a month');
     expect(text).toContain('List value is 69 times what was paid.');
     expect(text.match(/The large number is/g)).toHaveLength(1);
-  });
-  test('the zone is stated once', () => {
-    expect(text.match(/\bP[DS]T\b/g)).toEqual(['PDT']);
   });
 
   const SOURCES = ['src/pages/CostPage.tsx', 'src/cost/Charts.tsx', 'src/cost/model.ts'];
