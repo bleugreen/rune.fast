@@ -72,9 +72,10 @@ const textOf = (html: string) =>
 const without = (html: string, ...res: RegExp[]) => res.reduce((h, re) => h.replace(re, ' '), html);
 const QUOTED = /<blockquote[\s\S]*?<\/blockquote>/g;
 const DISCLOSED = /<details[\s\S]*?<\/details>/g;
-/** The story page's copy of the draft: its title, byline, section titles, prose and the margin's pulled quotes. */
+/** The story page's copy of the draft: its title, byline (credit and research credit), section titles, prose and the margin's pulled quotes. */
 const DRAFT = [
   /<h1 class="title">[\s\S]*?<\/h1>/g,
+  /<p class="credit">[\s\S]*?<\/p>/g,
   /<p class="byline">[\s\S]*?<\/p>/g,
   /<h2 class="sectionTitle">[\s\S]*?<\/h2>/g,
   /<p class="prose">[\s\S]*?<\/p>/g,

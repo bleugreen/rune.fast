@@ -1,4 +1,37 @@
+import { AUTHOR } from '../lib/site';
 import type { DraftSection, Story, StoryBlock } from './draft';
+
+/** Words that link out, and where to. */
+export interface StoryLink {
+  text: string;
+  href: string;
+}
+
+/**
+ * The byline's opening sentence, which the page sets as a credit line of its own above the rest
+ * of the byline (the research credit): without its full stop, the name linked to the author's site.
+ */
+export const CREDIT = { sentence: `By ${AUTHOR.name}.`, link: { text: AUTHOR.name, href: AUTHOR.url } } as const;
+
+export interface StoryByline {
+  /** The credit line as set: 'By bleugreen'. */
+  credit: string;
+  link: StoryLink;
+  /** The rest of the byline, in the draft's words. */
+  research: string;
+}
+
+/** The draft's byline as the page sets it; fails loudly if it no longer opens on the credit. */
+export function storyByline(byline: string): StoryByline {
+  if (!byline.startsWith(`${CREDIT.sentence} `)) {
+    throw new Error(`The byline does not open '${CREDIT.sentence}', which the page sets as its credit line`);
+  }
+  return {
+    credit: CREDIT.sentence.slice(0, -1),
+    link: CREDIT.link,
+    research: byline.slice(CREDIT.sentence.length + 1),
+  };
+}
 
 /** A figure the page sets between two blocks of a section's prose. */
 export type StoryFigure =
@@ -40,7 +73,7 @@ interface SectionMeta {
    */
   pulled: readonly string[];
   /** Words in the prose that link out; each target is also in the section's sources. */
-  links: readonly { text: string; href: string }[];
+  links: readonly StoryLink[];
 }
 
 /** What the page adds to each of the draft's sections, in the draft's order. */

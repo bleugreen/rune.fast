@@ -72,10 +72,19 @@
   }
 }
 
-/* The narrator's authorial statement, set small under the title. */
-.byline {
+/* The narrator's credit, in ink over the rule under the title. */
+.credit {
   padding-top: var(--space-3);
   border-top: var(--stroke-rule) solid var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* The research credit, set small and muted under it. */
+.byline {
+  margin-top: var(--space-1);
   font-family: var(--font-sans);
   font-size: var(--label-lg);
   line-height: 1.6;

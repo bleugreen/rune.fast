@@ -6,7 +6,7 @@ import { clipById, clipSource, clipSrc, clipWhen } from '../clips/registry';
 import { AUTHOR } from '../lib/site';
 import { StoryPage } from '../pages/StoryPage';
 import { inlineTokens, sourceTable } from './draft';
-import { SECTION_META, quotes, storySections } from './sections';
+import { CREDIT, SECTION_META, quotes, storyByline, storySections } from './sections';
 import { plainReceiptLines, plainSourceLines } from './sources';
 import { story } from './story';
 
@@ -72,8 +72,24 @@ describe('the draft, placed verbatim', () => {
     expect(parsed).toEqual(paragraphs);
   });
 
-  test.each(paragraphs.map((p) => [p.slice(0, 60), p] as const))('the page carries "%s…" byte for byte', (_, p) => {
+  // The byline is set on two lines, checked on its own below.
+  test.each(paragraphs.filter((p) => p !== story.byline).map((p) => [p.slice(0, 60), p] as const))('the page carries "%s…" byte for byte', (_, p) => {
     expect(surface.includes(readerText(p))).toBe(true);
+  });
+
+  test('the byline is a credit line in ink, the name linked to the author’s site, over the research credit in the draft’s words', () => {
+    expect(CREDIT.sentence).toBe('By bleugreen.');
+    const { credit, research } = storyByline(story.byline);
+    expect(credit).toBe('By bleugreen');
+    expect(`${credit}. ${research}`).toBe(story.byline);
+    expect(html).toContain(`<p class="credit">By <a href="${AUTHOR.url}" target="_blank" rel="noreferrer">${AUTHOR.name}</a></p><p class="byline">`);
+    expect(decode(html.match(/<p class="byline">[\s\S]*?<\/p>/)![0])).toBe(readerText(research));
+    expect(html.indexOf('<p class="credit">')).toBeGreaterThan(html.indexOf('<h1 class="title">'));
+  });
+
+  test('a byline that no longer opens on the credit stops the page', () => {
+    expect(() => storyByline(story.byline.replace('By bleugreen.', 'By bleugreen,'))).toThrow(/does not open 'By bleugreen\.'/);
+    expect(() => storyByline('Research by `rune/main`.')).toThrow();
   });
 
   test('code spans and emphasis are set, not shown as backticks and asterisks', () => {
@@ -187,9 +203,9 @@ describe('what the page adds to the draft', () => {
     }
   });
 
-  test('the only outbound links are the ones the sections declare, each in its section’s sources', () => {
+  test('the only outbound links are the credit’s and the ones the sections declare, each in its section’s sources', () => {
     const hrefs = [...html.matchAll(/<a href="(http[^"]+)"/g)].map((m) => m[1]);
-    expect(hrefs).toEqual(SECTION_META.flatMap((s) => s.links.map((l) => l.href)));
+    expect(hrefs).toEqual([CREDIT.link.href, ...SECTION_META.flatMap((s) => s.links.map((l) => l.href))]);
     SECTION_META.forEach((s, i) => {
       for (const l of s.links) expect(story.sections[i]!.sources.some((line) => line.includes(l.href))).toBe(true);
     });
