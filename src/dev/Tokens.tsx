@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { timeline } from '../data/timeline';
-import { buildChartModel, chartAnchors, recordFacts } from '../attempts/model';
+import { buildChartModel, recordFacts } from '../attempts/model';
 import { TimelineChart } from '../attempts/TimelineChart';
 import { Clip } from '../clips/Clip';
 import { clipById } from '../clips/registry';
@@ -40,7 +40,6 @@ export default function Tokens() {
   }, []);
 
   const model = buildChartModel(timeline);
-  const anchors = chartAnchors(model);
 
   return (
     <article className={styles.page}>
@@ -124,7 +123,7 @@ export default function Tokens() {
 
       <section className={styles.block}>
         <h2 className={styles.h2}>A hairline chart</h2>
-        <TimelineChart model={model} anchors={anchors} finishTicks={recordFacts(timeline).final} />
+        <TimelineChart model={model} finishTicks={recordFacts(timeline).final} />
       </section>
     </article>
   );

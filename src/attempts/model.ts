@@ -253,21 +253,3 @@ export function recordFacts(t: Timeline): RecordFacts {
   return { previous, final, margin: previous - final, tickMs: Number(ms[1]) };
 }
 
-export interface HeadlineFacts {
-  scoredCount: number;
-  /** Whole hours from the first scored start to the last scored end. */
-  hours: number;
-  lastStops: number;
-  lastDeaths: number;
-}
-
-export function headlineFacts(model: ChartModel): HeadlineFacts {
-  const first = model.scored[0]!;
-  return {
-    scoredCount: model.scored.length,
-    hours: Math.floor((model.last.end - first.start) / HOUR),
-    lastStops: stopsInWorld(model.last).length,
-    lastDeaths: deaths(model.last).length,
-  };
-}
-

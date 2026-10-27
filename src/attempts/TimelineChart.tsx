@@ -1,18 +1,9 @@
-import { useId, useMemo, useRef, type KeyboardEvent, type ReactElement } from 'react';
+import { useId, useMemo, type ReactElement } from 'react';
 import { scaleUtc } from 'd3-scale';
 import { useWidth } from '../lib/useWidth';
-import {
-  HOUR,
-  fmtDuration,
-  fmtPacificDayLong,
-  fmtPacificDayShort,
-  fmtPacificHm,
-  pacificHour,
-  pacificMidnights,
-  pacificZone,
-} from '../lib/time';
+import { HOUR, fmtDuration, fmtPacificDayLong, fmtPacificDayShort, fmtPacificHm, pacificHour, pacificMidnights } from '../lib/time';
 import { fmtInt } from '../lib/numbers';
-import type { AttemptModel, ChartAnchors, ChartModel, Mark } from './model';
+import { drawnMarks, type AttemptModel, type ChartModel } from './model';
 import styles from './TimelineChart.module.css';
 
 /* Layout constants, in CSS pixels. */
@@ -33,56 +24,16 @@ function pacificTicks(d0: number, d1: number, step: number): number[] {
   for (let t = Math.ceil(d0 / HOUR) * HOUR; t <= d1; t += HOUR) if (pacificHour(t) % step === 0) out.push(t);
   return out;
 }
-/** Pulled-quote ticks closer than this share one numeral label. */
-const QUOTE_LABEL_GAP = 12;
 
 /** Short row labels where the attempt's own name will not fit the label column. */
 const ROW_LABEL: Readonly<Record<string, string>> = { L2: 'Lab run 2' };
 
 type Scale = (t: number) => number;
 
-function Glyph({ m, x, y, anchors }: { m: Mark; x: number; y: number; anchors: ChartAnchors }) {
-  if (anchors.quoteNumber.has(m.key)) return <line className={styles.quoteTick} x1={x} x2={x} y1={y - 5} y2={y - 12} />;
-  if (m.key === anchors.finish?.key) return null; // the finish number is its glyph
-  if (m.kind === 'death') return <circle className={styles.death} cx={x} cy={y} r={4.5} />;
-  return <line className={styles.stop} x1={x} x2={x} y1={y - 5} y2={y + 5} />;
-}
-
-/** Numerals over the quote ticks, with ticks that nearly coincide labelled together ('3 4 5'). */
-function QuoteNumerals({ marks, x, y }: { marks: Mark[]; x: Scale; y: (m: Mark) => number }) {
-  const groups: { xs: number[]; ns: number[]; y: number }[] = [];
-  marks.forEach((m, i) => {
-    const px = x(m.t);
-    const last = groups.at(-1);
-    if (last && px - last.xs.at(-1)! < QUOTE_LABEL_GAP && last.y === y(m)) {
-      last.xs.push(px);
-      last.ns.push(i + 1);
-    } else groups.push({ xs: [px], ns: [i + 1], y: y(m) });
-  });
-  return (
-    <>
-      {groups.map((g) => (
-        <text key={g.ns[0]} className={styles.tickNum} x={(g.xs[0]! + g.xs.at(-1)!) / 2} y={g.y - 15} textAnchor="middle">
-          {g.ns.join(' ')}
-        </text>
-      ))}
-    </>
-  );
-}
-
-interface LineProps {
-  am: AttemptModel;
-  x: Scale;
-  y: number;
-  anchors: ChartAnchors;
-  drawn: (m: Mark) => boolean;
-}
-
-function AttemptLine({ am, x, y, anchors, drawn }: LineProps) {
+function AttemptLine({ am, x, y }: { am: AttemptModel; x: Scale; y: number }) {
   const [l0, l1] = am.line;
-  const marks = am.marks
-    .filter(drawn)
-    .sort((a, b) => Number(a.kind === 'death') - Number(b.kind === 'death'));
+  // Deaths last, so a death sits over a stop at the same instant.
+  const marks = drawnMarks(am).sort((a, b) => Number(a.kind === 'death') - Number(b.kind === 'death'));
   return (
     <g className={am.scored ? undefined : styles.faint}>
       {am.spans ? (
@@ -107,49 +58,34 @@ function AttemptLine({ am, x, y, anchors, drawn }: LineProps) {
           {fmtDuration(g.to - g.from)}
         </text>
       ))}
-      {marks.map((m) => (
-        <Glyph key={m.key} m={m} x={x(m.t)} y={y} anchors={anchors} />
-      ))}
+      {marks.map((m) =>
+        m.kind === 'death' ? (
+          <circle key={m.key} className={styles.death} cx={x(m.t)} cy={y} r={4.5} />
+        ) : (
+          <line key={m.key} className={styles.stop} x1={x(m.t)} x2={x(m.t)} y1={y - 5} y2={y + 5} />
+        ),
+      )}
     </g>
   );
 }
 
-/** Scrubbing, where a reading pane shows the selected mark. */
-export interface ChartInteraction {
-  /** The mark the reading pane shows: the previewed one while hovering, else the pinned one. */
-  shown: Mark | null;
-  onPreview: (m: Mark | null) => void;
-  onSelect: (m: Mark) => void;
-}
-
 interface Props {
   model: ChartModel;
-  anchors: ChartAnchors;
   finishTicks: number;
   /** Crops the time axis to these instants; rows with nothing inside them are left out. */
   crop?: readonly [number, number];
-  /**
-   * Without it the chart is a static figure: no pointer or keyboard selection, and
-   * no pulled-quote ticks, whose numerals key to the quote strip.
-   */
-  interaction?: ChartInteraction;
-  /** Names the Pacific zone on the first tick, where the axis carries the page's first clock time. */
-  zone?: boolean;
 }
 
-export function TimelineChart({ model, anchors, finishTicks, crop, interaction, zone }: Props) {
+/** Every attempt's logged-in time on one wall-clock axis, with its in-world stops and deaths. */
+export function TimelineChart({ model, finishTicks, crop }: Props) {
   const [measureRef, measured] = useWidth<HTMLDivElement>();
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
   const clipId = `plot${useId().replace(/:/g, '')}`;
-  const shown = interaction?.shown ?? null;
 
   const [d0, d1] = crop ?? model.domain;
   const rows = useMemo(
     () => model.rows.filter((row) => row.some((am) => am.line[0] < d1 && am.line[1] > d0)),
     [model.rows, d0, d1],
   );
-  const drawn = (m: Mark) => anchors.keys.has(m.key) && (interaction !== undefined || !anchors.quoteNumber.has(m.key));
 
   const width = Math.max(measured, crop ? CROPPED_MIN_WIDTH : MIN_WIDTH);
   const rowY = (i: number) => MARGIN.top + i * ROW_PITCH;
@@ -159,109 +95,17 @@ export function TimelineChart({ model, anchors, finishTicks, crop, interaction, 
   const scale = useMemo(() => scaleUtc().domain([d0, d1]).range([MARGIN.left, width - MARGIN.right]), [d0, d1, width]);
   const x: Scale = (t) => scale(t);
 
-  /** The anchors of each row, in time order: what the pointer and the arrow keys move between. */
-  const rowAnchors = useMemo(
-    () => rows.map((row) => row.flatMap((am) => am.marks.filter((m) => anchors.keys.has(m.key))).sort((a, b) => a.t - b.t)),
-    [rows, anchors],
-  );
-  const rowOf = useMemo(() => {
-    const m = new Map<string, number>();
-    rows.forEach((row, i) => row.forEach((am) => am.marks.forEach((mk) => m.set(mk.key, i))));
-    return m;
-  }, [rows]);
-
   const ticks = pacificTicks(d0, d1, axisStepHours(d1 - d0));
   const midnights = pacificMidnights(d0, d1).filter((t) => t > d0 && t < d1);
   const dayBands = [d0, ...midnights].map((from, i, all) => ({ from, to: all[i + 1] ?? d1 }));
   const lastRow = rows.findIndex((r) => r.includes(model.last));
   const showFinish = lastRow >= 0 && model.last.line[1] <= d1;
-
-  /** A time cursor: the anchor nearest the pointer in time, whichever row it is on. */
-  const locate = (e: { clientX: number }): Mark | null => {
-    const r = svgRef.current?.getBoundingClientRect();
-    if (!r || !anchors.list.length) return null;
-    const px = e.clientX - r.left;
-    return anchors.list.reduce((a, b) => (Math.abs(x(b.t) - px) < Math.abs(x(a.t) - px) ? b : a));
-  };
-
-  const reveal = (m: Mark) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const px = x(m.t);
-    if (px < el.scrollLeft + 40 || px > el.scrollLeft + el.clientWidth - 40) el.scrollLeft = px - el.clientWidth / 2;
-  };
-
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!interaction) return;
-    const all = anchors.list;
-    const cur = shown ?? all[0];
-    if (!cur) return;
-    const i = all.findIndex((m) => m.key === cur.key);
-    let next: Mark | undefined;
-    switch (e.key) {
-      case 'ArrowRight':
-        next = all[i + 1];
-        break;
-      case 'ArrowLeft':
-        next = all[i - 1];
-        break;
-      case 'Home':
-        next = all[0];
-        break;
-      case 'End':
-        next = all.at(-1);
-        break;
-      case 'ArrowDown':
-      case 'ArrowUp': {
-        const ri = rowOf.get(cur.key) ?? 0;
-        const other = rowAnchors[ri + (e.key === 'ArrowDown' ? 1 : -1)];
-        next = other?.reduce((a, b) => (Math.abs(b.t - cur.t) < Math.abs(a.t - cur.t) ? b : a));
-        break;
-      }
-      default:
-        return;
-    }
-    e.preventDefault();
-    if (next) {
-      interaction.onPreview(null);
-      interaction.onSelect(next);
-      reveal(next);
-    }
-  };
-
-  const ring = shown
-    ? { cx: x(shown.t), cy: rowY(rowOf.get(shown.key) ?? 0) - (anchors.quoteNumber.has(shown.key) ? 9 : 0) }
-    : null;
   const finishX = width - MARGIN.right + 10;
 
   return (
     <div ref={measureRef} className={styles.root}>
-      <div
-        ref={scrollRef}
-        className={styles.scroller}
-        {...(interaction && {
-          tabIndex: 0,
-          role: 'group',
-          'aria-label':
-            'Attempts timeline. Arrow keys move between the marked events; the reading pane below shows the selected one.',
-          onKeyDown,
-        })}
-      >
-        <svg
-          ref={svgRef}
-          className={styles.svg}
-          width={width}
-          height={height}
-          {...(interaction && {
-            onPointerMove: (e: { clientX: number }) => interaction.onPreview(locate(e)),
-            onPointerLeave: () => interaction.onPreview(null),
-            onClick: (e: { clientX: number }) => {
-              const hit = locate(e);
-              if (hit) interaction.onSelect(hit);
-            },
-          })}
-          aria-hidden="true"
-        >
+      <div className={styles.scroller}>
+        <svg className={styles.svg} width={width} height={height} aria-hidden="true">
           {crop && (
             <defs>
               <clipPath id={clipId}>
@@ -273,11 +117,6 @@ export function TimelineChart({ model, anchors, finishTicks, crop, interaction, 
           {midnights.map((t) => (
             <line key={t} className={styles.midnight} x1={x(t)} x2={x(t)} y1={MARGIN.top - 18} y2={axisY} />
           ))}
-
-          {/* The whole plot is the pointer target. */}
-          {interaction && <rect className={styles.band} x={0} y={0} width={width} height={axisY} />}
-
-          {ring && <line className={styles.guide} x1={ring.cx} x2={ring.cx} y1={MARGIN.top - 18} y2={axisY} />}
 
           {rows.map((row, ri) => (
             <g key={ri}>
@@ -291,13 +130,11 @@ export function TimelineChart({ model, anchors, finishTicks, crop, interaction, 
                   </text>
                 ))}
                 {row.map((am) => (
-                  <AttemptLine key={am.attempt.id} am={am} x={x} y={rowY(ri)} anchors={anchors} drawn={drawn} />
+                  <AttemptLine key={am.attempt.id} am={am} x={x} y={rowY(ri)} />
                 ))}
               </g>
             </g>
           ))}
-
-          {interaction && <QuoteNumerals marks={anchors.quotes} x={x} y={(m) => rowY(rowOf.get(m.key) ?? 0)} />}
 
           {showFinish && (
             <>
@@ -310,15 +147,12 @@ export function TimelineChart({ model, anchors, finishTicks, crop, interaction, 
             </>
           )}
 
-          {ring && <circle className={styles.ring} cx={ring.cx} cy={ring.cy} r={7.5} />}
-
           <line className={styles.axis} x1={MARGIN.left} x2={width - MARGIN.right} y1={axisY} y2={axisY} />
-          {ticks.map((t, i) => (
+          {ticks.map((t) => (
             <g key={t}>
               <line className={styles.axis} x1={x(t)} x2={x(t)} y1={axisY} y2={axisY + 4} />
               <text className={styles.tick} x={x(t)} y={axisY + 16} textAnchor="middle">
                 {fmtPacificHm(t)}
-                {zone && i === 0 && ` ${pacificZone(t)}`}
               </text>
             </g>
           ))}
@@ -330,32 +164,6 @@ export function TimelineChart({ model, anchors, finishTicks, crop, interaction, 
         </svg>
       </div>
     </div>
-  );
-}
-
-/** The pulled operator quotes, numbered as their ticks on the chart. */
-export function QuoteStrip({ anchors, shown, onSelect }: { anchors: ChartAnchors; shown: Mark | null; onSelect: (m: Mark) => void }) {
-  return (
-    <ol className={styles.quotes}>
-      {anchors.quotes.map((m, i) => (
-        <li key={m.key}>
-          <button type="button" className={styles.quote} data-selected={shown?.key === m.key || undefined} onClick={() => onSelect(m)}>
-            <span className={styles.quoteNum}>{i + 1}</span>
-            <span className={styles.quoteText}>
-              {m.event.quote!.split(' / ').map((l, j) => (
-                <span key={j}>
-                  {j > 0 && <br />}
-                  {l}
-                </span>
-              ))}
-            </span>
-            <span className={styles.quoteTime}>
-              {fmtPacificDayShort(m.t)}, {fmtPacificHm(m.t)}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ol>
   );
 }
 
