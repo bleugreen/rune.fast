@@ -7,7 +7,6 @@ const LIVE = [
   { to: '/attempts', label: 'Attempts' },
   { to: '/tricks', label: 'Tricks' },
   { to: '/cost', label: 'Cost' },
-  { to: '/replay', label: 'Replays' },
 ] as const;
 
 const SOON = ['Swarm', 'Routes'] as const;
