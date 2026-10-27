@@ -1,0 +1,50 @@
+/*
+ * The share image's frame: the site name small at the top, the title set at its foot, level with
+ * the tree's #1, as the story page sets them side by side; the tree at its natural shape.
+ */
+.card {
+  --tree-height: 534px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) calc(var(--tree-height) * 0.85);
+  column-gap: var(--space-7);
+  padding: 48px 40px 48px 64px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.words {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 6px;
+}
+
+.site {
+  font-family: var(--font-serif);
+  font-size: 1.625rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.title {
+  padding-top: var(--space-4);
+  border-top: var(--stroke-rule) solid var(--ink);
+  font-family: var(--font-serif);
+  font-size: 3.5rem;
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.014em;
+  text-wrap: balance;
+}
+
+.card .tree {
+  margin: 0;
+  max-width: none;
+}
+
+/* The figure's key and sources are the page's; the image is the drawing alone. */
+.card .tree figcaption {
+  display: none;
+}

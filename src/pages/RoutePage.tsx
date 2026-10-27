@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { timeline } from '../data/timeline';
 import { fmtPacificDayLong, pacificZone, parseUtc } from '../lib/time';
 import { route } from '../route/data';
@@ -38,10 +38,6 @@ export function RoutePage() {
   const facts = useMemo(() => openingFacts(timeline), []);
   const storyTitles = useMemo(() => new Map(storySections(story).map((s) => [s.id, s.title])), []);
   const finish = finishWords(route);
-
-  useEffect(() => {
-    document.title = 'Route · rune.fast';
-  }, []);
 
   return (
     <ClockContext.Provider value={clock}>

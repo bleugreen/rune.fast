@@ -1,5 +1,7 @@
-import { Link, NavLink, Outlet, ScrollRestoration, type RouteObject } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, NavLink, Outlet, ScrollRestoration, useLocation, type RouteObject } from 'react-router-dom';
 import { fmtCalendarDate } from '../lib/time';
+import { applyPageMeta, metaFor } from '../meta';
 import { RouteError } from '../pages/LoadFailed';
 import styles from './Layout.module.css';
 
@@ -32,6 +34,14 @@ export function Nav() {
 }
 
 export function Layout() {
+  // The page's title and description, as its built HTML carries them, on every navigation. A path
+  // that is no page (Nothing here, the dev screens) sets its own title.
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const meta = metaFor(pathname);
+    if (meta) applyPageMeta(document, meta);
+  }, [pathname]);
+
   return (
     <div className={styles.shell}>
       <header className={styles.masthead}>

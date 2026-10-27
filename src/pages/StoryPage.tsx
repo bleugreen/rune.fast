@@ -71,10 +71,6 @@ export function StoryPage() {
   }));
 
   useEffect(() => {
-    document.title = 'rune.fast';
-  }, []);
-
-  useEffect(() => {
     const head = headRef.current;
     if (!head) return;
     const io = new IntersectionObserver(([e]) => setHeadInView(e?.isIntersecting ?? false));

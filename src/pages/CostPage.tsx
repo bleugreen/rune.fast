@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { costInputs } from '../data/cost';
 import type { StatusGroup } from '../data/costTypes';
 import { timeline } from '../data/timeline';
@@ -51,9 +51,6 @@ function StatusBar({ segments }: { segments: readonly StatusSegment[] }) {
 
 export function CostPage() {
   const m = useMemo(() => buildCostModel(costInputs, timeline), []);
-  useEffect(() => {
-    document.title = 'Cost · rune.fast';
-  }, []);
 
   const { window: w, subscription: sub, swing, gptDay, swarm } = m;
   const span = halfDays(w.days);

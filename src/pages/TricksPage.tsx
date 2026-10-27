@@ -9,10 +9,6 @@ export function TricksPage() {
   // The first clip's caption is the first clock time on the open page (source lines wait behind their disclosures), so it names the zone.
   const firstClip = GROUPS.flatMap((g) => inGroup(TRICKS, g.id)).find((t) => t.clip)?.id;
 
-  useEffect(() => {
-    document.title = 'Tricks · rune.fast';
-  }, []);
-
   // A link to /tricks#<id> lands on that card, arriving from another page or by a changed hash.
   useEffect(() => {
     const land = () => {

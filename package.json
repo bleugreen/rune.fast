@@ -5,12 +5,14 @@
   "workspaces": ["packages/*"],
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && bun --preload ./scripts/test-preload.ts scripts/page-heads.ts",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "bun test",
-    "check:public": "bun scripts/check-public.ts",
+    "check:public": "bun --preload ./scripts/test-preload.ts scripts/check-public.ts",
     "check:masthead": "bun scripts/check-masthead.ts",
+    "check:heads": "bun --preload ./scripts/test-preload.ts scripts/check-heads.ts",
+    "render:share": "bun --preload ./scripts/test-preload.ts scripts/render-share.ts",
     "check": "bun run typecheck && bun run test && bun run build && bun run check:public"
   },
   "dependencies": {

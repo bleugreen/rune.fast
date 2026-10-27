@@ -12,8 +12,9 @@ import { HarnessPage } from './pages/HarnessPage';
 import { RoutePage } from './pages/RoutePage';
 import { NotFound } from './pages/NotFound';
 
-/* The tokens screen exists only in development; the production build drops it. */
+/* The tokens and share-image screens exist only in development; the production build drops them. */
 const Tokens = import.meta.env.DEV ? lazy(() => import('./dev/Tokens')) : null;
+const Share = import.meta.env.DEV ? lazy(() => import('./dev/Share')) : null;
 
 const pages: RouteObject[] = [
   { index: true, element: <StoryPage /> },
@@ -22,6 +23,7 @@ const pages: RouteObject[] = [
   { path: 'cost', element: <CostPage /> },
   { path: 'harness', element: <HarnessPage /> },
   ...(Tokens ? [{ path: 'tokens', element: <Suspense><Tokens /></Suspense> }] : []),
+  ...(Share ? [{ path: 'share', element: <Suspense><Share /></Suspense> }] : []),
   { path: '*', element: <NotFound /> },
 ];
 

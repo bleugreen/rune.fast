@@ -2,11 +2,13 @@
  * Scans the built site for identifiers that must never be published (the patterns, cairn
  * addresses among them, live in forbidden.ts, shared with the replay clip scan; the harness
  * page's taught addresses in src/harness/addresses.ts are the one exemption), and checks that the licences the 3D replay
- * ships under are in it. Run after `vite build`; exits non-zero on any hit.
+ * ships under are in it, and that each page's HTML carries its own head (src/meta.ts). Run after `bun run build`,
+ * under scripts/test-preload.ts (package.json `check:public`); exits non-zero on any hit.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { TAUGHT } from '../src/harness/addresses';
+import { HEAD_MARKER, PAGE_PATHS, headTags, pageFile, siteMeta } from '../src/meta';
 import { FORBIDDEN, withoutAddresses } from './forbidden';
 import { filesUnder, pagesRoutes } from './pages-routes';
 
@@ -50,8 +52,24 @@ if (routes === undefined || JSON.stringify(JSON.parse(routes)) !== JSON.stringif
   console.error('check-public: dist/_routes.json is missing or does not match the build (scripts/pages-routes.ts)');
 }
 
+// Each page's own HTML with its own head, and the same app beneath it (scripts/page-heads.ts).
+const shellBody = (html: string) => html.slice(html.indexOf('</head>'));
+const home = existsSync('dist/index.html') ? readFileSync('dist/index.html', 'utf8') : '';
+const meta = siteMeta();
+for (const p of PAGE_PATHS) {
+  const f = join('dist', pageFile(p));
+  const html = existsSync(f) ? readFileSync(f, 'utf8') : '';
+  const missing = headTags(meta[p]).filter((t) => !html.includes(t));
+  if (!html || missing.length || html.includes(HEAD_MARKER) || shellBody(html) !== shellBody(home)) {
+    hits++;
+    console.error(`check-public: ${f} is missing, lacks its head (${missing[0] ?? 'the marker is unspent'}), or is not the shell`);
+  }
+}
+
 if (hits) {
   console.error(`check-public: ${hits} problem(s) in dist/`);
   process.exit(1);
 }
-console.log('check-public: dist/ carries no forbidden identifiers, the replay licences and wasm are present, and _routes.json matches the build');
+console.log(
+  'check-public: dist/ carries no forbidden identifiers, the replay licences and wasm are present, _routes.json matches the build, and every page has its own head',
+);
