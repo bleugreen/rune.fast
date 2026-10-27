@@ -124,8 +124,7 @@
 .tookLogin {
   background: var(--ink-faint);
 }
-.tookUnassigned,
-.hatchedKey {
+.tookUnassigned {
   background: repeating-linear-gradient(-45deg, var(--ink) 0 1px, transparent 1px 3.5px);
   box-shadow: inset 0 0 0 var(--stroke-thin) var(--ink);
 }

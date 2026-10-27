@@ -112,13 +112,6 @@
   border-top: var(--stroke-rule) solid var(--ink);
   border-bottom: 0;
 }
-.key {
-  display: inline-block;
-  width: 0.9em;
-  height: 0.6em;
-  margin-right: 0.4em;
-}
-
 @media (max-width: 63.999rem) {
   .page {
     --axis: 1.75rem;

@@ -539,7 +539,8 @@ export function opening(r: Route, f: OpeningFacts, days: { start: string; end: s
   ];
 }
 
-export function finishWords(r: Route): { before: string[]; middle: string[]; after: string[] } {
+/** The finish's words: before the drift chart, and between it and the ledger. */
+export function finishWords(r: Route): { before: string[]; middle: string[] } {
   const margin = r.record - r.finish;
   const drift = [...new Set(r.stampDrift.map((s) => s.drift))].filter((d) => d > 0);
   const firstAt = (d: number) => r.stampDrift.find((s) => s.drift === d)!.skill;
@@ -556,7 +557,6 @@ export function finishWords(r: Route): { before: string[]; middle: string[]; aft
     middle: [
       `Of the ${n(r.ledger.residual)}, ${n(r.ledger.unassigned)} are ticks no log holds. The stamps bracket them, and ${n(death.to - death.from)} fall between ${a} 99 and ${b} 99: the window in which the account’s body stood at the spiders after its controller had been stopped, long enough by the wall clock for about ${n(Math.round(deathWallTicks(deathLogin, r) / 10) * 10)} ticks. That fits, but it is a bracket and not a measurement, so the page draws those ticks hatched and calls them unassigned.`,
     ],
-    after: [],
   };
 }
 

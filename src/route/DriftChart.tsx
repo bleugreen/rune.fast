@@ -56,7 +56,7 @@ export function DriftChart({ route }: { route: Route }) {
             <text
               key={s.skill}
               x={x(s.tick) - 6}
-              y={y(s.drift) - 8 - (i < labelled.length - 1 ? 12 * (labelled.length - 2 - i) : 0)}
+              y={y(s.drift) - 8 - 16 * (labelled.length - 1 - i)}
               textAnchor="end"
               className={styles.driftLabel}
             >
