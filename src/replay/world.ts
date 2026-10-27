@@ -126,6 +126,41 @@ async function fetchChunk(recording: string, chunk: ClipChunk): Promise<ChunkDat
   return parseChunk(text, REVISION);
 }
 
+/** The last stage handed out and how far its claim got, for `window.__replay()` in development. */
+const debug: { phase?: string; stage?: Omit<Stage, 'kFrom' | 'kTo'> } = {};
+
+if (import.meta.env.DEV) {
+  (window as unknown as { __replay: () => unknown }).__replay = () => {
+    const s = debug.stage;
+    const followed = s?.controller.getFollowed();
+    const live = s?.renderer.liveRenderer;
+    return {
+      phase: debug.phase,
+      tenant: tenant?.ticket.entry.id,
+      driver: s?.driver.debugState(),
+      follow: s && {
+        name: s.controller.followName,
+        slot: s.controller.followSlot,
+        pending: s.controller.pendingFollow,
+        followed: !!followed,
+        drawn: !!followed && !!live && live.lastDrawn.has(followed),
+        camera: [s.viewer.camera.getPosX(), s.viewer.camera.getPosZ()].map(Math.round),
+        player: followed && [followed.x / 128, followed.z / 128].map(Math.round),
+      },
+      renderer: s && {
+        running: s.renderer.running,
+        frames: s.renderer.stats.frameCount,
+        program: !!s.renderer.mainProgram,
+        live: !!live,
+        pendingBakes: live?.pendingBakes,
+        mapSquares: s.renderer.mapManager.mapSquares.size,
+        loadingMaps: s.renderer.mapManager.loadingMapIds.size,
+        poolPending: s.pool.pendingTasks,
+      },
+    };
+  };
+}
+
 /** The entry's driver, from the kept ones or new; the most recently used last. */
 function driverFor(entry: ReplayEntry, manifest: ClipManifest): ReplayDriver {
   let driver = drivers.get(entry.id);
