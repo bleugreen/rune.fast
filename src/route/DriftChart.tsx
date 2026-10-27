@@ -53,11 +53,12 @@ export function DriftChart({ route }: { route: Route }) {
             <circle key={s.skill} cx={x(s.tick)} cy={y(s.drift)} r={2.5} className={styles.driftDot} />
           ))}
           {labelled.map((s, i) => (
+            // Alternately left and right of their dots, so labels of nearby steps never meet.
             <text
               key={s.skill}
-              x={x(s.tick) - 6}
-              y={y(s.drift) - 8 - 16 * (labelled.length - 1 - i)}
-              textAnchor="end"
+              x={x(s.tick) + (i % 2 ? 6 : -6)}
+              y={y(s.drift) - 8}
+              textAnchor={i % 2 ? 'start' : 'end'}
               className={styles.driftLabel}
             >
               {s.skill} 99: {fmtInt(s.drift)} ahead
