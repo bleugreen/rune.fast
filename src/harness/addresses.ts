@@ -27,3 +27,11 @@ export const ADDRESSES = {
 export type AddressKey = keyof typeof ADDRESSES;
 
 export const TAUGHT: readonly string[] = Object.values(ADDRESSES);
+
+/**
+ * The head of the pull request's address, the scheme and the projects' root, which the address
+ * figure sets as a segment of its own; it names no object of the run. The built HTML carries it
+ * on its own, so the scan of dist/ lets it through as a whole too, and still nothing longer that
+ * starts with it.
+ */
+export const ADDRESS_HEAD = ADDRESSES.pr.slice(0, ADDRESSES.pr.indexOf('/rs/') + 1);

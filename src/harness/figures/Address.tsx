@@ -1,6 +1,6 @@
 import { countWord, fmtInt } from '../../lib/numbers';
 import { fmtPacificClockRange, fmtPacificDayShort, fmtPacificHm } from '../../lib/time';
-import { ADDRESSES } from '../addresses';
+import { ADDRESS_HEAD, ADDRESSES } from '../addresses';
 import type { HarnessModel } from '../model';
 import styles from './Figures.module.css';
 
@@ -11,13 +11,13 @@ import styles from './Figures.module.css';
 export function Address({ m }: { m: HarnessModel }) {
   const a = m.address;
   const full = ADDRESSES.pr;
-  const cut = full.indexOf('/rs/') + 1;
+  const cut = ADDRESS_HEAD.length;
   const [project, issue, execution, node, artifact] = full.slice(cut).split('/') as [string, string, string, string, string];
   if (issue !== String(a.issue) || execution !== String(a.execution) || node !== a.node || artifact !== a.artifact) {
     throw new Error('The taught address and the extracted issue disagree');
   }
   const segments: { code: string; concept?: string; meaning?: string; lit?: boolean }[] = [
-    { code: full.slice(0, cut) },
+    { code: ADDRESS_HEAD },
     { code: project, concept: 'project', meaning: `the speedrun: ${fmtInt(m.totals.issues)} issues, ${countWord(m.totals.threads)} threads` },
     { code: '/' },
     { code: issue, concept: 'issue', meaning: `${a.title}, filed ${fmtPacificHm(a.filed)} ${fmtPacificDayShort(a.filed)}`, lit: true },

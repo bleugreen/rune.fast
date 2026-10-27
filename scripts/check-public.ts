@@ -7,7 +7,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { TAUGHT } from '../src/harness/addresses';
+import { ADDRESS_HEAD, TAUGHT } from '../src/harness/addresses';
 import { HEAD_MARKER, NOT_FOUND_FILE, PAGE_PATHS, headTags, pageFile, siteMeta } from '../src/meta';
 import { FORBIDDEN, withoutAddresses } from './forbidden';
 import { filesUnder, pagesRoutes } from './pages-routes';
@@ -22,8 +22,9 @@ function* files(dir: string): Generator<string> {
 
 let hits = 0;
 for (const f of files('dist')) {
-  // The harness page's taught addresses are subject matter; any other address still fails.
-  const text = withoutAddresses(readFileSync(f, 'utf8'), TAUGHT);
+  // The harness page's taught addresses are subject matter, and its HTML sets the head of one as a
+  // segment of its own; any other address still fails.
+  const text = withoutAddresses(readFileSync(f, 'utf8'), [...TAUGHT, ADDRESS_HEAD]);
   for (const [what, re] of FORBIDDEN) {
     const m = re.exec(text);
     if (m) {

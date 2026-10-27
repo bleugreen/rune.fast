@@ -12,7 +12,7 @@ import { SCREEN_FIGURE } from './figures/OperatorScreen';
 import { fmtInt, fmtPercent } from '../lib/numbers';
 import { HOUR, MINUTE, SECOND, fmtPacificHm, fmtPacificHms } from '../lib/time';
 import { HarnessPage } from '../pages/HarnessPage';
-import { ADDRESSES, TAUGHT } from './addresses';
+import { ADDRESS_HEAD, ADDRESSES, TAUGHT } from './addresses';
 import { axisAt, buildHarnessModel } from './model';
 import type { RawHarnessData } from './types';
 
@@ -273,6 +273,14 @@ describe('the taught addresses', () => {
     }
     // The replay clip scan keeps the blanket rule.
     expect(findForbidden(ADDRESSES.pr)?.what).toBe('cairn address');
+  });
+
+  test('the built HTML’s scan also lets through the head the address figure sets apart, and only on its own', () => {
+    const scan = (s: string) => findForbidden(withoutAddresses(s, [...TAUGHT, ADDRESS_HEAD]))?.what;
+    expect(ADDRESS_HEAD).toBe('cairn://p/');
+    expect(html).toContain(`>${ADDRESS_HEAD}</code>`);
+    expect(scan(`<code>${ADDRESS_HEAD}</code><span>project</span>`)).toBeUndefined();
+    for (const other of ['cairn://p/rs/186', 'cairn://p/x', 'cairn://posts/361']) expect(scan(`<code>${other}</code>`)).toBe('cairn address');
   });
 });
 
