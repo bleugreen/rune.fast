@@ -34,9 +34,9 @@ interface SectionMeta {
   /** Each figure follows the one block of prose that contains its `after` text; the first is the section's own figure. */
   figures: readonly { figure: StoryFigure; after: string }[];
   /**
-   * The operator's short lines, set again in the margin beside the block that
-   * carries them: either quoted inline in a paragraph (the text between the double
-   * quotes, exactly) or a quoted message ('> ' block) that contains them.
+   * The operator's lines, set again in the margin beside the block that carries
+   * them: either quoted inline in a paragraph (the text between the straight or
+   * curly double quotes, exactly) or a quoted message ('> ' block) that contains them.
    */
   pulled: readonly string[];
   /** Words in the prose that link out; each target is also in the section's sources. */
@@ -48,14 +48,17 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-number',
     dates: '20 Oct 2026',
-    figures: [{ figure: { kind: 'ladder' }, after: 'The count underneath never moved, 35,916 ticks' }],
-    pulled: ['sounds like a plan', 'Sure!', 'absolutely! Swarm out my guy :)'],
-    links: [{ text: 'RuneScape Bench: MMOs for Agents', href: 'https://www.youtube.com/watch?v=cNm4zyUtWj0' }],
+    figures: [{ figure: { kind: 'ladder' }, after: 'The record stood at 35,916 ticks' }],
+    pulled: [
+      'I played RuneScape a lot as a kid, before getting into botting RuneScape and quickly getting banned. ‘RuneScape but for bots specifically’ was incredibly up my alley.',
+      'absolutely! Swarm out my guy :)',
+    ],
+    links: [],
   },
   {
     id: 'the-tricks',
     dates: '20–21 Oct',
-    figures: [{ figure: { kind: 'clip' }, after: 'had the wine script open' }],
+    figures: [{ figure: { kind: 'clip' }, after: 'Wine left in the bank ferments on a timer' }],
     pulled: [],
     links: [],
   },
@@ -71,7 +74,7 @@ export const SECTION_META: readonly SectionMeta[] = [
     dates: '23–24 Oct',
     figures: [
       { figure: { kind: 'timeline', crop: ['2026-10-23T17:00Z', '2026-10-24T17:00Z'] }, after: 'ok fine one more attempt' },
-      // Attempt 4's death at the tree door, which the paragraph before the quotation narrates.
+      // Attempt 4's death at the Grand Tree door, which the paragraph before the quotation narrates.
       { figure: { kind: 'clip', id: 'attempt-4-death' }, after: 'ok fine one more attempt' },
     ],
     pulled: ['ok fine one more attempt'],
@@ -82,9 +85,7 @@ export const SECTION_META: readonly SectionMeta[] = [
     dates: 'Sat 24–Sun 25 Oct',
     figures: [
       { figure: { kind: 'timeline', crop: ['2026-10-25T06:00Z', '2026-10-25T22:00Z'] }, after: 'Attempt 5 logged in' },
-      // Elvarg's fight ending and the Strength 99 page the run stopped on, after the paragraph that narrates it.
-      { figure: { kind: 'clip', id: 'dragon-slayer-stop' }, after: 'Five minutes later Elvarg was dead and the run had stopped' },
-      // The 2:34 PM stop at the spiders with no prayer. Its paragraph ends in a colon, so the clip follows the quotation it introduces.
+      // The stop at the spiders with no prayer. Its paragraph ends in a colon, so the clip follows the quotation it introduces.
       { figure: { kind: 'clip', id: 'spider-stop' }, after: 'builder is overestimating, wall clock is free, ticks are not' },
     ],
     pulled: ['wall clock is free, ticks are not'],
@@ -94,9 +95,14 @@ export const SECTION_META: readonly SectionMeta[] = [
     id: 'the-death',
     dates: '25–26 Oct',
     figures: [
-      { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'incredible work couldn’t have done it without you' },
-      // The board behind the #1 paragraph. That paragraph ends in a colon, so the board follows the
-      // quotation it introduces, after the Agility clip: the level-up came first, then the board.
+      // The body among the spiders as it dies. The replay starts three minutes after the script killed its client,
+      // after the ruling and the logout order, so it follows the sentence that says the account died.
+      { figure: { kind: 'clip', id: 'spider-death' }, after: 'Under a minute later the account was dead' },
+      // The death gap and the recovery, after the quotation the death beat ends on (its paragraph ends in a colon).
+      { figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] }, after: 'I WANT A #1' },
+      // The recovery paragraph carries the rebuilt kit, Agility 99 and the #1, so its three figures follow it in that order.
+      { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt everything the death had cost' },
+      { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'Agility 99 landed at 4:07 AM' },
       // The operator texted this same screenshot at 4:30 AM, which bounds when it was taken.
       {
         figure: {
@@ -109,16 +115,10 @@ export const SECTION_META: readonly SectionMeta[] = [
           source: 'The operator’s screenshot',
           takenBefore: '2026-10-26T11:30Z',
         },
-        after: 'incredible work couldn’t have done it without you',
+        after: 'OFFICIAL #1 VERIFIED',
       },
-      // The body among the spiders and the respawn the roster saw, after the quotation that paragraph introduces.
-      { figure: { kind: 'clip', id: 'spider-death' }, after: 'Welp there goes the run' },
-      // The death gap and the recovery, after the quotation the death beat ends on (its paragraph ends in a colon).
-      { figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] }, after: 'I WANT A #1' },
-      // The kit the paragraph says was rebuilt overnight, arriving in the trade after the recovery login.
-      { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt the lost kit' },
     ],
-    pulled: ['Every tick counts'],
+    pulled: ['saw it go from ‘might as well finish’ to ‘wait I think we’re gonna do it’.'],
     links: [],
   },
 ];
@@ -132,9 +132,9 @@ export interface StorySection extends SectionMeta, DraftSection {
 
 const blockText = (b: StoryBlock) => (b.kind === 'p' ? b.text : b.paragraphs.join('\n\n'));
 
-/** Whether the block quotes these words: inside double quotes in a paragraph, or anywhere in a quoted message. */
+/** Whether the block quotes these words: inside straight or curly double quotes in a paragraph, or anywhere in a quoted message. */
 export const quotes = (b: StoryBlock, q: string) =>
-  b.kind === 'p' ? b.text.includes(`"${q}"`) : b.paragraphs.some((p) => p.includes(q));
+  b.kind === 'p' ? b.text.includes(`"${q}"`) || b.text.includes(`“${q}”`) : b.paragraphs.some((p) => p.includes(q));
 
 /** The draft's sections with what the page adds to them; fails loudly if the draft no longer supports an addition. */
 export function storySections(story: Story): StorySection[] {
