@@ -566,10 +566,10 @@ def extract(x: Export) -> dict:
     src("git", "export", "messages", "the harness's own messages about branches: base-branch and branch updates, and divergent history")
 
     # --- quotes in the prose -----------------------------------------------------------
-    def quote(key: str, sql_like: str, sender: str, fig: str, cut: str | None = None) -> dict:
-        mid, t, s, content = x.one(
-            "select id, created_at, sender_name, content from messages where content like ? and sender_name=?",
-            sql_like, sender,
+    def quote(key: str, sql_like: str, sender: str, fig: str, cut: str | None = None, first: bool = False) -> dict:
+        sql = "select id, created_at, sender_name, content from messages where content like ? and sender_name=?"
+        mid, t, s, content = (
+            x.all(sql + " order by created_at limit 1", sql_like, sender)[0] if first else x.one(sql, sql_like, sender)
         )
         words = content if cut is None else content[: content.index(cut) + len(cut)]
         src(fig, "messages", mid, f"{plain_id(s)}, {when(t)}")
@@ -580,7 +580,8 @@ def extract(x: Export) -> dict:
               "didn't help."),
         quote("oneOff", "%rs/95's one-off push is APPROVED%", "cairn://p/rs/main", "friction",
               None),
-        quote("backstop", "Coordinator check-in backstop%", "system", "routing", "cannot schedule recurring wakes"),
+        quote("backstop", "Coordinator check-in backstop%", "system", "routing", "cannot schedule recurring wakes",
+              first=True),
     ]
     one_off = quotes[1]
     one_off["words"] = "rs/95's one-off push is APPROVED"
