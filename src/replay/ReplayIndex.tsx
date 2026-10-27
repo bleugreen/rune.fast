@@ -10,23 +10,6 @@ export default function ReplayIndex() {
     document.title = 'Replays · rune.fast';
   }, []);
 
-  // Fill Cache Storage with the game cache while the reader picks a moment: after first paint,
-  // when the browser is idle, and through a dynamic import so this page's own chunk stays small.
-  useEffect(() => {
-    let idle: number | undefined;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const prefetch = () => void import('./cache').then((m) => m.prefetchCache());
-    const frame = requestAnimationFrame(() => {
-      if ('requestIdleCallback' in window) idle = requestIdleCallback(prefetch);
-      else timer = setTimeout(prefetch, 0);
-    });
-    return () => {
-      cancelAnimationFrame(frame);
-      if (idle !== undefined) cancelIdleCallback(idle);
-      clearTimeout(timer);
-    };
-  }, []);
-
   return (
     <article className={styles.page}>
       <header className={styles.head}>
