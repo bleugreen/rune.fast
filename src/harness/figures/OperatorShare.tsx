@@ -6,9 +6,9 @@ import styles from './Figures.module.css';
 export function OperatorShare({ m }: { m: HarnessModel }) {
   const o = m.operator;
   const rows = [
-    { key: 'operator', label: 'the operator: messages, answers and verdicts', n: o.inputs, tone: 'accent' },
-    { key: 'agents', label: 'agents to agents', n: o.agents },
-    { key: 'harness', label: 'the harness itself', n: o.harness, tone: 'faint' },
+    { key: 'operator', label: 'the operator: typed messages, answers and tenet verdicts', n: o.inputs, tone: 'accent' },
+    { key: 'agents', label: 'agents’ messages to each other', n: o.agents },
+    { key: 'harness', label: 'the harness’s own messages', n: o.harness, tone: 'faint' },
   ];
   const top = Math.max(...rows.map((r) => r.n));
   return (

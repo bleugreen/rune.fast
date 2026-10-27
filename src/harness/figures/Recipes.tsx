@@ -25,8 +25,8 @@ export function Recipes({ m }: { m: HarnessModel }) {
         ))}
       </ol>
       <p className={styles.footnote}>
-        Circles are agents, squares are artifacts and pull requests. Also {listWords(rest.map((r) => `${r.id} ×${fmtInt(r.executions)}`))}:{' '}
-        {fmtInt(m.recipeTotal)} executions in all.
+        Circles are agents; squares are artifacts and pull requests. The run also used{' '}
+        {listWords(rest.map((r) => `${r.id} ×${fmtInt(r.executions)}`))}, for {fmtInt(m.recipeTotal)} executions in all.
       </p>
     </div>
   );

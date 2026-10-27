@@ -201,7 +201,7 @@ export function HarnessPage() {
           idle, and {countWord(i.testWakes)} of its later turns began when a test run finished.{' '}
           {capitalize(countWord(i.messageWakes))} began with a message from rs/{i.reviewerIssue}, the coordinator
           reviewing its work, and {countWord(i.bothWakes)} with a finished command and {countWord(i.bothMessages)}{' '}
-          messages from rs/{i.reviewerIssue} at once. Nobody had to check on it.
+          messages from rs/{i.reviewerIssue} at once.
         </p>
         <Figure
           title={titles.issue}

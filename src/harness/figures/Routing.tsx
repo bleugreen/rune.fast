@@ -25,18 +25,20 @@ export function stepText(s: RouteStep, m: HarnessModel): string {
       return s.to[0] === 'main'
         ? `rs/3 reports up to main: “${s.words}”`
         : `${issue(s.from)}’s builder reports up to rs/3: “${s.words}”`;
-    case 'question':
-      return `rs/3 asks the operator: “${s.words}” ${(s.options ?? []).join(' · ')}`;
+    case 'question': {
+      const options = (s.options ?? []).map((o) => `“${o}”`);
+      return `rs/3 asks the operator “${s.words}” and offers ${countWord(options.length)} answers: ${options.slice(0, -1).join(', ')} or ${options.at(-1)}.`;
+    }
     case 'answer':
       return `The operator answers “${s.words}”, ${r.answerSeconds} seconds later.`;
     case 'start':
-      return `rs/3 starts ${listWords(s.to.map(issue))}, each its own issue with its own pull request.`;
+      return `rs/3 starts work on ${listWords(s.to.map(issue))}, two fixes filed under main.`;
     case 'decision':
-      return `main to rs/3: “${s.words}” main has started both fixes itself; its starts become execution ${r.mainExecution} of each and supersede rs/3’s.`;
+      return `main to rs/3: “${s.words}” main has started both fixes too; its starts become execution ${r.mainExecution} of each and supersede rs/3’s.`;
     case 'fanout':
-      return `rs/3 to ${countWord(s.to.length)} of its children: “${s.words}”`;
+      return `rs/3 passes the decisions to ${countWord(s.to.length)} of its children: “${s.words}”`;
     case 'confirm':
-      return `main to rs/3: “${s.words}”`;
+      return `main replies: “${s.words}”`;
   }
 }
 

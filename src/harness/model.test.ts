@@ -297,7 +297,7 @@ describe('every number on the page comes from the data', () => {
 
   test('the page says what the run did, in its own counts', () => {
     expect(text).toContain('910 of the 962 executions ran the one-stage build recipe');
-    expect(text).toContain('Coordinator agents filed 529 of the 900');
+    expect(text).toContain('Coordinators filed 529 of the 900 issues');
     expect(text).toContain('The operator answers “Start both”, 39 seconds later.');
     expect(text).toContain('main had merged 212 pull requests by write call, coordinators 203 and the integration thread 19');
     expect(text).toContain('Thursday brought 1,467 branch notices; 899 needed an agent');

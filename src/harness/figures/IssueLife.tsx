@@ -251,7 +251,7 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
           <svg width={8} height={8} aria-hidden="true">
             <rect className={styles.accent} x={1} y={1} width={6} height={6} />
           </svg>
-          woken by a command it was waiting on
+          woken when a command it left running finished
         </span>
         <span>
           <svg width={8} height={8} aria-hidden="true">
