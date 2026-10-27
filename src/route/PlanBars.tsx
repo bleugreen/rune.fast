@@ -21,8 +21,8 @@ export function PlanBars({ step }: { step: Step }) {
       <span>Took</span>
       <span className={styles.bar}>
         <i className={styles.tookSession} style={{ width: pct(session, max) }} />
-        {login > 0 && <i className={styles.tookLogin} style={{ left: pct(session, max), width: pct(login, max) }} />}
-        {unassigned > 0 && <i className={styles.tookUnassigned} style={{ left: pct(session + login, max), width: pct(unassigned, max) }} />}
+        {login !== 0 && <i className={styles.tookLogin} style={{ left: pct(session, max), width: pct(login, max) }} />}
+        {unassigned !== 0 && <i className={styles.tookUnassigned} style={{ left: pct(session + login, max), width: pct(unassigned, max) }} />}
       </span>
       <span className={styles.figure}>{fmtInt(step.took)}</span>
     </div>
