@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { contentTag, jpegSize, mp4Facts } from '../../scripts/world/media';
+import { avifSize, contentTag, jpegSize, mp4Facts } from '../../scripts/world/media';
 import { TOKENS_CLIPS } from '../dev/Tokens';
 import { parseUtc } from '../lib/time';
 import { SECTION_META } from '../story/sections';
 import { TRICKS } from '../tricks/model';
-import { CLIPS, TICK_MS, clipById, clipSource, clipWhen, tickAt } from './registry';
+import { CLIPS, TICK_MS, clipById, clipSource, clipWhen, posterAvif, tickAt } from './registry';
 
 /** The ceiling on one clip's file, so a page of clips stays light. */
 const MAX_BYTES = 3_000_000;
@@ -24,6 +24,14 @@ describe('the clip registry', () => {
     test('has its poster in public/, the size the registry says', () => {
       expect(existsSync(file(c.poster))).toBe(true);
       expect(jpegSize(readFileSync(file(c.poster)))).toEqual({ width: c.width, height: c.height });
+    });
+
+    test('has an AVIF of its poster beside it, the same size and lighter (bun scripts/world/posters.ts)', () => {
+      expect(c.poster).toMatch(/\.jpg$/);
+      expect(existsSync(file(posterAvif(c)))).toBe(true);
+      const avif = readFileSync(file(posterAvif(c)));
+      expect(avifSize(avif)).toEqual({ width: c.width, height: c.height });
+      expect(avif.length).toBeLessThan(readFileSync(file(c.poster)).length);
     });
 
     test('has a caption, a step and a source note in plain words', () => {
@@ -87,8 +95,9 @@ describe('the clip registry', () => {
     });
   });
 
-  test('no video is kept in git: public/ holds posters only', () => {
-    expect(readdirSync('public/clips').filter((f) => !f.endsWith('.jpg'))).toEqual([]);
+  test('no video is kept in git: public/ holds the registered posters only', () => {
+    const posters = CLIPS.flatMap((c) => [c.poster, posterAvif(c)].map((p) => p.replace('/clips/', '')));
+    expect(readdirSync('public/clips').sort()).toEqual(posters.sort());
   });
 
   test('every registered clip is placed on a page, and every placed clip is registered', () => {

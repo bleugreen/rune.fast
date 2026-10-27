@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from '
 import { timeline } from '../data/timeline';
 import { buildChartModel, recordFacts } from '../attempts/model';
 import { Threaded } from '../components/Coded';
+import { registerItalicAfterLoad } from '../lib/fonts';
 import { fmtInt } from '../lib/numbers';
 import { inlineTokens } from '../story/draft';
 import { story } from '../story/story';
@@ -110,7 +111,7 @@ export function StoryPage() {
       </div>
 
       <div className={styles.opening}>
-        <RunTree className={styles.tree} />
+        <RunTree className={styles.tree} onSettled={registerItalicAfterLoad} />
         <header ref={headRef} className={styles.head}>
           <h1 className={styles.title}>{prose(story.title)}</h1>
           <p className={styles.byline}>{prose(story.byline)}</p>

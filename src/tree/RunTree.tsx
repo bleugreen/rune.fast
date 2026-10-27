@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fmtInt } from '../lib/numbers';
-import { treeData } from './data';
+import { loadTreeData } from './data';
 import { buildTree, layout, type Edge, type Layout, type Tree } from './model';
 import styles from './RunTree.module.css';
 
@@ -161,14 +161,30 @@ interface Size {
 
 /**
  * The story page's hero: the whole run as a tree, from main's creation at the top to the #1 at the
- * foot. Drawn once on mount and again only when the figure's size changes; never on scroll.
+ * foot. Drawn once its data arrives (src/tree/data.ts) and again only when the figure's size
+ * changes; never on scroll. `onSettled` is called each time it is drawn, and if its data fails.
  */
-export function RunTree({ className }: { className?: string }) {
-  const tree = useMemo(() => buildTree(treeData), []);
+export function RunTree({ className, onSettled }: { className?: string; onSettled?: () => void }) {
+  const [tree, setTree] = useState<Tree | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [size, setSize] = useState<Size | null>(null);
-  const L = useMemo(() => (size ? layout(tree, size) : null), [tree, size]);
+  const L = useMemo(() => (tree && size ? layout(tree, size) : null), [tree, size]);
+
+  useEffect(() => {
+    let live = true;
+    loadTreeData().then(
+      (data) => live && setTree(buildTree(data)),
+      (e: unknown) => {
+        console.error('The run tree failed to load', e);
+        onSettled?.();
+      },
+    );
+    return () => {
+      live = false;
+    };
+    // Once per mount; the callback only reports.
+  }, []);
 
   useEffect(() => {
     const el = frameRef.current!;
@@ -200,7 +216,7 @@ export function RunTree({ className }: { className?: string }) {
   }, []);
 
   useEffect(() => {
-    if (!L) return;
+    if (!L || !tree) return;
     const cv = canvasRef.current!;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = Math.round(L.width * dpr);
@@ -210,12 +226,12 @@ export function RunTree({ className }: { className?: string }) {
     performance.mark('rune:tree-draw-start');
     draw(ctx, tree, L, colours(cv));
     performance.measure('rune:tree-draw', 'rune:tree-draw-start');
+    onSettled?.();
   }, [tree, L]);
 
-  const t = tree.totals;
   const description =
-    `The whole run as a tree, from Tuesday 20 October at the top to the #1 on Monday 26 October at the foot: ` +
-    `${fmtInt(t.issues)} issues, each growing from the thread or coordinator that filed it until it merged or closed.`;
+    `The whole run as a tree, from Tuesday 20 October at the top to the #1 on Monday 26 October at the foot` +
+    (tree ? `: ${fmtInt(tree.totals.issues)} issues, each growing from the thread or coordinator that filed it until it merged or closed.` : '.');
 
   const monoPx = L?.compact ? 10 : 11;
 

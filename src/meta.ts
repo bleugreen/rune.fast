@@ -2,6 +2,7 @@ import { recordFacts } from './attempts/model';
 import { buildCostModel } from './cost/model';
 import { costInputs } from './data/cost';
 import { timeline } from './data/timeline';
+import { AUTHOR, PAGE_ONLY } from './lib/site';
 import { fmtInt, fmtUsd } from './lib/numbers';
 import { inlineTokens } from './story/draft';
 import { story } from './story/story';
@@ -15,9 +16,6 @@ import { story } from './story/story';
 
 export const ORIGIN = 'https://rune.fast';
 export const SITE_NAME = 'rune.fast';
-
-/** Who runs the site: named in every page's footer and head. */
-export const AUTHOR = { name: 'bleugreen', url: 'https://bleu.green' } as const;
 
 export const PAGE_PATHS = ['/', '/route', '/tricks', '/cost', '/harness'] as const;
 export type PagePath = (typeof PAGE_PATHS)[number];
@@ -153,12 +151,19 @@ export function headTags(m: PageMeta): string[] {
   ];
 }
 
-/** The built shell with a page's head written in at the marker, at the marker's indent. */
+const pageOnlyTag = new RegExp(`[ \\t]*<[^>]*\\b${PAGE_ONLY}="([^"]*)"[^>]*>\\n?`, 'g');
+
+/**
+ * The built shell with a page's head written in at the marker, at the marker's indent, and
+ * without the tags marked for another page.
+ */
 export function withHead(shell: string, m: PageMeta): string {
   const at = shell.indexOf(HEAD_MARKER);
   if (at < 0 || shell.indexOf(HEAD_MARKER, at + 1) >= 0) {
     throw new Error(`page heads: the shell must carry ${HEAD_MARKER} exactly once (index.html)`);
   }
   const indent = /[ \t]*$/.exec(shell.slice(0, at))![0];
-  return shell.slice(0, at) + headTags(m).join(`\n${indent}`) + shell.slice(at + HEAD_MARKER.length);
+  const head = shell.slice(0, at) + headTags(m).join(`\n${indent}`) + shell.slice(at + HEAD_MARKER.length);
+  const end = head.indexOf('</head>');
+  return head.slice(0, end).replace(pageOnlyTag, (tag, path: string) => (path === m.path ? tag : '')) + head.slice(end);
 }

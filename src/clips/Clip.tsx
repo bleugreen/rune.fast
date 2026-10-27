@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { Contained } from '../components/Contained';
 import { fmtInt } from '../lib/numbers';
-import { clipSource, clipSrc, clipTickAt, clipWhen, type ClipEntry, type ReplayEntry, type VideoEntry } from './registry';
+import { clipSource, clipSrc, clipTickAt, clipWhen, posterAvif, type ClipEntry, type ReplayEntry, type VideoEntry } from './registry';
 import { ProgressWatch, STALL_MS } from './watchdog';
 import styles from './Clip.module.css';
 
@@ -211,7 +211,18 @@ export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: s
             </Contained>
           ))}
         {(phase === 'rest' || !begun) && (
-          <img className={styles.poster} src={clip.poster} alt="" width={clip.width} height={clip.height} loading="lazy" />
+          <picture>
+            <source type="image/avif" srcSet={posterAvif(clip)} />
+            <img
+              className={styles.poster}
+              src={clip.poster}
+              alt=""
+              width={clip.width}
+              height={clip.height}
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
         )}
         {phase !== 'playing' && <span className={styles.play} aria-hidden="true" />}
         {error && (
@@ -250,7 +261,9 @@ export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: s
 
 /**
  * A video file, with the browser's own controls never shown. A file that fails to load (a 404, a
- * refused range) or stops arriving fails the frame visibly, never an indefinite dimmed mark.
+ * refused range) or stops arriving fails the frame visibly, never an indefinite dimmed mark. It has
+ * no poster of its own: the frame's lazy poster covers it until its first frame, and a video's
+ * poster attribute is fetched at once, however far below the screen the clip is.
  */
 const VideoMedia = forwardRef<MediaHandle, MediaProps<VideoEntry>>(function VideoMedia(
   { entry, playing, onPlaying, onPaused, onEnded, onTime, onFailed },
@@ -301,7 +314,6 @@ const VideoMedia = forwardRef<MediaHandle, MediaProps<VideoEntry>>(function Vide
     <video
       ref={video}
       src={clipSrc(entry)}
-      poster={entry.poster}
       width={entry.width}
       height={entry.height}
       preload="none"

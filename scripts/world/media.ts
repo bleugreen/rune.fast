@@ -65,6 +65,19 @@ export function avifSize(buf: Buffer): { width: number; height: number } {
   return { width: buf.readUInt32BE(at + 8), height: buf.readUInt32BE(at + 12) };
 }
 
+/**
+ * Writes a clip poster's AVIF beside its JPEG (x.jpg to x.avif), at the quality the figures'
+ * column AVIFs use: about half the JPEG's bytes and, at the column's size, the same picture.
+ * Needs ImageMagick with AVIF.
+ */
+export function encodePosterAvif(jpg: string): string {
+  if (!jpg.endsWith('.jpg')) throw new Error(`${jpg}: a poster is a .jpg`);
+  const avif = jpg.replace(/\.jpg$/, '.avif');
+  const p = Bun.spawnSync(['magick', jpg, '-strip', '-quality', '60', avif], { stdout: 'pipe', stderr: 'pipe' });
+  if (p.exitCode !== 0) throw new Error(`magick ${jpg}: ${p.stderr.toString()}`);
+  return avif;
+}
+
 /** The eight hex digits of a file's SHA-256 that its published name carries. */
 export function contentTag(buf: Uint8Array): string {
   return createHash('sha256').update(buf).digest('hex').slice(0, 8);

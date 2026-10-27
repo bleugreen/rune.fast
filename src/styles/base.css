@@ -1,23 +1,17 @@
+/* The faces are in src/fonts/, so the build names each by its content under /assets/. */
 @font-face {
   font-family: 'Rune Serif';
-  src: url('/fonts/RuneSerif-Roman.var.woff2') format('woff2-variations'),
-    url('/fonts/RuneSerif-Roman.var.woff2') format('woff2');
+  src: url('../fonts/RuneSerif-Roman.var.woff2') format('woff2-variations'),
+    url('../fonts/RuneSerif-Roman.var.woff2') format('woff2');
   font-weight: 200 900;
   font-style: normal;
   font-display: swap;
 }
-@font-face {
-  font-family: 'Rune Serif';
-  src: url('/fonts/RuneSerif-Italic.var.woff2') format('woff2-variations'),
-    url('/fonts/RuneSerif-Italic.var.woff2') format('woff2');
-  font-weight: 200 900;
-  font-style: italic;
-  font-display: swap;
-}
+/* The italic is registered from script, so the story page can hold it back (src/lib/fonts.ts). */
 /* IBM's own Latin1 split files; the unicode-range is the one IBM publishes with them. */
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: url('/fonts/IBMPlexSans-Regular-Latin1.woff2') format('woff2');
+  src: url('../fonts/IBMPlexSans-Regular-Latin1.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -27,7 +21,7 @@
 }
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: url('/fonts/IBMPlexSans-Medium-Latin1.woff2') format('woff2');
+  src: url('../fonts/IBMPlexSans-Medium-Latin1.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -37,7 +31,7 @@
 }
 @font-face {
   font-family: 'IBM Plex Sans';
-  src: url('/fonts/IBMPlexSans-SemiBold-Latin1.woff2') format('woff2');
+  src: url('../fonts/IBMPlexSans-SemiBold-Latin1.woff2') format('woff2');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
