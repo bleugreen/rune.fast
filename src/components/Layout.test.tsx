@@ -27,7 +27,8 @@ describe('the nav', () => {
   const labels = [...html.matchAll(/<a [^>]*>([^<]*)<\/a>/g)].map((m) => m[1]);
 
   test('links every live page, the Route page among them', () => {
-    expect(labels).toEqual(['Story', 'Attempts', 'Route', 'Tricks', 'Cost', 'Harness']);
+    expect(labels).toEqual(['Story', 'Route', 'Tricks', 'Cost', 'Harness']);
+    expect(html).not.toContain('href="/attempts"');
     expect(html).toContain('href="/route"');
   });
 

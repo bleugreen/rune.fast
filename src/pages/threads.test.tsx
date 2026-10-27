@@ -7,14 +7,11 @@ import rawTimeline from '../../data/attempts-timeline.json';
 import { projectHarness } from '../../scripts/public-harness';
 import { projectTimeline } from '../../scripts/public-timeline';
 import { projectTricks } from '../../scripts/public-tricks';
-import { EventCard, EventList } from '../attempts/EventCard';
-import { buildChartModel } from '../attempts/model';
 import { Threaded } from '../components/Coded';
 import type { ArchivalTimeline } from '../data/types';
 import type { RawHarnessData } from '../harness/types';
 import { THREADS } from '../lib/threads';
 import { TRICKS } from '../tricks/model';
-import { AttemptsPage } from './AttemptsPage';
 import { CostPage } from './CostPage';
 import { HarnessPage } from './HarnessPage';
 import { StoryPage } from './StoryPage';
@@ -90,7 +87,6 @@ function render(node: ReactNode): string {
 
 const ROUTES: ReadonlyArray<readonly [string, ComponentType]> = [
   ['/', StoryPage],
-  ['/attempts', AttemptsPage],
   ['/tricks', TricksPage],
   ['/cost', CostPage],
   ['/harness', HarnessPage],
@@ -100,14 +96,6 @@ describe('thread names are code wherever they stand as names', () => {
   test.each(ROUTES)('%s', (path, Page) => {
     const html = render(<Page />);
     expect(bareNames(readerLines(html, ...(path === '/' ? DRAFT : [])))).toEqual([]);
-  });
-
-  test('/attempts, every event a reader can select', () => {
-    const model = buildChartModel(projectTimeline(rawTimeline as unknown as ArchivalTimeline));
-    const html = [...model.byId.values()]
-      .map((am) => render(<>{am.marks.map((mk) => <EventCard key={mk.key} mark={mk} attemptName={am.attempt.name} />)}<EventList marks={am.marks} /></>))
-      .join('');
-    expect(bareNames(readerLines(html))).toEqual([]);
   });
 
   test('source lines, as the build ships them', () => {

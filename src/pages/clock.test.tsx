@@ -8,7 +8,6 @@ import { projectTricks } from '../../scripts/public-tricks';
 import type { ArchivalTimeline } from '../data/types';
 import { story } from '../story/story';
 import { TRICKS } from '../tricks/model';
-import { AttemptsPage } from './AttemptsPage';
 import { CostPage } from './CostPage';
 import { HarnessPage } from './HarnessPage';
 import rawHarness from '../../data/harness.json';
@@ -86,7 +85,6 @@ function render(Page: ComponentType): string {
 
 /** The pages whose own components print the zone, and the open surface each is checked on. */
 const ZONED: ReadonlyArray<readonly [string, ComponentType]> = [
-  ['/attempts', AttemptsPage],
   ['/route', RoutePage],
   ['/tricks', TricksPage],
   ['/cost', CostPage],
