@@ -22,11 +22,11 @@ export function Address({ m }: { m: HarnessModel }) {
     { code: '/' },
     { code: issue, concept: 'issue', meaning: `${a.title}, filed ${fmtPacificHm(a.filed)} ${fmtPacificDayShort(a.filed)}`, lit: true },
     { code: '/' },
-    { code: execution, concept: 'execution', meaning: `its only run of a recipe: ${a.recipe}` },
+    { code: execution, concept: 'execution', meaning: `the one attempt at it, running the ${a.recipe} recipe` },
     { code: '/' },
-    { code: node, concept: 'node', meaning: `one agent, ${countWord(a.turns)} turns, ${fmtPacificClockRange(a.start, a.end)}` },
+    { code: node, concept: 'node', meaning: `the builder agent: ${countWord(a.turns)} turns, ${fmtPacificClockRange(a.start, a.end)}` },
     { code: '/' },
-    { code: artifact, concept: 'artifact', meaning: `PR #${a.pr}, ${countWord(a.versions)} versions, merged ${fmtPacificHm(a.merged)}` },
+    { code: artifact, concept: 'artifact', meaning: `pull request #${a.pr}: ${countWord(a.versions)} versions, merged ${fmtPacificHm(a.merged)}` },
   ];
   return (
     <div>
@@ -42,9 +42,9 @@ export function Address({ m }: { m: HarnessModel }) {
       </p>
       <dl className={styles.shapes}>
         <dt>{ADDRESSES.thread}</dt>
-        <dd>a thread: a name where an issue has a number, and no end. The operator talks to it.</dd>
+        <dd>a thread: a name where an issue has a number, and no end. This is the one the operator talked to most.</dd>
         <dt>{ADDRESSES.wakes}</dt>
-        <dd>the same grammar, relative to the agent writing it: here, its own wake subscriptions.</dd>
+        <dd>the same grammar seen from inside an agent: the ~ is the agent writing the address, so this is its own list of wake subscriptions.</dd>
       </dl>
     </div>
   );
