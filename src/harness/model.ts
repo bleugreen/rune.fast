@@ -27,12 +27,6 @@ function binFloor(t: number): number {
   return x;
 }
 
-function binCeil(t: number): number {
-  let x = Math.ceil(t / HOUR) * HOUR;
-  while (pacificHour(x) % 6) x += HOUR;
-  return x;
-}
-
 export interface LifelineRow {
   name: string;
   /** The operator's messages to the thread, per bin (none for the coordinators' row). */
