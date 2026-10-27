@@ -504,34 +504,25 @@ export const clockTime = fmtPacificHm;
 /* ------------------------------------------------------------------------- */
 
 const HOURS_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
-const MINUTE_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-
-/** The shortest and the longest logged-out stretch, as words: 'four minutes', 'nine hours'. */
-export function stretchWords(r: Route): [string, string] {
-  const outs = r.breaks.flatMap((b) => b.parts.flatMap((x) => (x.kind === 'out' ? [x.to - x.from] : [])));
-  const min = Math.floor(Math.min(...outs) / 60_000);
-  const max = Math.floor(Math.max(...outs) / 3_600_000);
-  return [`${MINUTE_WORDS[min] ?? min} minutes`, `${HOURS_WORDS[max] ?? max} hours`];
-}
 
 export interface OpeningFacts {
   /** The attempt as the timeline names it. */
   name: string;
   start: number;
   last99: number;
-  /** The operator's words, as the timeline quotes them. */
+  /** The operator's words, as the timeline quotes them: lower-case, as said mid-sentence. */
   quote: string;
 }
 
-export function opening(r: Route, f: OpeningFacts, days: { start: string; end: string }, zone: string): string[] {
+export function opening(r: Route, f: OpeningFacts): string[] {
   const wallHours = Math.floor((f.last99 - f.start) / 3_600_000);
-  const scoredHours = (r.finish * r.tickMs) / 3_600_000;
-  const under = Math.ceil(scoredHours);
-  const [shortest, longest] = stretchWords(r);
+  const under = Math.ceil((r.finish * r.tickMs) / 3_600_000);
+  // The quote opens the sentence here, so it takes a capital; the timeline keeps it as said.
+  const quote = f.quote.charAt(0).toUpperCase() + f.quote.slice(1);
   return [
-    `The hiscore this record stands on does not time an account by the wall clock. It counts the game ticks the account spends logged in, ${r.tickMs / 1000} seconds each, up to the tick of its last level-up, and while the account is logged out the count stands still. ${f.name} logged in at ${clockTime(f.start)} ${zone} on ${days.start} and reached its last 99 at ${clockTime(f.last99)} on ${days.end}, ${wallHours} hours later. The hiscore counted ${n(r.finish)} ticks, just under ${HOURS_WORDS[under]} of those hours.`,
-    `The swarm planned the route around that rule, and the operator put it plainly on the Sunday afternoon: “${f.quote}”. When something went wrong, the account logged out and waited, and the wait cost nothing. It fetched almost nothing for itself, because helper accounts met it with supplies at nearly every step, so its logged-in ticks went to training. Where one skill left it standing idle, the route put another skill in the gap.`,
-    `This page follows the ${n(r.finish)} ticks in order. The line down the left is the hiscore’s clock. Scrolling moves the run forward, and where the account was logged out the line breaks, and the break takes the same small room whether the wait was ${shortest} or ${longest}. As you go, the ${r.stamps.length} skills climb to 99 as the run’s own log recorded them. Before the attempt, the swarm’s run order priced every step in ticks; I have grouped its steps into ${HOURS_WORDS[r.stretches.length]} stretches, and for each I say what the account did, why it came at that point, what the plan expected it to cost and what it took. The stops, the death and the recovery show here only as breaks in the line, each linked to the story, which tells them.`,
+    `The hiscore doesn’t time a run by the clock on the wall. It counts game ticks, ${r.tickMs / 1000} seconds each, and only while the account is logged in. ${f.name} took ${wallHours} hours from logging in to its last 99. The hiscore counted ${n(r.finish)} ticks, just under ${HOURS_WORDS[under]} hours.`,
+    `“${quote},” as the operator put it, so the route spent ticks only on training. When something went wrong, the account logged out and waited for free. Helpers brought its supplies, and where one skill left it idle, another filled the gap.`,
+    `This page follows those ticks in order. The line on the left is the hiscore’s clock. It moves as you scroll and breaks wherever the account was logged out, however long the wait. Each stretch says what the account did, why it came then, and what it cost against the plan.`,
   ];
 }
 
