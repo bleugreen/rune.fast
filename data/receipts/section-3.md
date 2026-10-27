@@ -103,3 +103,5 @@ Runner-up: 21 Oct 08:16, main on why the name was a leak. The ambassador bot had
 - Fix section 1's weekday: 20 October 2026 was a Tuesday.
 - If section 3 must stay inside 21 to 22 October, keep the name line as a callback, as drafted, and give the 20 October 21:39 moment to section 2.
 - Change moments row #1's wording from "six direct messages with all whitespace removed" to "about 40 messages, 17:16 to 17:33, with nearly all spaces removed", so the page doesn't repeat a claim the log contradicts.
+
+- Added 26 Oct 2026 by rune/main: 'The run's machine belongs in Ashburn': cairn://p/rs/main/chat Turn 149 (01:59 PDT 21 Oct). The request for the run machine (q-3, about 02:00) and 'The machine itself still does not exist' / 'There is no software fix for distance; the client has to be there.': the morning turn at transcript line ~2656, before the 08:50 VM report.
