@@ -58,6 +58,15 @@
   }
 }
 
+/*
+ * The opening screenshot: wider than the text column where the window allows, centred on it. A flex
+ * item wider than its line overflows both sides equally; the gutter keeps it inside the window.
+ */
+.screen {
+  align-self: center;
+  width: min(68rem, 100vw - 2 * var(--gutter));
+}
+
 .section {
   display: flex;
   flex-direction: column;
