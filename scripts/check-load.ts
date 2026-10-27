@@ -11,12 +11,15 @@
  *   beacon, only after the load event (src/lib/analytics.ts). Chrome resolves rune.fast to the preview server, so the page
  *   runs as on the site; the beacon is answered here with an empty script, so nothing is sent.
  *
- * `--measure` also prints, for the desktop page loaded plainly and over an emulated slow link
- * (300 ms RTT, 1.6 Mbps down, cache disabled): DOMContentLoaded, load, when the first screen is
- * drawn (the tree), and the bytes and requests before load and once the network settles.
- * `vite preview` serves gzip where Pages serves brotli, so its bytes run a little over the site's.
- * It also measures a repeat visit, the cache warm from a first; for that to mean what it does on
- * the site, serve dist/ with Pages' own server, which applies public/_headers, and pass its port:
+ * `--measure` also prints, for the desktop page loaded plainly and over emulated slow links
+ * (1.6 Mbps down, cache disabled, at 300 ms RTT and at 600 ms, a reader as far from the edge as
+ * Perth is from Frankfurt): first contentful paint, the frame that first holds the page's title,
+ * largest contentful paint, DOMContentLoaded, load, when the first screen is drawn (the tree), and
+ * the bytes and requests before load and once the network settles; then the same paints for every
+ * other page on both slow links. `vite preview` serves gzip where Pages serves brotli, so its bytes
+ * run a little over the site's. It also measures a repeat visit, the cache warm from a first; for
+ * that to mean what it does on the site, serve dist/ with Pages' own server, which applies
+ * public/_headers, and pass its port:
  *
  *   bun run build && bun run check:load [--measure]
  *   wrangler pages dev dist --ip 127.0.0.1 --port 8791 & bun run check:load --measure --port 8791
@@ -52,11 +55,27 @@ const VIEWPORTS: Record<string, BrowserContextOptions> = {
   phone: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
 };
 
-/** The slow link, in DevTools' units: ms, and bytes per second. */
-const SLOW = { offline: false, latency: 300, downloadThroughput: 1_600_000 / 8, uploadThroughput: 750_000 / 8 };
+/** A slow link, in DevTools' units: ms of round trip, and bytes per second. */
+const link = (latency: number) => ({ offline: false, latency, downloadThroughput: 1_600_000 / 8, uploadThroughput: 750_000 / 8 });
+type Link = ReturnType<typeof link>;
+const SLOW = link(300);
+const FAR = link(600);
+
+/**
+ * Marks the first rendered frame whose document holds the page's title. An animation frame runs
+ * only when the page renders, and the frame whose callback first finds the title paints it.
+ */
+const TITLE_FRAME = `(() => {
+  const look = () => {
+    if (document.querySelector('main h1')) performance.mark('rune:title-frame');
+    else requestAnimationFrame(look);
+  };
+  requestAnimationFrame(look);
+})();`;
 
 const kb = (n: number) => `${(n / 1024).toFixed(0)} KB`;
 const s = (ms: number) => `${(ms / 1000).toFixed(2)} s`;
+const maybe = (ms: number | null) => (ms === null ? 'never' : s(ms));
 
 /** Brotli at a middling level, as a CDN compresses on the fly; the maximum would flatter the budget. */
 const brotli = (buf: Buffer) => brotliCompressSync(buf, { params: { [constants.BROTLI_PARAM_QUALITY]: 5 } }).length;
@@ -93,6 +112,10 @@ interface Request {
 }
 
 interface Load {
+  fcp: number | null;
+  /** The first frame holding the title. */
+  title: number | null;
+  lcp: number | null;
   dcl: number;
   load: number;
   /** When the tree finished drawing, or null if it never did. */
@@ -102,8 +125,9 @@ interface Load {
 }
 
 /** Opens `url` in a fresh tab and waits until no new resource has started for three seconds. */
-async function visit(context: BrowserContext, url: string, slow: boolean, cold: boolean): Promise<Page> {
+async function visit(context: BrowserContext, url: string, slow: Link | null, cold: boolean): Promise<Page> {
   const page = await context.newPage();
+  await page.addInitScript(TITLE_FRAME);
   const cdp = await context.newCDPSession(page);
   await cdp.send('Network.enable');
   await cdp.send('Network.setCacheDisabled', { cacheDisabled: cold });
@@ -118,7 +142,7 @@ async function visit(context: BrowserContext, url: string, slow: boolean, cold: 
     });
   });
   await cdp.send('Fetch.enable', { patterns: [{ urlPattern: `${BEACON_SRC}*` }] });
-  if (slow) await cdp.send('Network.emulateNetworkConditions', SLOW);
+  if (slow) await cdp.send('Network.emulateNetworkConditions', slow);
   await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
   let seen = -1;
   for (;;) {
@@ -131,13 +155,20 @@ async function visit(context: BrowserContext, url: string, slow: boolean, cold: 
 }
 
 /** A load of `url` with the cache disabled, or with `repeat`, a second visit after a first has filled the cache. */
-async function load(browser: Browser, url: string, options: BrowserContextOptions, slow: boolean, repeat = false): Promise<Load> {
+async function load(browser: Browser, url: string, options: BrowserContextOptions, slow: Link | null, repeat = false): Promise<Load> {
   const context = await browser.newContext(options);
   if (repeat) await (await visit(context, url, slow, false)).close();
   const page = await visit(context, url, slow, !repeat);
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate(async () => {
     const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
     const draw = performance.getEntriesByName('rune:tree-draw')[0];
+    const lcp = await new Promise<number | null>((resolve) => {
+      new PerformanceObserver((list) => resolve(list.getEntries().at(-1)?.startTime ?? null)).observe({
+        type: 'largest-contentful-paint',
+        buffered: true,
+      });
+      setTimeout(() => resolve(null), 1000);
+    });
     const path = (u: string) => {
       const url = new URL(u);
       return url.origin === location.origin ? url.pathname : u;
@@ -148,6 +179,9 @@ async function load(browser: Browser, url: string, options: BrowserContextOption
       start: r.startTime,
     }));
     return {
+      fcp: performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? null,
+      title: performance.getEntriesByName('rune:title-frame')[0]?.startTime ?? null,
+      lcp,
       dcl: nav.domContentLoadedEventStart,
       load: nav.loadEventStart,
       drawn: draw ? draw.startTime + draw.duration : null,
@@ -191,20 +225,21 @@ const browser = await chromium.launch({ channel: 'chrome', args: [`--host-resolv
 const home = `http://rune.fast:${server.port}/`;
 try {
   for (const [name, options] of Object.entries(VIEWPORTS)) {
-    const found = problems(await load(browser, home, options, false));
+    const found = problems(await load(browser, home, options, null));
     failed ||= found.length > 0;
     console.log(found.length ? `FAIL: the ${name} home page:\n  ${found.join('\n  ')}` : `ok: the ${name} home page requests only its first screen, then the italic and the beacon`);
   }
 
   if (args.measure) {
     console.log(
-      '\n| Load | DOMContentLoaded | Load event | First screen drawn | Before load | Settled | Over the network |\n|---|---|---|---|---|---|---|',
+      '\nThe story page:\n\n| Load | First contentful paint | Title painted | Largest contentful paint | DOMContentLoaded | Load event | First screen drawn | Before load | Settled | Over the network |\n|---|---|---|---|---|---|---|---|---|---|',
     );
     const rows: string[] = [];
     const runs = [
-      ['Plain', false, false],
-      ['300 ms RTT, 1.6 Mbps', true, false],
-      ['Repeat visit, 300 ms RTT, 1.6 Mbps', true, true],
+      ['Plain', null, false],
+      ['300 ms RTT, 1.6 Mbps', SLOW, false],
+      ['600 ms RTT, 1.6 Mbps', FAR, false],
+      ['Repeat visit, 300 ms RTT, 1.6 Mbps', SLOW, true],
     ] as const;
     for (const [label, slow, repeat] of runs) {
       const m = await load(browser, home, VIEWPORTS.desktop!, slow, repeat);
@@ -213,15 +248,25 @@ try {
       const fetched = m.requests.filter((r) => r.bytes > 0);
       const sum = (rs: Request[]) => kb(rs.reduce((t, r) => t + r.bytes, 0));
       console.log(
-        `| ${label} | ${s(m.dcl)} | ${s(m.load)} | ${m.drawn === null ? 'never' : s(m.drawn)} | ` +
+        `| ${label} | ${maybe(m.fcp)} | ${maybe(m.title)} | ${maybe(m.lcp)} | ${s(m.dcl)} | ${s(m.load)} | ${maybe(m.drawn)} | ` +
           `${sum(early)} in ${early.length} | ${sum(m.requests)} in ${m.requests.length} | ${fetched.length} requests |`,
       );
-      if (slow) {
+      if (slow && !repeat) {
         rows.push(`  ${label}:`);
         for (const r of m.requests) rows.push(`    ${s(r.start).padStart(7)} ${kb(r.bytes).padStart(7)}  ${r.path}`);
       }
     }
-    console.log(`\nThe slow loads' requests, by start:\n${rows.join('\n')}`);
+
+    console.log(
+      '\nThe other pages, landed on cold:\n\n| Page | Link | First contentful paint | Title painted | Largest contentful paint | DOMContentLoaded | Load event |\n|---|---|---|---|---|---|---|',
+    );
+    for (const path of ['/route', '/tricks', '/cost', '/harness']) {
+      for (const [label, slow] of [['300 ms', SLOW], ['600 ms', FAR]] as const) {
+        const m = await load(browser, `http://rune.fast:${server.port}${path}`, VIEWPORTS.desktop!, slow);
+        console.log(`| ${path} | ${label} | ${maybe(m.fcp)} | ${maybe(m.title)} | ${maybe(m.lcp)} | ${s(m.dcl)} | ${s(m.load)} |`);
+      }
+    }
+    console.log(`\nThe story page's slow loads' requests, by start:\n${rows.join('\n')}`);
   }
 } finally {
   await browser.close();
