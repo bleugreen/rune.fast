@@ -17,7 +17,6 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import { join, relative } from 'node:path';
 import { parseArgs } from 'node:util';
 import { brotliCompressSync, brotliDecompressSync, constants } from 'node:zlib';
-import { canonicalAccountName } from '@rune/world/live/accountName';
 import type { FeedHandlers } from '@rune/world/live/FeedSource';
 import {
   CLIP_VERSION,
