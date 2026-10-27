@@ -2,14 +2,15 @@
  * Builds a replay clip from the recorder's hourly world-feed files: chains them from the last
  * hello before the window, gates and redacts every frame, simulates headless with the real cache
  * loaders up to the window, then writes one-minute chunks (each led by its checkpoint) and a
- * manifest, and scans every byte it wrote. With --upload it then puts them on R2.
+ * manifest, and scans every byte it wrote. With --upload it then puts them on R2. Each clip's
+ * window and checks are in clips.ts.
  *
- *   RUNE_SCORED_ACCOUNT="$(cat <recorder>/follow)" bun scripts/world/publish-clip.ts \
- *     --clip finish --from 2026-10-26T10:27:00Z --to 2026-10-26T11:08:00Z \
- *     --recordings <recorder>/out --cache .world/cache [--out .world] [--upload] [--upload-cache]
+ *   RUNE_SCORED_ACCOUNT=<record account> [RUNE_FOLLOW_ACCOUNT=<account>] bun scripts/world/publish-clip.ts \
+ *     --clip finish --recordings <recorder>/out --cache .world/cache [--out .world] [--upload] [--upload-cache]
  *
- * The scored account's name comes only from the environment. Nothing this script prints carries
- * a name or a payload: counts, ticks, slots, sizes and times.
+ * Account names come only from the environment: the record account always, and for a clip that
+ * follows another account, that account too. Nothing this script prints carries a name or a
+ * payload: counts, ticks, slots, sizes and times.
  */
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -28,22 +29,10 @@ import {
 } from '@rune/world/replay/clip';
 import { cutChunks } from '@rune/world/replay/cut';
 import { Playhead } from '@rune/world/replay/Playhead';
+import { CLIPS } from './clips';
 import { RecordingError, StreamSource, headlessController, openChain, recordedFrames, type StreamStats } from './recordings';
-import { RedactionError, Redactor, scanEmitted } from './redact';
+import { RedactionError, Redactor, scanEmitted, slotName } from './redact';
 
-/** Per clip: how session ticks are numbered, how long chunks are, and marks the tick numbering must hit. */
-const CLIPS: Record<string, { kOffset: number; slot: number; ticksPerChunk: number; marks: { k: number; at: string; what: string }[] }> = {
-  finish: {
-    // The scored account's roster slot through the window, as measured: a valid but wrong name
-    // in RUNE_SCORED_ACCOUNT would hold some other slot, and fail here instead of publishing it.
-    slot: 1167,
-    // Login after the final recovery is session tick 1 at k 118025 (timeline: 10:27:14.715Z).
-    kOffset: 118024,
-    ticksPerChunk: 150,
-    // Agility 99, session tick 6095 on the timeline at 11:07:53.355Z.
-    marks: [{ k: 124119, at: '2026-10-26T11:07:53.355Z', what: 'Agility 99' }],
-  },
-};
 const MARK_TOLERANCE_MS = 100;
 
 function fail(message: string): never {
@@ -54,8 +43,6 @@ function fail(message: string): never {
 const { values: args } = parseArgs({
   options: {
     clip: { type: 'string' },
-    from: { type: 'string' },
-    to: { type: 'string' },
     recordings: { type: 'string' },
     cache: { type: 'string', default: '.world/cache' },
     // .world mirrors the bucket's world/ prefix: cache/ and replays/.
@@ -66,14 +53,17 @@ const { values: args } = parseArgs({
 });
 const clipId = args.clip ?? fail('--clip is required');
 const clip = CLIPS[clipId] ?? fail(`unknown clip ${clipId}`);
-const fromMs = Date.parse(args.from ?? fail('--from is required'));
-const toMs = Date.parse(args.to ?? fail('--to is required'));
-if (!(fromMs < toMs)) fail('--from must be before --to');
+const fromMs = Date.parse(clip.window.from);
+const toMs = Date.parse(clip.window.to);
+if (!(fromMs < toMs)) fail(`${clipId}: the window must start before it ends`);
 const recordings = args.recordings ?? fail('--recordings is required');
+const FOLLOW_ENV = clip.follow === 'env' ? 'RUNE_FOLLOW_ACCOUNT' : 'RUNE_SCORED_ACCOUNT';
+if (clip.follow === 'env' && process.env.RUNE_FOLLOW_ACCOUNT === undefined) fail(`${clipId} follows another account: RUNE_FOLLOW_ACCOUNT is required`);
+if (clip.follow === 'record' && process.env.RUNE_FOLLOW_ACCOUNT !== undefined) fail(`${clipId} follows the record account: unset RUNE_FOLLOW_ACCOUNT`);
 
 let redactor: Redactor;
 try {
-  redactor = new Redactor(process.env.RUNE_SCORED_ACCOUNT);
+  redactor = new Redactor(process.env.RUNE_SCORED_ACCOUNT, clip.follow === 'env' ? process.env.RUNE_FOLLOW_ACCOUNT : undefined);
 } catch (e) {
   fail(e instanceof RedactionError ? e.message : 'could not start redaction');
 }
@@ -102,14 +92,15 @@ function* frames(): Generator<ReplayFrame> {
 
 const { controller, handlers, cacheName, revision } = headlessController(args.cache);
 
-// Ticks in the window where the scored account is not among the streamed players.
+// Ticks where the followed account is not among the streamed players.
 const followGaps: [number, number][] = [];
 const observed: FeedHandlers = {
   ...handlers,
   onTick(tick) {
     handlers.onTick(tick);
     if (tick.k < clip.kOffset) return;
-    const inView = [...controller.world.players.values()].some((p) => canonicalAccountName(p.name) === redactor.scored);
+    const slot = redactor.followSlot;
+    const inView = slot !== undefined && controller.world.players.has(slot);
     if (inView) return;
     const last = followGaps[followGaps.length - 1];
     if (last && last[1] === tick.k - 1) last[1] = tick.k;
@@ -139,11 +130,20 @@ mkdirSync(outDir, { recursive: true });
 const chunks: ClipChunk[] = [];
 const written: { file: string; text: string; br: Buffer }[] = [];
 const markRecv = new Map<number, number>();
+// The followed slot's death beats, as the published frames carry them.
+const beats: { zeroHp?: { k: number; recv: number }; respawn?: { k: number; recv: number } } = {};
 t0 = performance.now();
 for (const data of cutChunks(playhead, clip.ticksPerChunk, toMs)) {
   const ks = data.frames.flatMap((f) => (f.msg.t === 'tick' ? [f.msg.k] : []));
   for (const f of data.frames) {
-    if (f.msg.t === 'tick' && clip.marks.some((m) => m.k === (f.msg as { k: number }).k)) markRecv.set(f.msg.k, f.recv);
+    if (f.msg.t !== 'tick') continue;
+    const k = f.msg.k;
+    if (clip.marks.some((m) => m.k === k)) markRecv.set(k, f.recv);
+    const me = clip.death && f.msg.p?.find((r) => r.i === clip.slot);
+    if (!me || !clip.death) continue;
+    if (me.hp?.[0] === 0 && !beats.zeroHp) beats.zeroHp = { k, recv: f.recv };
+    const [rx, rz] = clip.death.respawn;
+    if (beats.zeroHp && !beats.respawn && me.f === 1 && me.x === rx && me.z === rz) beats.respawn = { k, recv: f.recv };
   }
   const text = [formatCheckpointLine(data.checkpoint), ...data.frames.map(formatFrameLine)].join('\n') + '\n';
   const sha256 = createHash('sha256').update(text).digest('hex');
@@ -176,13 +176,22 @@ for (const mark of clip.marks) {
   console.log(`mark: ${mark.what} is tick ${mark.k} (session tick ${mark.k - clip.kOffset}), received ${off} ms from the timeline's ${mark.at}`);
 }
 
-// Exactly one roster slot for the scored account across the window.
+// A death clip holds the death and the respawn that follows it.
+if (clip.death) {
+  if (!beats.zeroHp) fail(`the followed slot never reaches 0 HP in the window`);
+  if (!beats.respawn) fail(`the followed slot is not seen at the respawn tile after its death in the window`);
+  const at = (b: { k: number; recv: number }) => `tick ${b.k} at ${new Date(b.recv).toISOString()}`;
+  console.log(`death: 0 HP ${at(beats.zeroHp)}, first seen at the respawn ${at(beats.respawn)}`);
+}
+
+// Exactly one roster slot for the followed account across the window.
 const kStart = chunks[0]!.k0;
 const kEnd = chunks[chunks.length - 1]!.k1;
-const slots = redactor.scoredSlotsBetween(kStart, kEnd);
-if (slots.length !== 1) fail(`the scored account holds ${slots.length} roster slots in the window; expected exactly 1`);
-if (slots[0] !== clip.slot) fail(`the scored account holds slot ${slots[0]}, not the clip's slot ${clip.slot}: is RUNE_SCORED_ACCOUNT the record account?`);
-const followName = process.env.RUNE_SCORED_ACCOUNT!.trim();
+const slots = redactor.followSlotsBetween(kStart, kEnd);
+if (slots.length !== 1) fail(`the followed account holds ${slots.length} roster slots in the window; expected exactly 1`);
+if (slots[0] !== clip.slot) fail(`the followed account holds slot ${slots[0]}, not the clip's slot ${clip.slot}: is ${FOLLOW_ENV} the right account?`);
+// Another account than the record one is followed by its slot alias: the clip names no one else.
+const followName = clip.follow === 'record' ? process.env.RUNE_SCORED_ACCOUNT!.trim() : slotName(slots[0]!);
 
 const manifest: ClipManifest = {
   v: CLIP_VERSION,
@@ -193,7 +202,7 @@ const manifest: ClipManifest = {
   anchor: { kOffset: clip.kOffset },
   window: { kStart, kEnd, recvStart: chunks[0]!.recv0, recvEnd: chunks[chunks.length - 1]!.recv1 },
   // From login on: before it the account is simply not online, which is not a gap.
-  followGaps: followGaps.filter(([, k1]) => k1 < kEnd && k1 > clip.kOffset + 1),
+  followGaps: followGaps.filter(([, k1]) => k1 < kEnd && k1 >= kStart && k1 > clip.kOffset + 1),
   subs,
   chunks,
   redaction: { ...redactor.counts, namesScanned: redactor.names.size, hits: 0 },
@@ -219,7 +228,7 @@ const hits = scanOut();
 console.log(
   `redaction: ${redactor.counts.rosterNamesReplaced} roster names and ${redactor.counts.appearanceNamesReplaced} appearance names ` +
     `replaced, ${redactor.counts.playerTextDropped} player texts and ${redactor.counts.npcTextDropped} NPC texts dropped, ` +
-    `${redactor.names.size} names scanned for, ${hits} hits; scored account on slot ${slots[0]}; ${stats.dropped} frames dropped by the gate`,
+    `${redactor.names.size} names scanned for, ${hits} hits; followed account (${clip.follow}) on slot ${slots[0]}; ${stats.dropped} frames dropped by the gate`,
 );
 if (hits > 0) {
   rmSync(outDir, { recursive: true, force: true });
