@@ -15,8 +15,11 @@
  * (300 ms RTT, 1.6 Mbps down, cache disabled): DOMContentLoaded, load, when the first screen is
  * drawn (the tree), and the bytes and requests before load and once the network settles.
  * `vite preview` serves gzip where Pages serves brotli, so its bytes run a little over the site's.
+ * It also measures a repeat visit, the cache warm from a first; for that to mean what it does on
+ * the site, serve dist/ with Pages' own server, which applies public/_headers, and pass its port:
  *
  *   bun run build && bun run check:load [--measure]
+ *   wrangler pages dev dist --ip 127.0.0.1 --port 8791 & bun run check:load --measure --port 8791
  *
  * Exits 1 if any budget is exceeded.
  */
@@ -24,12 +27,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { brotliCompressSync, constants } from 'node:zlib';
-import { chromium, type Browser, type BrowserContextOptions } from 'playwright-core';
+import { chromium, type Browser, type BrowserContext, type BrowserContextOptions, type Page } from 'playwright-core';
 import { preview } from 'vite';
 import { BEACON_SRC } from '../src/lib/analytics';
 import { PAGE_ONLY } from '../src/lib/site';
 
-const { values: args } = parseArgs({ options: { measure: { type: 'boolean', default: false } } });
+const { values: args } = parseArgs({ options: { measure: { type: 'boolean', default: false }, port: { type: 'string' } } });
 
 /** Brotli bytes of the home page's initial JavaScript. */
 const ENTRY_BUDGET = 150 * 1024;
@@ -98,16 +101,14 @@ interface Load {
   requests: Request[];
 }
 
-async function load(browser: Browser, url: string, options: BrowserContextOptions, slow: boolean): Promise<Load> {
-  const context = await browser.newContext(options);
-  await context.route(`${BEACON_SRC}*`, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+/** Opens `url` in a fresh tab and waits until no new resource has started for three seconds. */
+async function visit(context: BrowserContext, url: string, slow: boolean, cold: boolean): Promise<Page> {
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
   await cdp.send('Network.enable');
-  await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
+  await cdp.send('Network.setCacheDisabled', { cacheDisabled: cold });
   if (slow) await cdp.send('Network.emulateNetworkConditions', SLOW);
   await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
-  // Settled: no new resource for three seconds.
   let seen = -1;
   for (;;) {
     const n = await page.evaluate(() => performance.getEntriesByType('resource').length);
@@ -115,6 +116,15 @@ async function load(browser: Browser, url: string, options: BrowserContextOption
     seen = n;
     await page.waitForTimeout(3000);
   }
+  return page;
+}
+
+/** A load of `url` with the cache disabled, or with `repeat`, a second visit after a first has filled the cache. */
+async function load(browser: Browser, url: string, options: BrowserContextOptions, slow: boolean, repeat = false): Promise<Load> {
+  const context = await browser.newContext(options);
+  await context.route(`${BEACON_SRC}*`, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  if (repeat) await (await visit(context, url, slow, false)).close();
+  const page = await visit(context, url, slow, !repeat);
   const result = await page.evaluate(() => {
     const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
     const draw = performance.getEntriesByName('rune:tree-draw')[0];
@@ -166,7 +176,7 @@ console.log(
   `${entryBytes > ENTRY_BUDGET ? 'FAIL' : 'ok'}: initial JavaScript ${kb(entryBytes)} brotli (budget ${kb(ENTRY_BUDGET)}): ${scripts.join(', ')}`,
 );
 
-const server = await startPreview();
+const server = args.port ? { port: Number(args.port), stop: async () => {} } : await startPreview();
 const browser = await chromium.launch({ channel: 'chrome', args: [`--host-resolver-rules=MAP rune.fast 127.0.0.1`] });
 const home = `http://rune.fast:${server.port}/`;
 try {
@@ -177,19 +187,31 @@ try {
   }
 
   if (args.measure) {
-    console.log('\n| Link | DOMContentLoaded | Load | First screen drawn | Before load | Settled |\n|---|---|---|---|---|---|');
+    console.log(
+      '\n| Load | DOMContentLoaded | Load event | First screen drawn | Before load | Settled | Over the network |\n|---|---|---|---|---|---|---|',
+    );
     const rows: string[] = [];
-    for (const slow of [false, true]) {
-      const m = await load(browser, home, VIEWPORTS.desktop!, slow);
+    const runs = [
+      ['Plain', false, false],
+      ['300 ms RTT, 1.6 Mbps', true, false],
+      ['Repeat visit, 300 ms RTT, 1.6 Mbps', true, true],
+    ] as const;
+    for (const [label, slow, repeat] of runs) {
+      const m = await load(browser, home, VIEWPORTS.desktop!, slow, repeat);
       const early = m.requests.filter((r) => r.start < m.load);
+      // A request answered from the cache transfers nothing; a revalidation transfers its headers.
+      const fetched = m.requests.filter((r) => r.bytes > 0);
       const sum = (rs: Request[]) => kb(rs.reduce((t, r) => t + r.bytes, 0));
       console.log(
-        `| ${slow ? '300 ms RTT, 1.6 Mbps' : 'Plain'} | ${s(m.dcl)} | ${s(m.load)} | ${m.drawn === null ? 'never' : s(m.drawn)} | ` +
-          `${sum(early)} in ${early.length} | ${sum(m.requests)} in ${m.requests.length} |`,
+        `| ${label} | ${s(m.dcl)} | ${s(m.load)} | ${m.drawn === null ? 'never' : s(m.drawn)} | ` +
+          `${sum(early)} in ${early.length} | ${sum(m.requests)} in ${m.requests.length} | ${fetched.length} requests |`,
       );
-      if (slow) for (const r of m.requests) rows.push(`    ${s(r.start).padStart(7)} ${kb(r.bytes).padStart(7)}  ${r.path}`);
+      if (slow) {
+        rows.push(`  ${label}:`);
+        for (const r of m.requests) rows.push(`    ${s(r.start).padStart(7)} ${kb(r.bytes).padStart(7)}  ${r.path}`);
+      }
     }
-    console.log(`\nThe slow load's requests, by start:\n${rows.join('\n')}`);
+    console.log(`\nThe slow loads' requests, by start:\n${rows.join('\n')}`);
   }
 } finally {
   await browser.close();
