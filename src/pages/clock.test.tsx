@@ -10,6 +10,10 @@ import { story } from '../story/story';
 import { TRICKS } from '../tricks/model';
 import { AttemptsPage } from './AttemptsPage';
 import { CostPage } from './CostPage';
+import { HarnessPage } from './HarnessPage';
+import rawHarness from '../../data/harness.json';
+import { projectHarness } from '../../scripts/public-harness';
+import type { RawHarnessData } from '../harness/types';
 import { StoryPage } from './StoryPage';
 import { TricksPage } from './TricksPage';
 
@@ -82,6 +86,7 @@ const ZONED: ReadonlyArray<readonly [string, ComponentType]> = [
   ['/attempts', AttemptsPage],
   ['/tricks', TricksPage],
   ['/cost', CostPage],
+  ['/harness', HarnessPage],
 ];
 
 describe.each(ZONED)('%s', (_, Page) => {
@@ -138,6 +143,7 @@ describe('lines behind the disclosures, as the build ships them', () => {
   const lines = [
     ...projectTricks(TRICKS).flatMap((t) => t.sources),
     ...timeline.attempts.flatMap((a) => [a.start, a.end, ...a.events].flatMap((x) => x.sources)),
+    ...Object.values(projectHarness(rawHarness as unknown as RawHarnessData).sources).flatMap((rows) => rows.map((r) => r.plain)),
   ];
 
   test('print the 12-hour clock with no zone: the page has named it', () => {

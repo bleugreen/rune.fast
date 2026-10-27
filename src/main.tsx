@@ -9,6 +9,7 @@ import { StoryPage } from './pages/StoryPage';
 import { AttemptsPage } from './pages/AttemptsPage';
 import { TricksPage } from './pages/TricksPage';
 import { CostPage } from './pages/CostPage';
+import { HarnessPage } from './pages/HarnessPage';
 import { NotFound } from './pages/NotFound';
 
 /* The tokens screen exists only in development; the production build drops it. */
@@ -19,6 +20,7 @@ const pages: RouteObject[] = [
   { path: 'attempts', element: <AttemptsPage /> },
   { path: 'tricks', element: <TricksPage /> },
   { path: 'cost', element: <CostPage /> },
+  { path: 'harness', element: <HarnessPage /> },
   ...(Tokens ? [{ path: 'tokens', element: <Suspense><Tokens /></Suspense> }] : []),
   { path: '*', element: <NotFound /> },
 ];
