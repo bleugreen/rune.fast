@@ -185,7 +185,7 @@ export function HarnessPage() {
           {fmtInt(f.coordinators)} and the threads {fmtInt(f.threads)}, so the work forms a tree: the operator at the
           top, the threads below, coordinators below the threads, and the agents doing the work at the leaves. The red
           mark on <code>main</code>’s line is rs/{r.coordinator}, a coordinator for quest routes that <code>main</code>{' '}
-          filed at {at(m.lifelines.marks[0]!.t)}. The section on asking and answering comes back to it.
+          filed at {at(m.lifelines.marks.find((mk) => mk.key === 'rs3')!.t)}. The section on asking and answering comes back to it.
         </p>
         <p className={styles.prose}>
           Who files an issue and where it reports can differ. The other red mark, on the coordinators’ row, is rs/
