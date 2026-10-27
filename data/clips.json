@@ -22,6 +22,72 @@
     "ticks": [[0,67],[91,68],[490,69],[885,70],[1287,71],[1700,72],[2095,73],[2490,74],[2892,75],[3299,76],[3696,77],[4101,78],[4502,79],[4906,80],[5302,81],[5704,82],[6096,83],[6511,84],[6901,85],[7293,86],[7689,87],[8094,88],[8496,89],[8893,90],[9297,91],[9715,92],[10095,93],[10499,94],[11307,96],[11702,97],[12100,98],[12501,99],[12910,100]]
   },
   {
+    "id": "lab-dialogue-burst",
+    "kind": "video",
+    "src": "/clips/lab-dialogue-burst.mp4",
+    "poster": "/clips/lab-dialogue-burst.jpg",
+    "width": 764,
+    "height": 502,
+    "seconds": 12.8,
+    "caption": "Father Aereck’s welcome conversation, twice. First the bot reads it page by page, one tick a page; then it sends up to five continues in one tick without waiting to read the pages between, and the same 16 pages close in 7 ticks instead of 16. The swarm’s own script, re-run in the lab on a local server.",
+    "recorded": [
+      "2026-10-27T01:11:52Z",
+      "2026-10-27T01:12:05Z"
+    ],
+    "step": "Dialogue, rehearsed on a conversation any account can repeat",
+    "source": {
+      "label": "lab film",
+      "commit": "4f62822f0fa2a0f320abedba7fc473776c5b408d",
+      "note": "The lab capture of speedrun/lab/quests/aereck-burst.ts, 1.0 s to 13.8 s into the capture; the counter is the server tick its trace records."
+    },
+    "trace": "rune-fast lab/films/takes/aereck/trace.jsonl",
+    "ticks": [[0,46],[179,47],[578,48],[978,49],[1377,50],[1779,51],[2181,52],[2582,53],[2981,54],[3383,55],[3783,56],[4184,57],[4585,58],[4985,59],[5386,60],[5785,61],[6188,62],[6586,63],[6986,64],[7385,65],[7786,66],[8188,67],[8588,68],[8987,69],[9390,70],[9789,71],[10190,72],[10591,73],[10994,74],[11394,75],[11795,76],[12200,77],[12596,78]]
+  },
+  {
+    "id": "lab-dialogue-fixed",
+    "kind": "video",
+    "src": "/clips/lab-dialogue-fixed.mp4",
+    "poster": "/clips/lab-dialogue-fixed.jpg",
+    "width": 764,
+    "height": 502,
+    "seconds": 10,
+    "caption": "Father Aereck’s welcome conversation read page by page on the fixed client: the bot answers each page in the tick it opens, so the 16 pages take 16 ticks; at the end the next conversation opens. The standard client, at two ticks a page, is no longer in the code, so only this side could be filmed. The swarm’s own script, re-run in the lab on a local server.",
+    "recorded": [
+      "2026-10-27T01:12:05Z",
+      "2026-10-27T01:12:15Z"
+    ],
+    "step": "Dialogue, rehearsed on a conversation any account can repeat",
+    "source": {
+      "label": "lab film",
+      "commit": "4f62822f0fa2a0f320abedba7fc473776c5b408d",
+      "note": "The lab capture of speedrun/lab/quests/aereck-burst.ts, 13.3 s to 23.3 s into the capture; the counter is the server tick its trace records."
+    },
+    "trace": "rune-fast lab/films/takes/aereck/trace.jsonl",
+    "ticks": [[0,77],[296,78],[701,79],[1100,80],[1500,81],[1900,82],[2301,83],[2701,84],[3102,85],[3504,86],[3906,87],[4307,88],[4709,89],[5108,90],[5509,91],[5909,92],[6309,93],[6708,94],[7110,95],[7509,96],[7908,97],[8310,98],[8707,99],[9109,100],[9509,101],[9910,102]]
+  },
+  {
+    "id": "lab-relog",
+    "kind": "video",
+    "src": "/clips/lab-relog.mp4",
+    "poster": "/clips/lab-relog.jpg",
+    "width": 764,
+    "height": 502,
+    "seconds": 10,
+    "caption": "The bot logs out with the game’s own button and logs back in inside the same page: the title screen, the loading screen, and the account back beside the Varrock bank booths 1.2 s after the logout, its first state arriving on the new session’s first tick. The bank click it sends as soon as the booth is in view is cancelled by the run toggle every login sends in the same tick, so the bank stays shut. The swarm’s own measurement script, re-run in the lab on a local server.",
+    "recorded": [
+      "2026-10-27T01:16:43Z",
+      "2026-10-27T01:16:53Z"
+    ],
+    "step": "A relog, rehearsed",
+    "source": {
+      "label": "lab film",
+      "commit": "4f62822f0fa2a0f320abedba7fc473776c5b408d",
+      "note": "The lab capture of speedrun/tools/relog-probe.ts with the in-page relog and the bank click, run through rune-fast lab/films/relog-page.ts (which starts the page server the in-page login needs), 6.2 s to 16.2 s into the capture; the counter is the server tick its trace records."
+    },
+    "trace": "rune-fast lab/films/takes/relog/trace.jsonl",
+    "ticks": [[0,58],[192,59],[590,60],[991,61],[1389,62],[1794,63],[2191,64],[2596,65],[2998,66],[3395,67],[3798,68],[4201,69],[4598,70],[4999,71],[5398,72],[5799,73],[6201,74],[6599,75],[7000,76],[7401,77],[7800,78],[8203,79],[8603,80],[9008,81],[9405,82],[9809,83]]
+  },
+  {
     "id": "finish-rekit",
     "kind": "video",
     "src": "/clips/finish-rekit.mp4",

@@ -28,7 +28,7 @@
       "cairn://p/rs/287 (demo validation: 16 pages in 8.13 ticks, 0 failed bursts in 24)",
       "cairn://p/rs/507 (the cap measured at five on the demo)"
     ],
-    "clip": null
+    "clip": "lab-dialogue-burst"
   },
   {
     "id": "wine-fermentation",
@@ -259,7 +259,7 @@
       "cairn://p/rs/164",
       "data/attempts-timeline.json, attempt 5, 26 Oct 03:36Z"
     ],
-    "clip": null
+    "clip": "lab-relog"
   },
   {
     "id": "bury-in-knife-loop",
@@ -374,7 +374,7 @@
       "rs-sdk docs/speedrun/quests/CONVENTIONS.md lines 61-69",
       "cairn://p/rs/22 (publish once per tick)"
     ],
-    "clip": null
+    "clip": "lab-dialogue-fixed"
   },
   {
     "id": "knife-reset",
