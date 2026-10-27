@@ -91,32 +91,6 @@ export function fmtCalendarDate(key: string): string {
   return `${Number(m[3])} ${month} ${m[1]}`;
 }
 
-const pacHms = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
-const pacDayMonYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'short', year: 'numeric' });
-
-/**
- * The 12-hour clock as the site writes it, 'h:mm:ss AM', assembled from the parts: ICU
- * versions differ on the space before the period (U+202F or a plain space) and on the
- * hour's padding, and the page must not.
- */
-function clock(f: Intl.DateTimeFormat, t: number): string {
-  const p: Record<string, string> = {};
-  for (const { type, value } of f.formatToParts(t)) p[type] = value;
-  const seconds = p.second ? `:${p.second}` : '';
-  return `${Number(p.hour)}:${p.minute}${seconds} ${p.dayPeriod!.toUpperCase()}`;
-}
-
-/** '22 Oct 2026', Pacific */
-export const fmtPacificDayMonYear = (t: number) => pacDayMonYear.format(t);
-/** '4:14:43 AM', Pacific, with no zone. */
-export const fmtPacificHms = (t: number) => clock(pacHms, t);
-
-/** A span of the clock to the second, the period written once where both ends share it: '3:27:15–3:27:27 AM'. */
-export function fmtPacificClockRange(a: number, b: number): string {
-  const [from, to] = [a, b].map(fmtPacificHms) as [string, string];
-  return from.slice(-2) === to.slice(-2) ? `${from.slice(0, -3)}–${to}` : `${from}–${to}`;
-}
-
 /** Pacific zone abbreviation in force at t (PDT or PST). */
 export function pacificZone(t: number): string {
   return pacZone.formatToParts(t).find((p) => p.type === 'timeZoneName')?.value ?? '';
@@ -140,7 +114,7 @@ export function fmtDuration(ms: number, withSeconds = false): string {
   if (h) parts.push(`${h} h`);
   parts.push(`${h ? String(m).padStart(2, '0') : m} min`);
   if (withSeconds) parts.push(`${s} s`);
-  return parts.join(' ');
+  return parts.join(' ');
 }
 
 /** The Pacific midnights in [a, b]. Pacific offsets are whole hours, so midnight falls on a UTC hour. */
