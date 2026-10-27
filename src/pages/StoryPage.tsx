@@ -6,7 +6,7 @@ import { registerItalicAfterLoad } from '../lib/fonts';
 import { fmtInt } from '../lib/numbers';
 import { inlineTokens } from '../story/draft';
 import { story } from '../story/story';
-import { storySections } from '../story/sections';
+import { storyByline, storySections, type StoryLink } from '../story/sections';
 import { StoryFigure } from '../story/StoryFigure';
 import { RunTree } from '../tree/RunTree';
 import styles from './StoryPage.module.css';
@@ -52,10 +52,21 @@ function prose(text: string, needles: readonly Needle[] = []): ReactNode[] {
   );
 }
 
+/** Words in the copy that link out, opening a new tab. */
+const linked = (l: StoryLink): Needle => ({
+  text: l.text,
+  wrap: (t, k) => (
+    <a key={k} href={l.href} target="_blank" rel="noreferrer">
+      {t}
+    </a>
+  ),
+});
+
 export function StoryPage() {
   const record = recordFacts(timeline);
   const model = useMemo(() => buildChartModel(timeline), []);
   const sections = useMemo(() => storySections(story), []);
+  const byline = useMemo(() => storyByline(story.byline), []);
   const headRef = useRef<HTMLElement>(null);
   const sectionRefs = useRef(new Map<string, HTMLElement>());
   const [active, setActive] = useState<string | null>(null);
@@ -114,19 +125,13 @@ export function StoryPage() {
         <RunTree className={styles.tree} onSettled={registerItalicAfterLoad} />
         <header ref={headRef} className={styles.head}>
           <h1 className={styles.title}>{prose(story.title)}</h1>
-          <p className={styles.byline}>{prose(story.byline)}</p>
+          <p className={styles.credit}>{prose(byline.credit, [linked(byline.link)])}</p>
+          <p className={styles.byline}>{prose(byline.research)}</p>
         </header>
       </div>
 
       {sections.map((s) => {
-        const links: Needle[] = s.links.map((l) => ({
-          text: l.text,
-          wrap: (t, k) => (
-            <a key={k} href={l.href} target="_blank" rel="noreferrer">
-              {t}
-            </a>
-          ),
-        }));
+        const links = s.links.map(linked);
         return (
           <section
             key={s.id}

@@ -30,6 +30,7 @@ import { NAV } from '../src/components/Layout';
 import { NOT_FOUND_FILE, PAGE_PATHS, pageFile, type PagePath } from '../src/meta';
 import { renderPage } from '../src/server';
 import { inlineTokens } from '../src/story/draft';
+import { storyByline } from '../src/story/sections';
 import { story } from '../src/story/story';
 import { writePages } from './page-heads';
 
@@ -83,7 +84,8 @@ const home = text(rootOf(readFileSync('dist/index.html', 'utf8')));
 const firstProse = story.sections[0]!.blocks.find((b) => b.kind === 'p');
 check(opening(rootOf(readFileSync('dist/index.html', 'utf8')))?.h1 === plain(story.title), '/: the built title is not the story’s');
 check(!!firstProse && home.includes(plain(firstProse.text)), '/: the built HTML lacks the first section’s opening paragraph');
-check(home.includes(plain(story.byline)), '/: the built HTML lacks the byline');
+const byline = storyByline(story.byline);
+check(home.includes(byline.credit) && home.includes(plain(byline.research)), '/: the built HTML lacks the byline');
 
 const notFound = readFileSync(join('dist', NOT_FOUND_FILE), 'utf8');
 check(rootOf(notFound).startsWith('<div id="root" data-prerendered="*">') && opening(rootOf(notFound))?.h1 === 'Nothing here', `${NOT_FOUND_FILE}: not the Nothing here page`);

@@ -1,4 +1,37 @@
+import { AUTHOR } from '../lib/site';
 import type { DraftSection, Story, StoryBlock } from './draft';
+
+/** Words that link out, and where to. */
+export interface StoryLink {
+  text: string;
+  href: string;
+}
+
+/**
+ * The byline's opening sentence, which the page sets as a credit line of its own above the rest
+ * of the byline (the research credit): without its full stop, the name linked to the author's site.
+ */
+export const CREDIT = { sentence: `By ${AUTHOR.name}.`, link: { text: AUTHOR.name, href: AUTHOR.url } } as const;
+
+export interface StoryByline {
+  /** The credit line as set: 'By bleugreen'. */
+  credit: string;
+  link: StoryLink;
+  /** The rest of the byline, in the draft's words. */
+  research: string;
+}
+
+/** The draft's byline as the page sets it; fails loudly if it no longer opens on the credit. */
+export function storyByline(byline: string): StoryByline {
+  if (!byline.startsWith(`${CREDIT.sentence} `)) {
+    throw new Error(`The byline does not open '${CREDIT.sentence}', which the page sets as its credit line`);
+  }
+  return {
+    credit: CREDIT.sentence.slice(0, -1),
+    link: CREDIT.link,
+    research: byline.slice(CREDIT.sentence.length + 1),
+  };
+}
 
 /** A figure the page sets between two blocks of a section's prose. */
 export type StoryFigure =
@@ -40,7 +73,7 @@ interface SectionMeta {
    */
   pulled: readonly string[];
   /** Words in the prose that link out; each target is also in the section's sources. */
-  links: readonly { text: string; href: string }[];
+  links: readonly StoryLink[];
 }
 
 /** What the page adds to each of the draft's sections, in the draft's order. */
@@ -66,7 +99,8 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-swarm',
     dates: '21–22 Oct',
-    figures: [{ figure: { kind: 'cost' }, after: 'All this breadth took a toll on my subscription usage limits' }],
+    // The usage limits run through the whole section, out to host's answer that closes it, so the cost link comes last.
+    figures: [{ figure: { kind: 'cost' }, after: 'Those are written handoffs, not a direct view of my internal reasoning' }],
     pulled: [],
     links: [],
   },
@@ -103,9 +137,10 @@ export const SECTION_META: readonly SectionMeta[] = [
       { figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] }, after: 'we’re not done until #1' },
       { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt the lost kit' },
       // Agility 99 is narrated in the paragraph that closes on a colon before host's "OFFICIAL #1 VERIFIED", so the
-      // clip follows that quotation, and the board after it.
+      // clip follows that quotation.
       { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'OFFICIAL #1 VERIFIED' },
-      // The operator texted this same screenshot at 4:30 AM, which bounds when it was taken.
+      // The screenshot the operator texted his brother at 4:30 AM, which bounds when it was taken. The prose
+      // narrates the sending in a paragraph that closes on a colon before the texts, so it follows them, last in the story.
       {
         figure: {
           kind: 'image',
@@ -117,7 +152,7 @@ export const SECTION_META: readonly SectionMeta[] = [
           source: 'The operator’s screenshot',
           takenBefore: '2026-10-26T11:30Z',
         },
-        after: 'OFFICIAL #1 VERIFIED',
+        after: 'Im da king of runescape',
       },
     ],
     pulled: [],
