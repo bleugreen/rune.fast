@@ -44,7 +44,7 @@ export const made = { pools: 0, viewers: 0, renderers: 0 };
 
 let shared: Promise<SharedWorld> | undefined;
 let rendererStarted: Promise<void> | undefined;
-let tenant: { ticket: Ticket; host: HTMLElement; overlay: HTMLElement; evict: () => void } | undefined;
+let tenant: { claim: object; ticket: Ticket; evict: () => void } | undefined;
 const manifests = new Map<string, Promise<ClipManifest>>();
 const drivers = new Map<string, ReplayDriver>();
 
@@ -138,11 +138,14 @@ function driverFor(entry: ReplayEntry, manifest: ClipManifest): ReplayDriver {
  */
 export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElement, evict: () => void): Ticket {
   const previous = tenant;
+  // This claim's identity, made before anything is awaited, so a later claim can overtake it.
+  const claim = {};
+  const holds = () => tenant?.claim === claim;
   const ticket: Ticket = {
     entry,
     ready: (async () => {
       const [w, manifest] = await Promise.all([world(), manifestOf(entry.recording)]);
-      if (tenant?.ticket !== ticket) throw new Superseded();
+      if (!holds()) throw new Superseded();
       const { viewer, renderer } = w;
       const driver = driverFor(entry, manifest);
       // A fresh controller around the same viewer: the map squares, textures and models stay.
@@ -157,13 +160,13 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
       const kFrom = manifest.anchor.kOffset + entry.from;
       await driver.seek(kFrom);
       performance.mark('replay:seeked');
-      if (tenant?.ticket !== ticket) throw new Superseded();
+      if (!holds()) throw new Superseded();
       controller.setPendingFollow(manifest.follow.name);
       renderer.start();
       return { ...w, driver, controller, kFrom, kTo: manifest.anchor.kOffset + entry.to };
     })(),
   };
-  tenant = { ticket, host, overlay, evict };
+  tenant = { claim, ticket, evict };
   if (previous) {
     drivers.get(previous.ticket.entry.id)?.pause();
     previous.evict();
