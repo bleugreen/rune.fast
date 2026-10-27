@@ -1,0 +1,35 @@
+.strip {
+  min-width: 0;
+  margin: 0;
+}
+
+.frames {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.frames img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--paper-shade);
+}
+
+/* The clip frame's caption line. */
+.caption {
+  display: grid;
+  row-gap: var(--space-1);
+  margin-top: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.when {
+  font-size: var(--label-sm);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums lining-nums;
+}

@@ -1,5 +1,5 @@
 import raw from '../../data/tricks.json';
-import { clipById } from '../clips/registry';
+import { clipById, type Provenance } from '../clips/registry';
 
 export type Kind =
   | 'game-mechanic exploit'
@@ -49,6 +49,18 @@ export interface Trick {
   sources: string[];
   /** The card's clip, by its id in data/clips.json. */
   clip: string | null;
+  /** Frames in place of a clip, where the moment is too short for one (10 to 15 s). */
+  stills?: StillStrip;
+}
+
+/** A few frames of a lab film, in order, captioned like a clip. Images, not footage. */
+export interface StillStrip extends Provenance {
+  /** Under public/, as the page requests them, each with what it shows. */
+  frames: { src: string; alt: string }[];
+  width: number;
+  height: number;
+  caption: string;
+  step: string;
 }
 
 export const TRICKS = raw as unknown as readonly Trick[];
@@ -116,6 +128,7 @@ export function cardText(t: Trick): string[] {
     t.failed_live,
     ...(s ? [s.label, s.before_label, s.after_label, s.note] : []),
     ...(t.clip ? [clipById(t.clip).caption, clipById(t.clip).step] : []),
+    ...(t.stills ? [t.stills.caption, t.stills.step] : []),
   ].filter((x): x is string => x !== null);
 }
 

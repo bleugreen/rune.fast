@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
-import { clipById, clipSource, clipWhen } from '../clips/registry';
+import { clipById, clipSource, clipSrc, clipWhen } from '../clips/registry';
 import { StoryPage } from '../pages/StoryPage';
 import { sourceTable } from './draft';
 import { SECTION_META, quotes, storySections } from './sections';
