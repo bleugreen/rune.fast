@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, type ReactNode } from 'react';
+import { Fragment, useMemo, type ReactNode } from 'react';
 import { Threaded } from '../components/Coded';
 import { capitalize, countWord, fmtInt, fmtPercent, listWords } from '../lib/numbers';
 import { fmtDuration, fmtPacificDayLong, fmtPacificHm, fmtPacificHms, fmtPacificWeekday } from '../lib/time';
@@ -69,9 +69,6 @@ const threadList = (names: readonly string[]) =>
 
 export function HarnessPage() {
   const m: HarnessModel = useMemo(() => buildHarnessModel(harnessData), []);
-  useEffect(() => {
-    document.title = 'Harness · rune.fast';
-  }, []);
 
   const t = m.totals;
   const a = m.address;
