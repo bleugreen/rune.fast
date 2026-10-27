@@ -142,7 +142,7 @@
       "data/attempts-timeline.json, attempt 5 (holds of 9 h 08 min, 5 h 50 min and 6 h 46 min)"
     ],
     "clip": null,
-    "route": { "anchor": "logged-out-1", "text": "See the run’s first logout on the route, a wait out of a contest at the iron rocks" }
+    "route": { "anchor": "logged-out-1", "text": "See the run’s first logout on the route, at the crowded iron rocks" }
   },
   {
     "id": "quest-order",

@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { createElement } from 'react';
+import { createElement, type ReactElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router-dom';
+import { RoutePage } from '../pages/RoutePage';
 import { TricksPage } from '../pages/TricksPage';
 import { projectTricks } from '../../scripts/public-tricks';
 import { readFileSync } from 'node:fs';
@@ -12,6 +14,41 @@ import { GROUPS, TRICKS, cardText, headlineFacts, hi, inGroup, lo, rejected, sav
 const BASES = ['measured', 'inferred', 'estimated'];
 const STEP_CODE = /\b[SHT]\d{2}[a-z]?\b/;
 const charted = TRICKS.filter((t) => t.saving);
+
+/** A page as the server renders it. Layout effects (chart widths, the route's spine) do not run there, which is all these checks need. */
+function render(page: ReactElement): string {
+  const error = console.error;
+  console.error = (...args: unknown[]) => {
+    if (typeof args[0] === 'string' && args[0].includes('useLayoutEffect does nothing on the server')) return;
+    error(...args);
+  };
+  try {
+    return renderToStaticMarkup(createElement(MemoryRouter, null, page));
+  } finally {
+    console.error = error;
+  }
+}
+
+const VOID = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
+
+/** The elements directly inside the outermost element of `html`, as markup. React escapes `>` in attributes, so a tag ends at its first `>`. */
+function children(html: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (const m of html.matchAll(/<(\/?)([a-z][\w-]*)[^>]*?(\/?)>/g)) {
+    const [tag, close, name, self] = m;
+    if (close) {
+      if (--depth === 1) out.push(html.slice(start, m.index + tag.length));
+    } else if (self || VOID.has(name!)) {
+      if (depth === 1) out.push(tag);
+    } else {
+      if (depth === 1) start = m.index;
+      depth++;
+    }
+  }
+  return out;
+}
 
 describe('the data', () => {
   test('ids are unique', () => {
@@ -126,7 +163,7 @@ describe('order and headline', () => {
   });
 
   test('the page shows a card for each of the eighteen techniques the run used, and nothing it left out', () => {
-    const html = renderToStaticMarkup(createElement(TricksPage));
+    const html = render(createElement(TricksPage));
     const cards = [...html.matchAll(/<article[^>]* id="([^"]+)"/g)].map((m) => m[1]);
     expect(cards).toEqual(GROUPS.flatMap((g) => inGroup(TRICKS, g.id)).map((t) => t.id));
     expect(cards.length).toBe(18);
@@ -137,12 +174,49 @@ describe('order and headline', () => {
   });
 
   test('the headline is the title and the subtitle, with nothing between them and the first group', () => {
-    const html = renderToStaticMarkup(createElement(TricksPage));
+    const html = render(createElement(TricksPage));
     const header = html.match(/<header[^>]*>([\s\S]*?)<\/header>/)![1]!;
     const text = (s: string) => s.replace(/<[^>]+>/g, '\n').split('\n').map((x) => x.trim()).filter(Boolean);
     expect(text(header)).toEqual(['Techniques that made the run', 'Nine of them cut a cost in half or more']);
     const between = html.slice(html.indexOf('</header>') + '</header>'.length, html.indexOf('<h2'));
     expect(text(between)).toEqual([]);
+  });
+});
+
+describe('what a card shows beside its prose', () => {
+  const html = render(createElement(TricksPage));
+  const shown = GROUPS.flatMap((g) => inGroup(TRICKS, g.id));
+  const card = (id: string) => html.match(new RegExp(`<article id="${id}">[\\s\\S]*?</article>`))![0];
+
+  test.each(shown.map((t) => [t.id, t] as const))('%s: its clip, its still strip, or no media cell at all', (_, t) => {
+    // The prose, the chart if it has one, then any media cell, then the sources.
+    const cells = children(card(t.id));
+    expect(cells.at(-1)).toContain('<details');
+    const media = cells.slice(t.saving ? 2 : 1, -1);
+    if (t.clip) {
+      expect(media).toHaveLength(1);
+      expect(media[0]).toContain(`data-embed="${t.clip}"`);
+    } else if (t.stills) {
+      expect(media).toHaveLength(1);
+      for (const f of t.stills.frames) expect(media[0]).toContain(`src="${f.src}"`);
+    } else {
+      expect(media).toEqual([]);
+    }
+  });
+
+  test('nothing on the page promises footage to come', () => {
+    expect(html).not.toMatch(/to come/i);
+  });
+
+  test('the logged-out-time and quest-order cards link to the route', () => {
+    for (const id of ['logged-out-time', 'quest-order']) expect(card(id)).toContain('href="/route#');
+  });
+
+  test('every link to the route lands on an element the route page renders', () => {
+    const anchors = [...html.matchAll(/href="\/route#([^"]+)"/g)].map((m) => m[1]!);
+    expect(anchors.length).toBe(shown.filter((t) => t.route).length);
+    const route = render(createElement(RoutePage));
+    for (const a of anchors) expect(route).toContain(` id="${a}"`);
   });
 });
 
