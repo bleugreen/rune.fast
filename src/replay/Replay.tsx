@@ -52,7 +52,7 @@ type Ready = LoadedWorld & { driver: ReplayDriver; controller: LiveController; k
  * only ones. Only the record account is named in the scene.
  */
 const Replay = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function Replay(props, ref) {
-  const { entry, onFailed } = props;
+  const { entry } = props;
   const [ready, setReady] = useState<Ready>();
   const readyRef = useRef<Ready>();
   readyRef.current = ready;
@@ -104,7 +104,8 @@ const Replay = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function Replay(
       loaded?.viewer.dispose();
       void pool?.terminate();
     };
-  }, [entry, onFailed]);
+    // The frame's callbacks are read through `latest`: they are new closures on every render.
+  }, [entry]);
 
   return (
     <div
