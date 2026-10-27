@@ -37,7 +37,11 @@ describe('Web Analytics', () => {
     expect(w.added).toHaveLength(1);
     expect(w.added[0]!.src).toBe(BEACON_SRC);
     expect(w.added[0]!.defer).toBe(true);
-    expect(JSON.parse(w.added[0]!.dataset.cfBeacon!)).toEqual({ token: '361721d1f0454779b39c00a62bf112a9', spa: true });
+    expect(JSON.parse(w.added[0]!.dataset.cfBeacon!)).toEqual({
+      token: '361721d1f0454779b39c00a62bf112a9',
+      spa: true,
+      send: { to: '/cdn-cgi/rum' },
+    });
   });
 
   test('without requestIdleCallback, after load on a timer', () => {
