@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { countWord, listWords } from '../../lib/numbers';
 import { fmtPacificHms } from '../../lib/time';
 import { edgeKey, type HarnessModel, type NodeKey, type RouteStep } from '../model';
-import { shownSteps, stepTimeline, usePlayer, useReducedMotion } from '../player';
-import { EASE_OUT, TRAVEL_MS, useChartWidth } from './frame';
+import { keysLabel, shownSteps, stepTimeline, travelSpan, usePlayer, useReducedMotion } from '../player';
+import { arrivalDelay, dotDelay, EASE_OUT, TRAVEL_MS, useChartWidth } from './frame';
 import styles from './Figures.module.css';
 
 const H = 300;
@@ -11,8 +11,6 @@ const H = 300;
 const SLOT = 1100;
 /** A reduced-motion Play only highlights, so it can take longer over each step. */
 const REDUCED_SLOT = 1600;
-/** Between dots of one fan-out. */
-const STAGGER = 40;
 
 type Point = readonly [number, number];
 
@@ -100,14 +98,22 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
   const fixesShown = !state.started || shown > started;
 
   // Travel: the step just reached, by play or the Step button, sends its dots along its edges.
+  // Anything else (the keyboard, a reset) snaps, and takes any dots still in flight with it.
   const dots = useRef<SVGGElement>(null);
-  const lastShown = useRef(shown);
+  const flights = useRef(new Set<Animation>());
+  const prevPos = useRef({ t: state.t, started: state.started });
+  const span = travelSpan(prevPos.current, state, reduced);
+  const launching = span !== null && shownSteps(n, span[1]) === shownSteps(n, span[0]) + 1;
   useEffect(() => {
-    const prev = lastShown.current;
-    lastShown.current = shown;
+    const span = travelSpan(prevPos.current, state, reduced);
+    prevPos.current = { t: state.t, started: state.started };
     const g = dots.current;
-    if (!g || !state.started || reduced || shown !== prev + 1 || (state.via !== 'play' && state.via !== 'step')) return;
-    const s = r.steps[shown - 1]!;
+    if (!span) {
+      flights.current.forEach((a) => a.cancel());
+      return;
+    }
+    if (!g || shownSteps(n, span[1]) !== shownSteps(n, span[0]) + 1) return;
+    const s = r.steps[shownSteps(n, span[1]) - 1]!;
     s.to.forEach((to, j) => {
       const key = routeEdge(s.from, to);
       const probe = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -124,17 +130,24 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
       dot.setAttribute('class', styles.accent!);
       dot.style.transform = frames[0]!.transform;
       g.appendChild(dot);
-      const run = dot.animate(frames, { duration: TRAVEL_MS, delay: j * STAGGER, easing: EASE_OUT, fill: 'both' });
-      run.onfinish = run.oncancel = () => dot.remove();
+      const run = dot.animate(frames, { duration: TRAVEL_MS, delay: dotDelay(j), easing: EASE_OUT, fill: 'both' });
+      flights.current.add(run);
+      run.onfinish = run.oncancel = () => {
+        flights.current.delete(run);
+        dot.remove();
+      };
     });
-  }, [shown, state.started, state.via, reduced]);
+  }, [state, reduced]);
 
-  // An arrival ring waits for its dot only when one is travelling, and leaves at once.
-  const travelling = state.started && !reduced && (state.via === 'play' || state.via === 'step');
-  const ring = (k: NodeKey) => ({
-    opacity: arrived.has(k) ? 1 : 0,
-    style: { transitionDelay: arrived.has(k) && travelling ? `${TRAVEL_MS - 40}ms` : '0ms' },
-  });
+  // An arrival ring waits for its own dot when one is launched for it, and leaves at once. The
+  // step's edges light at once, as the route the message is taking.
+  const ring = (k: NodeKey) => {
+    const j = current ? current.to.indexOf(k) : -1;
+    return {
+      opacity: j >= 0 ? 1 : 0,
+      style: { transitionDelay: j >= 0 && launching ? `${arrivalDelay(j)}ms` : '0ms' },
+    };
+  };
   const node = (k: NodeKey, r0: number, cls: string) => (
     <g key={k}>
       <circle className={cls} cx={pt(k)[0]} cy={pt(k)[1]} r={r0} />
@@ -151,7 +164,7 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
       className={`${styles.root} ${styles.player}`}
       role="group"
       tabIndex={0}
-      aria-label={`${label}. Space plays; the arrow keys step.`}
+      aria-label={`${label}. ${keysLabel(reduced)}`}
       aria-keyshortcuts="Space ArrowLeft ArrowRight Home End"
       onKeyDown={player.onKeyDown}
     >

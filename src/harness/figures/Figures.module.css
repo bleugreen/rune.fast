@@ -7,9 +7,32 @@
   overflow: visible;
   font-family: var(--font-sans);
 }
-/* The playhead's veil runs off the right edge; the figure clips it there. */
-.clipped {
+/* A played chart with a moving layer over it; the veil runs off the right edge and is clipped there. */
+.stage {
+  position: relative;
   overflow: hidden;
+}
+.headLayer {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  will-change: transform;
+}
+.veilBox {
+  position: absolute;
+  left: 0.5px;
+  width: 100%;
+  background: var(--paper);
+  opacity: 0.74;
+}
+.headLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -0.5px;
+  width: 1px;
+  background: var(--accent);
 }
 
 /* Type inside the charts */
@@ -112,13 +135,6 @@
   .fade {
     transition: opacity 120ms ease-out 0s !important;
   }
-}
-.head {
-  pointer-events: none;
-}
-.veil {
-  fill: var(--paper);
-  opacity: 0.74;
 }
 
 /* A played figure: focusable, scrubbable, with its controls beneath */

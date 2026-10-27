@@ -55,10 +55,28 @@ export function nextMark(tl: Timeline, t: number, dir: 1 | -1): number {
   return [...tl.marks].reverse().find((m) => m < t - EPS) ?? 0;
 }
 
-/** Steps to the next mark; from rest, a step starts at the beginning. Stepping pauses play. */
+/** Steps to the next mark; from rest, a step goes to the first mark, the beginning. Stepping pauses play. */
 export function step(s: PlayerState, tl: Timeline, dir: 1 | -1, via: Via = 'step'): PlayerState {
-  const from = s.started ? s.t : 0;
-  return { t: nextMark(tl, from, dir), playing: false, started: true, via };
+  const t = s.started ? nextMark(tl, s.t, dir) : dir > 0 ? (tl.marks[0] ?? 0) : 0;
+  return { t, playing: false, started: true, via };
+}
+
+/** Where the clock stands before the reader first starts it: before the beginning, so the first step is a change. */
+export const BEFORE = -1;
+
+/**
+ * The stretch a change of state should animate across, from where the position was to where it
+ * is now, or null when the change should snap: under reduced motion, from the keyboard, a scrub, a
+ * jump or a reset, and any move backwards. From rest the stretch starts before the beginning.
+ */
+export function travelSpan(
+  prev: Pick<PlayerState, 't' | 'started'>,
+  next: PlayerState,
+  reduced: boolean,
+): readonly [number, number] | null {
+  if (reduced || !next.started || (next.via !== 'play' && next.via !== 'step')) return null;
+  const from = prev.started ? prev.t : BEFORE;
+  return next.t > from ? [from, next.t] : null;
 }
 
 export function seek(s: PlayerState, t: number, via: Via = 'scrub'): PlayerState {
@@ -72,14 +90,19 @@ export function markIndex(tl: Timeline, t: number): number {
   return i;
 }
 
-/** For a figure of `n` equal steps: how many have happened at t. Playing from 0 shows the first at once. */
+/**
+ * For a figure of `n` equal steps: how many have happened at t. Step k begins at mark (k-1)/n, so
+ * each step's change coincides with a mark (and so with a render), and playing from 0 shows the
+ * first at once.
+ */
 export function shownSteps(n: number, t: number): number {
-  return Math.min(n, Math.max(0, Math.ceil(t * n - 1e-6)));
+  if (t < 0) return 0;
+  return Math.min(n, Math.floor(t * n + 1e-9) + 1);
 }
 
-/** n equal steps as a timeline: a mark at the end of each. */
+/** n equal steps as a timeline: a mark at the start of each. */
 export function stepTimeline(n: number, slot: number): Timeline {
-  return { duration: n * slot, marks: Array.from({ length: n + 1 }, (_, k) => k / n) };
+  return { duration: n * slot, marks: Array.from({ length: n }, (_, k) => k / n) };
 }
 
 const REDUCED = '(prefers-reduced-motion: reduce)';
@@ -153,6 +176,8 @@ export function usePlayer(tl: Timeline, onFrame?: (t: number) => void) {
   const reset = () => commit(REST);
 
   const onKeyDown = (e: KeyboardEvent) => {
+    // Space on one of the figure's own buttons is that button's click, not the figure's shortcut.
+    if (e.key === ' ' && e.target !== e.currentTarget) return;
     if (e.key === ' ') {
       if (reduced) stepBy(1, 'key');
       else toggle();
@@ -168,3 +193,7 @@ export function usePlayer(tl: Timeline, onFrame?: (t: number) => void) {
 }
 
 export type Player = ReturnType<typeof usePlayer>;
+
+/** The keyboard, as a played figure's accessible name states it: under reduced motion Space steps. */
+export const keysLabel = (reduced: boolean) =>
+  reduced ? 'Space and the arrow keys step from event to event.' : 'Space plays and pauses; the arrow keys step from event to event.';

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, type PointerEvent } from 'react';
 import { countWord } from '../../lib/numbers';
 import { fmtDuration, fmtPacificHm, fmtPacificWeekday } from '../../lib/time';
 import { axisAt, AXIS_GAP, type HarnessModel, type Phase } from '../model';
-import { usePlayer } from '../player';
+import { keysLabel, travelSpan, usePlayer } from '../player';
 import { EASE_OUT, NARROW, TRAVEL_MS, useChartWidth } from './frame';
 import styles from './Figures.module.css';
 
@@ -33,7 +33,7 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
   const X = (f: number) => x0 + f * (x1 - x0);
   const at = (t: number) => X(axisAt(i.segments, t));
   const tl = useMemo(() => ({ duration: DURATION, marks: i.marks }), [i]);
-  const head = useRef<SVGGElement>(null);
+  const head = useRef<HTMLDivElement>(null);
   const player = usePlayer(tl, (f) => {
     if (head.current) head.current.style.transform = `translateX(${X(f)}px)`;
   });
@@ -43,24 +43,29 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
   const phase = i.phases.reduce((k, p, j) => (reached(p.at) ? j : k), 0);
 
   // A wake travels when the playhead crosses its turn's start in play or by the Step button.
+  // The keyboard, a scrub or a jump snaps, and settles any wake still dropping.
   const wakeEls = useRef(new Map<number, SVGGElement>());
-  const lastF = useRef(f);
+  const prevPos = useRef({ t: state.t, started: state.started });
   useEffect(() => {
-    const prev = lastF.current;
-    lastF.current = f;
-    if (!state.started || reduced || f <= prev || (state.via !== 'play' && state.via !== 'step')) return;
+    const span = travelSpan(prevPos.current, state, reduced);
+    prevPos.current = { t: state.t, started: state.started };
+    const markers = (n: number) => [...(wakeEls.current.get(n)?.querySelectorAll<SVGElement>('[data-from]') ?? [])];
+    if (!span) {
+      for (const tn of i.turns) for (const el of markers(tn.n)) el.getAnimations().forEach((a) => a.cancel());
+      return;
+    }
     for (const tn of i.turns) {
       const pos = axisAt(i.segments, tn.start);
-      if (!tn.wake || pos <= prev || pos > f + 1e-9) continue;
-      wakeEls.current.get(tn.n)?.querySelectorAll<SVGElement>('[data-from]').forEach((el) => {
-        const dy = Number(el.dataset.from);
-        el.animate([{ transform: `translateY(${dy}px)`, opacity: 0.2 }, { transform: 'translateY(0)', opacity: 1 }], {
+      if (!tn.wake || pos <= span[0] || pos > span[1] + 1e-9) continue;
+      for (const el of markers(tn.n)) {
+        el.getAnimations().forEach((a) => a.cancel());
+        el.animate([{ transform: `translateY(${Number(el.dataset.from)}px)`, opacity: 0.2 }, { transform: 'translateY(0)', opacity: 1 }], {
           duration: TRAVEL_MS,
           easing: EASE_OUT,
         });
-      });
+      }
     }
-  }, [f, state.started, state.via, reduced, i]);
+  }, [state, reduced, i]);
 
   const scrub = (e: PointerEvent<SVGSVGElement>) => {
     if (e.type === 'pointermove' && !e.currentTarget.hasPointerCapture(e.pointerId)) return;
@@ -96,12 +101,13 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
       className={`${styles.root} ${styles.player}`}
       role="group"
       tabIndex={0}
-      aria-label={`${label}. Space plays and pauses; the arrow keys step from event to event.`}
+      aria-label={`${label}. ${keysLabel(reduced)}`}
       aria-keyshortcuts="Space ArrowLeft ArrowRight Home End"
       onKeyDown={player.onKeyDown}
     >
+      <div className={styles.stage}>
       <svg
-        className={`${styles.svg} ${styles.clipped} ${styles.scrub}`}
+        className={`${styles.svg} ${styles.scrub}`}
         width={width}
         height={H}
         role="img"
@@ -218,12 +224,19 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
           </text>
         ))}
 
-        {/* The playhead: what is ahead of it is veiled */}
-        <g ref={head} className={styles.head} style={{ transform: `translateX(${X(f)}px)` }} opacity={state.started ? 1 : 0}>
-          <rect className={styles.veil} x={0.5} y={Y.source - 12} width={width} height={Y.pr + 20 - (Y.source - 12)} />
-          <line className={styles.accentLine} x1={0} x2={0} y1={Y.source - 14} y2={Y.axis + 4} />
-        </g>
       </svg>
+      {/* The playhead, and the veil over what is ahead of it: an HTML layer of its own, moved by
+          transform each frame without repainting the chart beneath. */}
+      <div
+        ref={head}
+        className={styles.headLayer}
+        aria-hidden="true"
+        style={{ top: Y.source - 14, height: Y.axis + 18 - Y.source, transform: `translateX(${X(f)}px)`, opacity: state.started ? 1 : 0 }}
+      >
+        <div className={styles.veilBox} style={{ top: 2, height: Y.pr + 18 - Y.source }} />
+        <div className={styles.headLine} />
+      </div>
+      </div>
       <div className={styles.controls}>
         {reduced ? (
           i.phases.map((p) => (
@@ -243,7 +256,7 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
           </button>
         )}
         <span className={styles.hint}>
-          {reduced ? 'or the arrow keys, event by event' : 'drag across it to scrub; the arrow keys step event by event'}
+          {reduced ? 'or Space and the arrow keys, event by event' : 'drag across it to scrub; the arrow keys step event by event'}
         </span>
       </div>
       <p className={styles.key}>
