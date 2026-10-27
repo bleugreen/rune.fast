@@ -84,16 +84,6 @@ const CUTS: readonly Cut[] = [
     to: '2026-10-25T21:34:56.000Z',
     poster: '2026-10-25T21:34:42.000Z',
   },
-  {
-    // The end of the recovery's cannon session: the Protect from Melee icon over the account, the spiders'
-    // hits on it landing as zeros, Ranged 99 at 10:40:44.9, and the cannon picked up.
-    id: 'protect-from-melee',
-    from: '2026-10-26T10:40:32.000Z',
-    to: '2026-10-26T10:40:47.000Z',
-    poster: '2026-10-26T10:40:34.000Z',
-    // The icon and two zeros, at two and a half times, up and left of the frame's centred play mark.
-    posterDetail: 'crop=552:362:277:145,scale=1380:904:flags=lanczos',
-  },
 ];
 
 const { values: args } = parseArgs({

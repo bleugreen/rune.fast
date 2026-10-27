@@ -127,14 +127,14 @@
   {
     "id": "protect-from-melee",
     "name": "Protect from Melee for free",
-    "kind": "game-mechanic exploit",
-    "group": "game",
-    "what_normally": "Protect from Melee is a prayer that blocks close-combat hits, and it drains prayer points for every tick it stays on.",
-    "what_instead": "Flicked on and off, it drained nothing in the lab, and in ten lab runs of the Grand Tree fights it cost 5 prayer points in all. Through the recovery’s cannon session, from the set-up to Ranged 99, the recording shows its icon over the account’s head and the spiders’ hits landing as zeros.",
-    "why_allowed": "Switching a prayer is an ordinary click.",
+    "kind": "rejected",
+    "group": null,
+    "what_normally": null,
+    "what_instead": "Flicking it drained nothing in the lab, but the run kept the prayer switched on and ran out of points at the spiders, so it was never used.",
+    "why_allowed": null,
     "saving": null,
-    "steps_plain": ["the Grand Tree quests", "the cannon step", "the fights in the other quests"],
-    "failed_live": "In the last attempt the prayer never switched on at the cannon step, and the account’s one death came on the next login.",
+    "steps_plain": [],
+    "failed_live": null,
     "sources": [
       "rs-sdk docs/speedrun/research/helper-fed-and-combat.md section 2 (zero drain, lab)",
       "cairn://posts/373",
@@ -143,7 +143,7 @@
       "the run host’s screen recording of attempt 5, 26 Oct 10:40:32-10:40:47Z, cropped to the game canvas (the clip: the icon and the zero hits to the end of the session, Ranged 99)",
       "data/attempts-timeline.json, attempt 5, 26 Oct 03:25Z to 03:40Z"
     ],
-    "clip": "protect-from-melee"
+    "clip": null
   },
   {
     "id": "logged-out-time",
