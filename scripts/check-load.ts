@@ -27,7 +27,7 @@ import { brotliCompressSync, constants } from 'node:zlib';
 import { chromium, type Browser, type BrowserContextOptions } from 'playwright-core';
 import { preview } from 'vite';
 import { BEACON_SRC } from '../src/lib/analytics';
-import { PAGE_ONLY } from '../src/meta';
+import { PAGE_ONLY } from '../src/lib/head';
 
 const { values: args } = parseArgs({ options: { measure: { type: 'boolean', default: false } } });
 

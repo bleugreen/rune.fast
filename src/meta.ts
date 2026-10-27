@@ -2,6 +2,7 @@ import { recordFacts } from './attempts/model';
 import { buildCostModel } from './cost/model';
 import { costInputs } from './data/cost';
 import { timeline } from './data/timeline';
+import { PAGE_ONLY } from './lib/head';
 import { fmtInt, fmtUsd } from './lib/numbers';
 import { inlineTokens } from './story/draft';
 import { story } from './story/story';
@@ -152,9 +153,6 @@ export function headTags(m: PageMeta): string[] {
     `<meta name="twitter:image:alt" content="${attr(SHARE_IMAGE.alt)}" />`,
   ];
 }
-
-/** The attribute that marks a tag of the built shell's head as one page's alone, by its path. */
-export const PAGE_ONLY = 'data-page';
 
 const pageOnlyTag = new RegExp(`[ \\t]*<[^>]*\\b${PAGE_ONLY}="([^"]*)"[^>]*>\\n?`, 'g');
 
