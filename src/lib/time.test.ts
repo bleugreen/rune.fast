@@ -2,13 +2,69 @@ import { afterEach, describe, expect, setSystemTime, test } from 'bun:test';
 import {
   fmtCalendarDate,
   fmtPacificClockRange,
+  fmtPacificDate,
+  fmtPacificDayLong,
+  fmtPacificDayMon,
+  fmtPacificDayMonth,
+  fmtPacificDayMonYear,
+  fmtPacificDayShort,
   fmtPacificHm,
   fmtPacificHms,
+  fmtPacificWeekday,
+  fmtPacificWeekdayDay,
   pacificDayKey,
   pacificHour,
   pacificMidnights,
+  pacificZone,
   parseUtc,
 } from './time';
+
+/** 1:25:07 AM PDT on Friday 23 October 2026. */
+const FRI = parseUtc('2026-10-23T08:25:07Z');
+/** Every way the site writes an instant, as it must read in any engine. */
+const WRITTEN: ReadonlyArray<readonly [string, (t: number) => string, number, string]> = [
+  ['fmtPacificDayMonth', fmtPacificDayMonth, FRI, '23 October'],
+  ['fmtPacificDayMon', fmtPacificDayMon, FRI, '23 Oct'],
+  ['pacificDayKey', pacificDayKey, FRI, '2026-10-23'],
+  ['fmtPacificWeekdayDay', fmtPacificWeekdayDay, FRI, 'Fri 23'],
+  ['fmtPacificDayLong', fmtPacificDayLong, FRI, 'Friday 23 October'],
+  ['fmtPacificWeekday', fmtPacificWeekday, FRI, 'Friday'],
+  ['fmtPacificDayShort', fmtPacificDayShort, FRI, 'Fri 23 Oct'],
+  ['fmtPacificDate', fmtPacificDate, FRI, '23 October 2026'],
+  ['fmtPacificDayMonYear', fmtPacificDayMonYear, FRI, '23 Oct 2026'],
+  ['fmtPacificHm', fmtPacificHm, FRI, '1:25 AM'],
+  ['fmtPacificHms', fmtPacificHms, FRI, '1:25:07 AM'],
+  ['pacificZone', pacificZone, FRI, 'PDT'],
+  ['pacificZone in winter', pacificZone, parseUtc('2026-11-01T09:30Z'), 'PST'],
+  ['fmtPacificDayShort on a Sunday', fmtPacificDayShort, parseUtc('2026-10-25T19:00Z'), 'Sun 25 Oct'],
+];
+
+describe('every date and time', () => {
+  test.each(WRITTEN)('%s writes the site’s own form', (_, f, t, want) => {
+    expect(f(t)).toBe(want);
+  });
+
+  // The build renders each page with Bun's ICU and the reader's browser renders it again with its
+  // own; Bun on Linux wrote en-GB's 'Fri 23 Oct' as 'Fri, 23 Oct' and broke hydration in production.
+  // So nothing written may depend on a locale's patterns or names, only on the clock's numbers.
+  test('owes nothing to the engine’s locale data', () => {
+    const proto = Intl.DateTimeFormat.prototype;
+    const { format, formatToParts } = proto;
+    proto.format = () => {
+      throw new Error('a locale pattern was used');
+    };
+    proto.formatToParts = function (this: Intl.DateTimeFormat, t?: number | Date) {
+      return formatToParts
+        .call(this, t)
+        .map((p) => (p.type === 'literal' ? { ...p, value: ', ' } : /^\d+$/.test(p.value) ? p : { ...p, value: '?' }));
+    };
+    try {
+      for (const [name, f, t, want] of WRITTEN) expect(`${name}: ${f(t)}`).toBe(`${name}: ${want}`);
+    } finally {
+      Object.assign(proto, { format, formatToParts });
+    }
+  });
+});
 
 describe('the clock', () => {
   test('is Pacific on the 12-hour clock, unpadded, with a plain space before an uppercase period', () => {
