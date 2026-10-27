@@ -170,6 +170,9 @@ export class ReplayDriver implements FeedSource, WorldStepper {
         this.controller = controller;
         controller.stepper = this;
         this.playhead = new Playhead(controller.world, this.handlers, this.source);
+        // A driver bound again, to a fresh controller, starts from an empty world: its next seek must
+        // restore a checkpoint rather than carry on from where its last world was.
+        this.positioned = false;
     }
 
     // FeedSource: a clip has no connection or subscriptions; the recorded frames already
