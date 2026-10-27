@@ -62,7 +62,7 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-swarm',
     dates: '21–22 Oct',
-    figures: [{ figure: { kind: 'cost' }, after: 'The day cost $5,448' }],
+    figures: [{ figure: { kind: 'cost' }, after: 'came to about $256' }],
     pulled: [],
     links: [],
   },
