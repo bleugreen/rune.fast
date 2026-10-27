@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { capitalize, countWord } from '../lib/numbers';
 import { GROUPS, TRICKS, headlineFacts, inGroup } from '../tricks/model';
 import { TrickCard } from '../tricks/TrickCard';
@@ -14,11 +13,16 @@ export function TricksPage() {
     document.title = 'Tricks · rune.fast';
   }, []);
 
-  // A link to /tricks#<id> lands on that card, arriving from another page or within this one.
-  const { hash } = useLocation();
+  // A link to /tricks#<id> lands on that card, arriving from another page or by a changed hash.
   useEffect(() => {
-    if (hash) document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ block: 'start' });
-  }, [hash]);
+    const land = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      if (id) document.getElementById(id)?.scrollIntoView({ block: 'start' });
+    };
+    land();
+    window.addEventListener('hashchange', land);
+    return () => window.removeEventListener('hashchange', land);
+  }, []);
 
   return (
     <article className={styles.page}>

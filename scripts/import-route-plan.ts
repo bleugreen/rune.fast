@@ -66,8 +66,9 @@ function table(rev: string, scenarioChecked: boolean): { rows: PlanRow[]; text: 
     const id = c[1]!;
     if (!id) continue; // the table's closing total, which section 7 supersedes
     // The leading figure, bold or not, and the tags right after it: '**1,353 m/i**', 'knife 2,978.0 i', '2,026'.
-    const e = /^[^\d]{0,12}?(\d[\d,]*(?:\.\d+)?)\**\s*((?:[mier](?:-demo)?)(?:\/[mier])*)?(?![\w])/.exec(c[6]!);
-    if (!e) fail(`${rev}:${i + 1} ${id}: no expected figure in '${c[6]!.slice(0, 60)}'`);
+    const e =
+      /^[^\d]{0,12}?(\d[\d,]*(?:\.\d+)?)\**\s*((?:[mier](?:-demo)?)(?:\/[mier])*)?(?![\w])/.exec(c[6]!) ??
+      fail(`${rev}:${i + 1} ${id}: no expected figure in '${c[6]!.slice(0, 60)}'`);
     const b = NUMBER.exec(c[7]!);
     const scenario = scenarioChecked ? (SCENARIO[id] ?? []) : [];
     for (const s of scenario) if (!line.includes(s.says)) fail(`${rev}:${i + 1} ${id} no longer says '${s.says}'`);
@@ -93,8 +94,9 @@ for (const id of Object.keys(SCENARIO)) if (!atLogin.rows.some((r) => r.id === i
 // The headline the revision states for attempt 5 on its run commit.
 const headline = atLogin.text.split('\n').findIndex((l) => /^\*\*Fold-in [\w.]+: attempt 5 on its run commit of record, 82f6da3a\b/.test(l));
 if (headline < 0) fail('no headline for attempt 5 on the run commit');
-const h = /expected (\d[\d,]*\.\d), [\d,.]+ under the record \(best (\d[\d,]*\.\d)\)/.exec(atLogin.text.split('\n')[headline]!);
-if (!h) fail('the headline does not state an expected and a best total');
+const h =
+  /expected (\d[\d,]*\.\d), [\d,.]+ under the record \(best (\d[\d,]*\.\d)\)/.exec(atLogin.text.split('\n')[headline]!) ??
+  fail('the headline does not state an expected and a best total');
 
 const plan: RoutePlan = {
   source: {
