@@ -53,7 +53,7 @@ export const SECTION_META: readonly SectionMeta[] = [
       'I played RuneScape a lot as a kid, before getting into botting RuneScape and quickly getting banned. ‘RuneScape but for bots specifically’ was incredibly up my alley.',
       'absolutely! Swarm out my guy :)',
     ],
-    links: [],
+    links: [{ text: 'RuneScape Bench: MMOs for Agents', href: 'https://www.youtube.com/watch?v=cNm4zyUtWj0' }],
   },
   {
     id: 'the-tricks',
