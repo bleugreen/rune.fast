@@ -3,7 +3,7 @@
  * (requested tick reached, the followed account drawn, no map squares or bakes outstanding).
  *
  *   bun scripts/world/shoot.ts [--base http://localhost:4173] [--out .world/shots] [--headed] \
- *     [--shot agility-99@6095:agility-99] [--shot rekit@10:rekit] [--timings] [--reload] [--prefetch]
+ *     [--shot agility-99@6095:agility-99] [--shot rekit@10:rekit] [--timings] [--reload]
  *
  * Prints each page's console errors and, against a dev server, its dev status line.
  */
@@ -22,8 +22,6 @@ const { values: args } = parseArgs({
     timings: { type: 'boolean', default: false },
     // After the first load, reload once with the browser's caches warm and measure again.
     reload: { type: 'boolean', default: false },
-    // Open /replay first and wait for its cache prefetch, then open the moment in the same page.
-    prefetch: { type: 'boolean', default: false },
     timeout: { type: 'string', default: '180000' },
   },
 });
@@ -48,13 +46,6 @@ try {
     });
     page.on('pageerror', (e) => errors.push(e.message));
     const url = `${args.base}/replay/${moment}?t=${tick}&paused`;
-    if (args.prefetch) {
-      const begun = Date.now();
-      await page.goto(`${args.base}/replay`);
-      await page.waitForFunction(() => performance.getEntriesByName('replay:cache-prefetched').length > 0, null, { timeout: Number(args.timeout) });
-      const at = await page.evaluate(() => ['replay:prefetch-start', 'replay:cache-prefetched'].map((n) => Math.round(performance.getEntriesByName(n)[0]!.startTime)));
-      console.log(`${name}: /replay prefetched the cache ${at[0]}-${at[1]} ms after navigation (${((Date.now() - begun) / 1000).toFixed(1)} s in all)`);
-    }
     const started = Date.now();
     await page.goto(url);
     const replay = page.locator('[data-replay]');
