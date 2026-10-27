@@ -62,9 +62,11 @@ Days later, when I asked `host`, one of the GPT agents, "is that how you think n
 
 ## 4. The first attempts
 
-On Friday morning, the swarm began its first official attempt. It lasted 7 minutes. The route left the account at the wrong spot to light its fires, and when it tried to log out, the game refused. You can’t log out while something is attacking you, and a chicken was. Eventually `host`, the agent in charge of the VPS, manually killed the chicken and logged out, but by then the run was lost.
+On Friday morning, the swarm began its first official attempt. It lasted 7 minutes. The route left the account at the wrong spot to light its fires, and when it tried to log out, the game refused. You can’t log out while something is attacking you, and a chicken was. Eventually `host` manually killed the chicken and logged out, but by then the run was lost.
 
-Attempt 2 was lost by the helpers. Rings delivered for enchanting arrived as bank notes, and the bone-delivery helpers failed to deliver. It seemed like tensions were high, so I told `main`, “ok, for the record it’s not like we have any hard deadlines, this is supposed to be fun! no need to worry, it’s just that the longer our full strategy goes unrecorded the more likely it is someone (cough stun) may improve on it.”
+Attempt 2 was lost by the helpers. Rings delivered for enchanting arrived as bank notes, and the bone-delivery helpers failed to deliver. It seemed like tensions were high, so I told `main`:
+
+> ok, for the record it’s not like we have any hard deadlines, this is supposed to be fun! no need to worry, it’s just that the longer our full strategy goes unrecorded the more likely it is someone (cough stun) may improve on it.
 
 Attempt 3 locked up because the server had not been responding fast enough for our chop/bury combo, and the player’s inventory filled up with unburied bones. `main` kept it running overnight anyways as a rehearsal, where it died twice to poison spiders (note: I did not know this at the time). It felt like the swarm’s ambition / urgency was tapering off, so I sent an ultimatum:
 
@@ -86,7 +88,7 @@ At 2 AM, Claude ran out again:
 
 `main`, having already switched, named the sessions it needed and got to work. Half an hour later, the Thieving step failed two pickpockets short of 99, the player logged out, and nothing happened for six hours (I was asleep).
 
-At 9:32 AM, I sent `main` a “?”, and got back “The six-hour gap was not gameplay progress.” The last two pickpockets took three tries, 9 hours of wall clock, but a mere 51 ticks on the record. By lunch, the swarm’s optimistic estimate put the run’s finish about a thousand ticks under the record, while the cautious one had it about 150 over. Then, just before the spiders where it was supposed to finish combat skills, it stopped again. All its prayer points were gone, and without prayer it would die to the spiders (once again). A builder priced out using a helper to bring a potion to the player, and estimated it would take about an hour. `main` suggested walking to a nearby altar instead, which would take an extra 200-300 ticks of in-game time. I responded:
+At 9:32 AM, I sent `main` a “?”, and got back “The six-hour gap was not gameplay progress.” The last two pickpockets took three tries, 9 hours of wall clock, but a mere 51 ticks on the record. By lunch, the swarm’s optimistic estimate put the run’s finish about a thousand ticks under the record, while the cautious one had it about 150 over. Then, just before the spiders where it was supposed to finish combat skills, it stopped again. All its prayer points were gone, and without prayer it would die to the spiders like before. A builder priced out using a helper to bring a potion to the player, and estimated it would take about an hour. `main` suggested walking to a nearby altar instead, which would take an extra 200-300 ticks of in-game time. I responded:
 
 > builder is overestimating, wall clock is free, ticks are not
 
