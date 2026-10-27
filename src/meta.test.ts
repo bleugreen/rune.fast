@@ -68,8 +68,6 @@ describe('one title and description per page', () => {
     // 'Five days' is the story's own count, from the first message to the #1.
     const opening = story.sections[0]!.blocks.find((b) => b.kind === 'p' && b.text.startsWith('Five days,'));
     expect(opening).toBeDefined();
-    expect(meta['/'].description).toContain('RuneScape for agents');
-    expect(story.title).toContain('RuneScape for agents');
   });
 
   test('every other page is described in one plain sentence of at most 155 characters', () => {

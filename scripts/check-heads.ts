@@ -6,8 +6,11 @@
  * every nav link routes client-side to its page, with that page's title and description; and an
  * unknown path gets the shell and the 'Nothing here' page.
  *
- *   bun run build && wrangler pages dev dist --port 8788    # Pages' own asset server
- *   bun run check:heads [--base http://localhost:8788]
+ *   bun run build && wrangler pages dev dist --ip 127.0.0.1 --port 8788   # Pages' own asset server
+ *   bun run check:heads [--base http://127.0.0.1:8788]
+ *
+ * Not `vite preview`: it is Pages that must serve /route from route.html, and the Function and
+ * public/_headers that must answer around it.
  *
  * Exits 1 on any failure.
  */
@@ -16,7 +19,7 @@ import { chromium } from 'playwright-core';
 import { NAV } from '../src/components/Layout';
 import { ORIGIN, PAGE_PATHS, SHARE_IMAGE, siteMeta } from '../src/meta';
 
-const { values: args } = parseArgs({ options: { base: { type: 'string', default: 'http://localhost:8788' } } });
+const { values: args } = parseArgs({ options: { base: { type: 'string', default: 'http://127.0.0.1:8788' } } });
 const meta = siteMeta();
 const problems: string[] = [];
 const check = (ok: boolean, what: string) => {

@@ -10,7 +10,7 @@ bun run dev        # http://localhost:5173, including the /tokens design screen
 bun run check      # typecheck, tests, production build, and the public-identifier scan of dist/
 ```
 
-`bun run build` writes the static site to `dist/`. The `/tokens` route renders the palette, type scale, figures, a sample chart, and footage in the shared frame (two 3D replays and a video clip); it exists only under `bun run dev`.
+`bun run build` writes the static site to `dist/`, each page with its own head. The `/tokens` route renders the palette, type scale, figures, a sample chart, and footage in the shared frame (two 3D replays and a video clip); it exists only under `bun run dev`.
 
 ## How it is built
 
@@ -92,13 +92,19 @@ Self-hosted under `public/fonts/`, both under the SIL Open Font License 1.1 (lic
 - **Rune Serif**, a Latin subset of Source Serif 4 (Adobe, variable weight and optical size). The licence reserves the name "Source" for unmodified fonts, so the subset carries its own name.
 - **IBM Plex Sans**, IBM's own unmodified Latin1 files at weights 400, 500 and 600.
 
+## Titles and link previews
+
+A link unfurler (Discord, X, iMessage, Slack, LinkedIn) runs no JavaScript, so each page's title, description and preview tags must be in the HTML Pages serves for it. `src/meta.ts` is the one source: each page's title (the story's own title for `/`, `Route · rune.fast` and so on for the rest) and its one-sentence description, whose figures come from the same data and models the pages print (the record's play time, the cost page's list value and subscriptions). In the browser, the Layout sets the document's title and description from it on every navigation. After `vite build`, `scripts/page-heads.ts` writes each page's HTML: the built shell with the page's head at the `<!--page-head-->` marker in `index.html` (title, description, canonical URL, Open Graph and X card tags, every URL absolute on https://rune.fast). It writes `dist/index.html` for `/` and `route.html`, `tricks.html`, `cost.html` and `harness.html` beside it, because Pages serves `route.html` at `/route` and redirects `/route/` there, whereas it serves a `route/index.html` only at `/route/`, redirecting `/route` to it. Every page file is the same app beneath its head, and `dist/index.html` stays the shell for every other path. `src/meta.test.ts` checks the module and each page's head, `check:public` checks the files the build wrote, and `bun run check:heads`, run against `wrangler pages dev dist`, opens each page in Chrome and checks what it serves, that it renders, and that its nav routes client-side with each page's title.
+
+Every page shares one preview image, `public/share.png` (1200 by 630): the story's opening, with the site name, the title and the run as a tree on paper. It is drawn from the dev-only `/share` screen (`src/dev/Share.tsx`) by `bun run render:share` with `bun run dev` running, which also draws the favicon's PNGs from `public/favicon.svg` (Rune Serif's r in ink on paper): `favicon-32.png` and the 180 px `apple-touch-icon.png`. Like the site's other figures, all of them are checked in.
+
 ## Deploying
 
 Cloudflare Pages builds the site from `main`. The project is configured in the Cloudflare dashboard, not in this repository, so there is no `wrangler.toml`:
 
 - Build command: `bun run build`
 - Build output directory: `dist`
-- No `404.html` is emitted, so Pages serves `index.html` for unknown paths and the client router handles `/route` and the rest, including the 'Nothing here' page for paths it does not know.
+- No `404.html` is emitted, so Pages serves `index.html` for unknown paths and the client router handles them with the 'Nothing here' page. Each page has its own HTML file (see Titles and link previews), so `/route` and the rest are served their own head and the client router takes over from there.
 - The root directory is the repository root, so Pages also builds the Function in `functions/`.
 
 **Surviving a deploy.** Pages serves only the current deployment's files, so a tab opened before a deploy asks for chunks, workers and stylesheets by hashed names that no longer exist. Left to Pages, such a request gets the app shell, `index.html` with status 200, and the browser fails to run HTML as a module. Three parts handle this:
