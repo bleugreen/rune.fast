@@ -95,8 +95,9 @@ describe('the clip registry', () => {
     });
   });
 
-  test('no video is kept in git: public/ holds posters only', () => {
-    expect(readdirSync('public/clips').filter((f) => !f.endsWith('.jpg'))).toEqual([]);
+  test('no video is kept in git: public/ holds the registered posters only', () => {
+    const posters = CLIPS.flatMap((c) => [c.poster, posterAvif(c)].map((p) => p.replace('/clips/', '')));
+    expect(readdirSync('public/clips').sort()).toEqual(posters.sort());
   });
 
   test('every registered clip is placed on a page, and every placed clip is registered', () => {
