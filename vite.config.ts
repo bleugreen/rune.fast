@@ -4,6 +4,7 @@ import { worldAssets, worldViteConfig } from './packages/world/vite';
 import { projectTimeline } from './scripts/public-timeline';
 import { projectCostData, projectRoles } from './scripts/public-cost';
 import { projectTricks } from './scripts/public-tricks';
+import { projectHarness } from './scripts/public-harness';
 import { isStoryMd, storyModule } from './scripts/story-module';
 import { pagesRoutesFile } from './scripts/pages-routes';
 import { pacificDayKey } from './src/lib/time';
@@ -14,12 +15,13 @@ const PROJECTIONS: ReadonlyArray<readonly [string, (raw: never) => unknown]> = [
   ['/data/cost-data.json', projectCostData],
   ['/data/roles.json', projectRoles],
   ['/data/tricks.json', projectTricks],
+  ['/data/harness.json', projectHarness],
 ];
 
 /**
  * The files in data/ are kept verbatim as exported; what reaches the browser is
- * their public projection (see scripts/public-timeline.ts, scripts/public-cost.ts
- * and scripts/public-tricks.ts).
+ * their public projection (see scripts/public-timeline.ts, scripts/public-cost.ts,
+ * scripts/public-tricks.ts and scripts/public-harness.ts).
  */
 function publicData(): Plugin {
   return {
