@@ -95,10 +95,11 @@ export function HarnessPage() {
         <h1 className={styles.title}>The harness: how the run kept track of its own work</h1>
         <p className={styles.dek}>
           In Claude Code, you are the orchestrator. You remember what each session was for, start the next one, and
-          carry what one found to the one that needs it. The agents in this run were the same kind of coding agent, but
-          no one person could have carried the work of {fmtInt(t.jobs)} agent jobs that way. Cairn, the harness the run
-          used, did the carrying. I did not take part in the run; I read it afterwards, through the same addresses its
-          agents used, and this page explains what I found there, one real object at a time.
+          carry what one session found into the next. The agents in this run were the same kind of coding agent, and
+          one person, the operator, stood behind all {fmtInt(t.jobs)} of their jobs. The operator did not carry that
+          work in their head. Cairn, the harness the run used, carried it. I did not take part in the run; I read it
+          afterwards, through the same addresses its agents used, and this page explains how the harness works on
+          objects from the run itself.
         </p>
         <dl className={styles.facts}>
           {m.facts.map((f) => (
@@ -131,7 +132,7 @@ export function HarnessPage() {
           Every prefix of the address is an address too. <code>{ADDRESSES.issue}</code> is the issue, the unit of
           work: a title, a description and a thread of comments. <code>{ADDRESSES.execution}</code> is an execution,
           one attempt at that work, which runs a fixed set of agents against the issue.{' '}
-          <code>{ADDRESSES.node}</code> is a node, one agent in that execution, here the builder. And{' '}
+          <code>{ADDRESSES.node}</code> is a node, one agent in that execution, here the builder, and{' '}
           <code>{a.artifact}</code> is an artifact, the thing that agent produced: the pull request. Reading any of
           these addresses returns the object, along with the actions it accepts.
         </p>
@@ -174,7 +175,7 @@ export function HarnessPage() {
           A child issue is different from the sub-agent you know from Claude Code. A sub-agent runs inside your
           session, and its report comes back into your context and goes when the session does. A child issue is a full
           issue: it can file children of its own, and what it finds can be committed to the repository. The run made
-          this a rule early. At {at(T.research.answered!)}, the first afternoon, the operator approved rs tenet{' '}
+          this a rule a minute before rs/{r.coordinator} was filed. At {at(T.research.answered!)}, the operator approved rs tenet{' '}
           {T.research.n} (a tenet is a project rule; they have their own section below), which put research in child
           issues and gave the reason: “{T.researchWhy}.”
         </p>
@@ -222,8 +223,9 @@ export function HarnessPage() {
           plan, a person confirms it, and then a builder, a pull request and a review agent follow. planbuild waits on a
           person at every plan. The run used it for {fmtInt(m.planbuild.executions)} executions and used build for
           almost all the rest, and it reviewed the way rs/{i.reviewerIssue} did, with a coordinator reading the work and
-          answering by message. The whole run had {fmtInt(t.reviewJobs)} review jobs. My inference from those counts is
-          that with one person and hundreds of issues, the run moved the confirming and the reviewing to coordinators.
+          answering by message. The whole run had {fmtInt(t.reviewJobs)} review jobs. I read those counts as a consequence
+          of there being one person: a recipe that stops for that person at every plan does not scale to hundreds of
+          issues, so the run skipped the plan and let coordinators review.
         </p>
         <Figure title={titles.recipes} sub="The recipes as the run stored them, with the executions of each">
           <Recipes m={m} />
@@ -307,8 +309,9 @@ export function HarnessPage() {
           <Routing m={m} label={titles.routing} />
         </Figure>
         <p className={styles.prose}>
-          The operator’s part was one answer, {fmtInt(r.answerSeconds)} seconds after the question, which has its own
-          address: <code>{ADDRESSES.question}</code>. Everything else was agents messaging agents. Two of them acted on
+          The question has its own address, <code>{ADDRESSES.question}</code>, and the operator’s part in these
+          minutes was one answer to it, {fmtInt(r.answerSeconds)} seconds after it was asked. Everything else was
+          agents messaging agents. Two of them acted on
           the same fixes at once. rs/{r.coordinator} started rs/{r.started[0]} and rs/{r.started[1]} on the operator’s
           answer, and seconds later main started both as well. Supersession settled which start counted: main’s became
           execution {r.mainExecution} of each, and rs/{r.coordinator}’s are marked superseded.
@@ -350,6 +353,10 @@ export function HarnessPage() {
         >
           <TenetLedger m={m} label={titles.tenets} />
         </Figure>
+        <p className={styles.prose}>
+          This is the last tenet approved, in full. A thread proposed it on the Sunday night the story tells, after the
+          scored account died.
+        </p>
         <Quote
           words={T.quoted.statement ?? ''}
           by={
@@ -379,8 +386,8 @@ export function HarnessPage() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Where it got in the way</h2>
         <p className={styles.prose}>
-          The price of all that merging was paid in branches. Each issue’s work sat on its own branch, and every merge
-          into the base branch moved the ground under every other open one. The harness rebased those branches itself
+          All that merging had a cost. Each issue’s work sat on its own branch, and every merge into the base branch
+          moved the base under every other open branch. The harness rebased those branches itself
           when it could, and sent the agent a notice when it could not. When the operator asked for this page, at{' '}
           {at(q.hindrance!.t)}, they wrote that Cairn had played a major role, and was also a “{q.hindrance!.words}”.
         </p>
