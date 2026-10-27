@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { fmtInt } from '../lib/numbers';
 import { SECOND, fmtPacificWeekdayHm } from '../lib/time';
 import { loadTitles, treeData } from './data';
@@ -304,7 +304,7 @@ export function RunTree() {
     return () => window.removeEventListener('scroll', close);
   }, [tapped]);
 
-  const at = (e: ReactPointerEvent | React.MouseEvent): [number, number] => {
+  const at = (e: ReactMouseEvent): [number, number] => {
     const r = overRef.current!.getBoundingClientRect();
     return [e.clientX - r.left, e.clientY - r.top];
   };
@@ -322,7 +322,7 @@ export function RunTree() {
   const onPointerLeave = (e: ReactPointerEvent<HTMLCanvasElement>) => {
     if (e.pointerType === 'mouse') setPick((p) => (p?.mode === 'hover' ? null : p));
   };
-  const onClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const onClick = (e: ReactMouseEvent<HTMLCanvasElement>) => {
     if (!TAP_CARD || pointerType.current === 'mouse' || !L) return;
     const [x, y] = at(e);
     choose(L.nearest(x, y, TAP_RADIUS), x, y, 'tap');

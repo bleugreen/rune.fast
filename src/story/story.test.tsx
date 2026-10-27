@@ -57,6 +57,10 @@ const html = renderToStaticMarkup(
 console.error = consoleError;
 const text = decode(html);
 const surface = decode(html.replace(/<details[\s\S]*?<\/details>/g, ''));
+/** The hero tree above the title (src/tree), and the draft's sections after it. */
+const HERO = /<figure class="hero">[\s\S]*?<\/figure>/;
+const hero = html.match(HERO)?.[0] ?? '';
+const sectionsHtml = html.replace(HERO, '');
 
 describe('the draft, placed verbatim', () => {
   test('the plain split and the page’s parser find the same paragraphs', () => {
@@ -95,10 +99,20 @@ describe('sources', () => {
   const receipts = blocksOf(lines.slice(receiptsAt + 1));
 
   test('every section closes with one closed Sources disclosure', () => {
-    const details = html.match(/<details[^>]*>/g) ?? [];
+    const details = sectionsHtml.match(/<details[^>]*>/g) ?? [];
     expect(details.length).toBe(SECTION_META.length);
     for (const d of details) expect(d).not.toContain('open');
-    expect(html.match(/<summary>Sources<\/summary>/g)?.length).toBe(SECTION_META.length);
+    expect(sectionsHtml.match(/<summary>Sources<\/summary>/g)?.length).toBe(SECTION_META.length);
+  });
+
+  test('the hero tree leads the page, with one closed Sources disclosure in plain words', () => {
+    expect(html.indexOf(hero)).toBeLessThan(html.indexOf('<h1'));
+    const details = hero.match(/<details[^>]*>/g) ?? [];
+    expect(details.length).toBe(1);
+    expect(details[0]).not.toContain('open');
+    expect(hero).toContain('<summary>Sources</summary>');
+    expect(decode(hero)).toContain('A language model read each message’s opening');
+    expect(hero).not.toMatch(/cairn:|\d:\d\d|\bPDT\b/);
   });
 
   test('each section’s key anchors open its disclosure, and the introduction to the receipts is left out', () => {
@@ -171,7 +185,8 @@ describe('what the page adds to the draft', () => {
 
   test('every figure the page places, and no other', () => {
     const placed = SECTION_META.reduce((n, s) => n + s.figures.length, 0);
-    expect(html.match(/<figure/g)?.length).toBe(placed);
+    expect(sectionsHtml.match(/<figure/g)?.length).toBe(placed);
+    expect(hero.match(/<figure/g)?.length).toBe(1);
   });
 
   test('the death section sets the body among the spiders after the roster beat, its timeline after the death beat, the re-kit clip after the overnight paragraph, then the Agility clip and the hiscore board', () => {
