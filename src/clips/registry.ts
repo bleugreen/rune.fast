@@ -60,6 +60,11 @@ export interface VideoEntry extends Footage {
   trace?: string;
   /** A lab clip's tick map: [ms into the clip, the server tick from that ms on], ascending, the first at 0. */
   ticks?: readonly (readonly [number, number])[];
+  /**
+   * Two windows of one film side by side, each from the tick its first click went out in: `recorded`
+   * spans both windows, and the tick map counts ticks since that first click.
+   */
+  pair?: true;
 }
 
 /**

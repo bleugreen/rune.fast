@@ -89,7 +89,7 @@ for (const p of PAIRS.filter((p) => wanted(p.id))) {
     const left = feedTicks(dir, p.left, p.seconds);
     const ticks = left.map(([ms, k]) => [ms, k - left[0]![1]]);
     // From the left window's first frame to the right window's last: the pair was filmed across both.
-    console.log(JSON.stringify({ ...add(p.id, cut), recorded: [utc(t0 + p.left * 1000), utc(t0 + (p.right + p.seconds) * 1000)], ticks }));
+    console.log(JSON.stringify({ ...add(p.id, cut), pair: true, recorded: [utc(t0 + p.left * 1000), utc(t0 + (p.right + p.seconds) * 1000)], ticks }));
 }
 
 for (const s of STILLS.filter((s) => wanted(s.name))) {

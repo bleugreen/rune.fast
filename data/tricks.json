@@ -272,9 +272,10 @@
       "cairn://p/rs/105",
       "cairn://p/rs/182 (the mining bury option)",
       "data/attempts-timeline.json, attempt 2, 23 Oct 19:48Z",
-      "cairn://p/rs/main/messages, 25 Oct 07:35Z (attempt 5: Prayer 99 at chain tick 3622, inside the willow band; 26 bone loads traded)"
+      "cairn://p/rs/main/messages, 25 Oct 07:35Z (attempt 5: Prayer 99 at chain tick 3622, inside the willow band; 26 bone loads traded)",
+      "the lab film of the willow band burying in the knife loop, rs-sdk 4f62822f (a bone every 3 ticks, 20 bones in 57 ticks while the chopping went on)"
     ],
-    "clip": null
+    "clip": "lab-bury"
   },
   {
     "id": "batched-bank",
@@ -299,9 +300,10 @@
     "sources": [
       "rs-sdk speedrun/README.md lines 181-188 (lab/measure-bank.ts: 24 to 5, 28 to 6, 2 to 1)",
       "cairn://p/rs/40",
-      "rs tenet 4 (quotes 48 for the stock deposit; unresolved against the README’s 24)"
+      "rs tenet 4 (quotes 48 for the stock deposit; unresolved against the README’s 24)",
+      "the lab film of measure-bank.ts’s two deposits, rs-sdk 4f62822f (24 ticks for the stock deposit and 5 for the swarm’s, in 4 of 4 rounds over two takes)"
     ],
-    "clip": null
+    "clip": "lab-bank-pair"
   },
   {
     "id": "batched-trade",
