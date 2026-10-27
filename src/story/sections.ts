@@ -8,7 +8,7 @@ export type StoryFigure =
   | { kind: 'clip'; id?: string }
   /** The cost page's day chart, linked. */
   | { kind: 'cost' }
-  /** The attempts chart, cropped to the section's hours (instants given in UTC; the chart reads Pacific). */
+  /** The timeline chart of every attempt's logged-in time, cropped to the section's hours (instants given in UTC; the chart reads Pacific). */
   | { kind: 'timeline'; crop: readonly [string, string] }
   /**
    * A still under public/, served as WebP with a PNG fallback: `src` names both files less

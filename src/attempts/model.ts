@@ -1,6 +1,5 @@
 import type { Attempt, EventType, Timeline, TimelineEvent } from '../data/types';
 import { HOUR, parseUtc } from '../lib/time';
-import { PULLED } from './pulled';
 
 /* ------------------------------------------------------------------------- */
 /* References into the timeline                                              */
@@ -117,7 +116,7 @@ export const LOGINS: Readonly<Record<string, readonly SpanSpec[]>> = {
 /** Chart rows, top to bottom. The rehearsal shares its account's row. */
 export const ROWS: ReadonlyArray<readonly string[]> = [['A1'], ['A2'], ['A3', 'R3'], ['A4'], ['L2'], ['A5']];
 
-/** The time axis of the attempts chart. */
+/** The time axis of the timeline chart, before a figure crops it. */
 export const DOMAIN = ['2026-10-23T17:00Z', '2026-10-26T12:00Z'] as const;
 
 /** Logged-out gaps at least this long carry their duration on the chart. */
@@ -204,15 +203,18 @@ export function modelAttempt(a: Attempt): AttemptModel {
   };
 }
 
-/** Stops while the account was in the world (a refused resume or a helper failure is not one). */
-export const stopsInWorld = (am: AttemptModel) => am.marks.filter((m) => m.kind === 'stop' && m.inWorld !== false);
-export const deaths = (am: AttemptModel) => am.marks.filter((m) => m.kind === 'death');
+/**
+ * The marks the chart draws: deaths, and stops while the account was in the world (a refused
+ * resume or a helper failure is not one). Every other event stays off the chart; the finish is
+ * drawn as its tick count.
+ */
+export const drawnMarks = (am: AttemptModel) =>
+  am.marks.filter((m) => m.kind === 'death' || (m.kind === 'stop' && m.inWorld !== false));
 
 export interface ChartModel {
   domain: [number, number];
   rows: AttemptModel[][];
   byId: Map<string, AttemptModel>;
-  markByKey: Map<string, Mark>;
   scored: AttemptModel[];
   last: AttemptModel;
 }
@@ -226,71 +228,10 @@ export function buildChartModel(t: Timeline): ChartModel {
       return am;
     }),
   );
-  const markByKey = new Map([...byId.values()].flatMap((am) => am.marks.map((m) => [m.key, m] as const)));
   const scored = [...byId.values()].filter((am) => am.scored).sort((a, b) => a.start - b.start);
   const last = scored.at(-1);
   if (!last) throw new Error('No scored attempts');
-  return { domain: [parseUtc(DOMAIN[0]), parseUtc(DOMAIN[1])], rows, byId, markByKey, scored, last };
-}
-
-export function findMark(model: ChartModel, attemptId: string, utc: string): Mark {
-  const m = model.byId.get(attemptId)?.marks.find((x) => x.event.utc === utc && x.t === parseUtc(utc));
-  if (!m) throw new Error(`${attemptId} has no event at ${utc}`);
-  return m;
-}
-
-/* ------------------------------------------------------------------------- */
-/* What the chart draws, and what each drawn mark carries                    */
-/* ------------------------------------------------------------------------- */
-
-export interface AnchorGroup {
-  /** Undrawn events before the attempt's first drawn mark (only on that mark). */
-  before: Mark[];
-  /** Undrawn events after this mark, up to the attempt's next drawn mark. */
-  after: Mark[];
-}
-
-/**
- * The chart draws a few marks (anchors): stops while the account was in the
- * world, deaths, the pulled operator quotes, and the official result. Every other
- * event rides with the anchor it follows, so the reading pane can show it in context.
- */
-export interface ChartAnchors {
-  /** All anchors in time order, across attempts. */
-  list: Mark[];
-  keys: Set<string>;
-  quotes: Mark[];
-  quoteNumber: Map<string, number>;
-  finish: Mark | null;
-  groups: Map<string, AnchorGroup>;
-}
-
-export function chartAnchors(model: ChartModel): ChartAnchors {
-  const quotes = PULLED.map((q) => findMark(model, q.attempt, q.utc));
-  const quoteNumber = new Map(quotes.map((m, i) => [m.key, i + 1]));
-  const finish = [...model.last.marks].reverse().find((m) => m.kind === 'result') ?? null;
-  const isAnchor = (m: Mark) =>
-    m.kind === 'death' || (m.kind === 'stop' && m.inWorld !== false) || quoteNumber.has(m.key) || m.key === finish?.key;
-
-  const list: Mark[] = [];
-  const groups = new Map<string, AnchorGroup>();
-  for (const am of model.byId.values()) {
-    // A stop recorded inside another event shares that event; show it once, as the anchor.
-    const anchored = new Set(am.marks.filter(isAnchor).map((m) => m.event));
-    const lead: Mark[] = [];
-    let open: AnchorGroup | null = null;
-    for (const m of am.marks) {
-      if (isAnchor(m)) {
-        open = { before: open ? [] : lead.splice(0), after: [] };
-        groups.set(m.key, open);
-        list.push(m);
-      } else if (!anchored.has(m.event)) {
-        (open ? open.after : lead).push(m);
-      }
-    }
-  }
-  list.sort((a, b) => a.t - b.t);
-  return { list, keys: new Set(list.map((m) => m.key)), quotes, quoteNumber, finish, groups };
+  return { domain: [parseUtc(DOMAIN[0]), parseUtc(DOMAIN[1])], rows, byId, scored, last };
 }
 
 /* ------------------------------------------------------------------------- */
@@ -310,23 +251,5 @@ export function recordFacts(t: Timeline): RecordFacts {
   const ms = /normalized to (\d+) ms/.exec(t.meta.tick_units);
   if (!ms) throw new Error('tick_units does not state the normalized tick length');
   return { previous, final, margin: previous - final, tickMs: Number(ms[1]) };
-}
-
-export interface HeadlineFacts {
-  scoredCount: number;
-  /** Whole hours from the first scored start to the last scored end. */
-  hours: number;
-  lastStops: number;
-  lastDeaths: number;
-}
-
-export function headlineFacts(model: ChartModel): HeadlineFacts {
-  const first = model.scored[0]!;
-  return {
-    scoredCount: model.scored.length,
-    hours: Math.floor((model.last.end - first.start) / HOUR),
-    lastStops: stopsInWorld(model.last).length,
-    lastDeaths: deaths(model.last).length,
-  };
 }
 

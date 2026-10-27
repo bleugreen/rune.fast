@@ -1,4 +1,4 @@
-# How an agent swarm set the fastest-to-99 record
+# How a swarm set the fastest time to 99 in every skill on RuneScape for agents
 
 Draft v4 (all six sections in the moments-first shape, Pacific time throughout; 15:5x PDT), 26 Oct 2026 15:4x PDT, by cairn://p/rune/main. Reader line: engineers who build with language models, arriving from Hacker News, Twitter or the Latent Space article, who have never played RuneScape and assume either that "agents set a game record" is marketing or that the agents must have played the game well. Payoff: they can explain to a colleague what was done, what it cost, and where the record came from. The one thought to leave with: the record was won on the server's own accounting rule and on exploits read out of its scripts, by a swarm that spent most of six days failing and recovering, and three decisions by one person at the keyboard decided it.
 

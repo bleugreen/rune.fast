@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { timeline } from '../data/timeline';
-import { buildChartModel, chartAnchors, recordFacts } from '../attempts/model';
+import { buildChartModel, recordFacts } from '../attempts/model';
 import { Threaded } from '../components/Coded';
 import { fmtInt } from '../lib/numbers';
 import { inlineTokens } from '../story/draft';
@@ -53,7 +53,6 @@ function prose(text: string, needles: readonly Needle[] = []): ReactNode[] {
 export function StoryPage() {
   const record = recordFacts(timeline);
   const model = useMemo(() => buildChartModel(timeline), []);
-  const anchors = useMemo(() => chartAnchors(model), [model]);
   const sections = useMemo(() => storySections(story), []);
   const headRef = useRef<HTMLElement>(null);
   const sectionRefs = useRef(new Map<string, HTMLElement>());
@@ -169,7 +168,7 @@ export function StoryPage() {
                     </aside>
                   )}
                   {figures.map((f, k) => (
-                    <StoryFigure key={k} figure={f} model={model} anchors={anchors} record={record} />
+                    <StoryFigure key={k} figure={f} model={model} record={record} />
                   ))}
                 </Fragment>
               );

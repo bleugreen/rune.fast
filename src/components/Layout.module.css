@@ -27,22 +27,47 @@
   text-decoration: none;
 }
 
+/*
+ * One line, always: where the nav does not fit beside the wordmark the whole row moves below it,
+ * and on the narrowest phones the tracking and gaps tighten rather than a label wrapping.
+ * scripts/check-masthead.ts measures it at phone widths.
+ */
 .nav {
+  --nav-gap: var(--space-4);
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+  flex-wrap: nowrap;
+  gap: var(--nav-gap);
+  white-space: nowrap;
   font-family: var(--font-sans);
   font-size: var(--label);
   font-weight: 500;
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
 }
+@media (max-width: 23.75rem) {
+  .nav {
+    --nav-gap: var(--space-3);
+    letter-spacing: 0.05em;
+  }
+}
 
 .link,
 .current {
+  position: relative;
   text-decoration: none;
   padding-bottom: 2px;
   border-bottom: var(--stroke-rule) solid transparent;
+}
+/* A tap target 44 px tall that meets its neighbours' halfway across the gap, without moving the label or its rule. */
+.link::after,
+.current::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(var(--nav-gap) / -2);
+  right: calc(var(--nav-gap) / -2);
+  height: 2.75rem;
+  transform: translateY(-50%);
 }
 .link:hover {
   border-bottom-color: var(--rule);

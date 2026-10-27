@@ -13,7 +13,6 @@ export function siteRoutes(pages: RouteObject[]): RouteObject[] {
 
 export const NAV = [
   { to: '/', label: 'Story' },
-  { to: '/attempts', label: 'Attempts' },
   { to: '/route', label: 'Route' },
   { to: '/tricks', label: 'Tricks' },
   { to: '/cost', label: 'Cost' },

@@ -2,20 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import raw from '../../data/attempts-timeline.json';
 import type { ArchivalTimeline } from '../data/types';
 import { projectTimeline } from '../../scripts/public-timeline';
-import { parseUtc } from '../lib/time';
-import {
-  LOGINS,
-  ROWS,
-  buildChartModel,
-  chartAnchors,
-  findMark,
-  headlineFacts,
-  isScored,
-  recordFacts,
-  stopsInWorld,
-} from './model';
-import { PULLED } from './pulled';
-import { plainFor, plainKey, plainKeys } from '../data/plain';
+import { LOGINS, ROWS, buildChartModel, drawnMarks, isScored, recordFacts } from './model';
 
 const archival = raw as unknown as ArchivalTimeline;
 const timeline = projectTimeline(archival);
@@ -86,12 +73,13 @@ describe('rows and axis', () => {
   });
 });
 
-describe('the page claim', () => {
-  test('five scored attempts in 65 hours; the last stopped nine times and died once', () => {
-    expect(headlineFacts(model)).toEqual({ scoredCount: 5, hours: 65, lastStops: 9, lastDeaths: 1 });
+describe('the marks the chart draws', () => {
+  const drawn = drawnMarks(model.last);
+  test('the last attempt died once', () => {
+    expect(drawn.filter((m) => m.kind === 'death').map((m) => m.event.utc)).toEqual(['2026-10-26T03:40:37Z']);
   });
-  test('the in-world stops of the last attempt', () => {
-    expect(stopsInWorld(model.last).map((m) => m.event.utc)).toEqual([
+  test('the last attempt’s nine in-world stops, and no stop made while logged out', () => {
+    expect(drawn.filter((m) => m.kind === 'stop').map((m) => m.event.utc)).toEqual([
       '2026-10-25T07:33:09.659Z',
       '2026-10-25T08:12:47.592Z',
       '2026-10-25T09:06:10Z',
@@ -112,46 +100,5 @@ describe('the record', () => {
   const r = recordFacts(timeline);
   test('the margin is the one the record states, never 130', () => {
     expect(timeline.meta.record.exact_margin.startsWith(`${r.margin} ticks / ${(r.margin * r.tickMs) / 1000} s`)).toBe(true);
-  });
-});
-
-describe('chart anchors', () => {
-  const anchors = chartAnchors(model);
-  test('every event reaches the page exactly once, as an anchor or in an anchor’s group', () => {
-    const shown = [
-      ...anchors.list.map((m) => m.event),
-      ...[...anchors.groups.values()].flatMap((g) => [...g.before, ...g.after].map((m) => m.event)),
-    ];
-    const all = timeline.attempts.flatMap((a) => a.events);
-    expect(shown.length).toBe(all.length);
-    expect(new Set(shown).size).toBe(all.length);
-  });
-  test('the finish is the official result', () => {
-    expect(anchors.finish?.event.title).toContain('official #1');
-  });
-});
-
-describe('plain-language lines', () => {
-  const events = timeline.attempts.flatMap((a) => a.events.map((e) => ({ id: a.id, e })));
-  test('every event is keyed uniquely by attempt and time', () => {
-    const keys = events.map(({ id, e }) => plainKey(id, e.utc));
-    expect(new Set(keys).size).toBe(keys.length);
-  });
-  test('every event that is not an operator message has one', () => {
-    const missing = events.filter(({ id, e }) => e.type !== 'operator' && !plainFor(id, e.utc)).map(({ id, e }) => plainKey(id, e.utc));
-    expect(missing).toEqual([]);
-  });
-  test('no line points at an event the timeline lacks', () => {
-    const known = new Set(events.map(({ id, e }) => plainKey(id, e.utc)));
-    expect(plainKeys().filter((k) => !known.has(k))).toEqual([]);
-  });
-});
-
-describe('pulled quotes', () => {
-  test.each(PULLED.map((q) => [q.utc, q] as const))('%s is an operator message with a quote', (_, q) => {
-    const m = findMark(model, q.attempt, q.utc);
-    expect(m.kind).toBe('operator');
-    expect(m.event.quote?.length).toBeGreaterThan(0);
-    expect(m.t).toBe(parseUtc(q.utc));
   });
 });

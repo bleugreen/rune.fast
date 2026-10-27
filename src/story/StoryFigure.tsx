@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { ChartAnchors, ChartModel, RecordFacts } from '../attempts/model';
+import type { ChartModel, RecordFacts } from '../attempts/model';
 import { Legend, TimelineChart } from '../attempts/TimelineChart';
 import { Clip } from '../clips/Clip';
 import { clipById } from '../clips/registry';
@@ -14,12 +14,11 @@ const PREVIOUS_HOLDER = 'stunbaron';
 interface Props {
   figure: Figure;
   model: ChartModel;
-  anchors: ChartAnchors;
   record: RecordFacts;
   className?: string;
 }
 
-export function StoryFigure({ figure, model, anchors, record, className }: Props) {
+export function StoryFigure({ figure, model, record, className }: Props) {
   const cls = (...c: (string | undefined)[]) => c.filter(Boolean).join(' ');
   switch (figure.kind) {
     case 'ladder':
@@ -56,10 +55,7 @@ export function StoryFigure({ figure, model, anchors, record, className }: Props
             <span className={styles.chartTitle}>Logged-in time, {fmtPacificDateRange(...crop)}</span>
             <Legend />
           </figcaption>
-          <TimelineChart model={model} anchors={anchors} finishTicks={record.final} crop={crop} />
-          <Link to="/attempts" className={styles.more}>
-            The full timeline →
-          </Link>
+          <TimelineChart model={model} finishTicks={record.final} crop={crop} />
         </figure>
       );
     }
