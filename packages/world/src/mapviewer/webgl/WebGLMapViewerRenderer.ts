@@ -212,9 +212,12 @@ export class WebGLMapViewerRenderer extends MapViewerRenderer<WebGLMapSquare> {
         if (this.mapViewer.disposed) return;
         const generation = this.lifetimeGeneration;
         this.disposed = false;
+        // Stage marks (User Timing): renderer-init, -loader, -textures, -shaders.
+        performance.mark("world:renderer-init");
         await super.init();
         if (!this.isCurrentLifetime(generation)) return;
         await this.mapViewer.workerPool.initLoader(this.dataLoader);
+        performance.mark("world:renderer-loader");
         if (!this.isCurrentLifetime(generation)) return;
 
         this.app = PicoGL.createApp(this.canvas);
@@ -266,8 +269,10 @@ export class WebGLMapViewerRenderer extends MapViewerRenderer<WebGLMapSquare> {
         this.initFramebuffers();
 
         this.initTextures();
+        performance.mark("world:renderer-textures");
 
         await this.initShaders(generation);
+        performance.mark("world:renderer-shaders");
         if (!this.isCurrentLifetime(generation)) return;
         console.log("Renderer init");
     }

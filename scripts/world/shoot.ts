@@ -51,6 +51,7 @@ try {
     const replay = page.locator('[data-replay]');
     try {
       await page.locator('[data-replay-ready]').waitFor({ timeout: Number(args.timeout) });
+      console.log(`${name}: data-replay-ready ${((Date.now() - started) / 1000).toFixed(1)} s after navigation began`);
     } catch {
       failed++;
       console.error(`${name}: not ready after ${args.timeout} ms`);
@@ -65,7 +66,7 @@ try {
     const file = join(args.out, `${name}.png`);
     await replay.scrollIntoViewIfNeeded().catch(() => {});
     await (await replay.count() ? replay : page.locator('main')).screenshot({ path: file });
-    console.log(`${name}: tick ${tick}, ready in ${((Date.now() - started) / 1000).toFixed(1)} s, renderer ${webgl}, ${file}`);
+    console.log(`${name}: tick ${tick}, shot taken ${((Date.now() - started) / 1000).toFixed(1)} s after navigation began (the element screenshot is the slow part), renderer ${webgl}, ${file}`);
     for (const e of errors.slice(0, 10)) console.error(`${name}: console error: ${e}`);
     if (args.timings) await report(page, `${name} (cold)`, logs);
     if (args.reload) {
@@ -84,7 +85,7 @@ process.exit(failed ? 1 : 0);
 /** The page's replay:* marks against navigation start, its cache and chunk fetches, and the workers' own timings. */
 async function report(page: import('playwright-core').Page, label: string, logs: string[]): Promise<void> {
   const t = await page.evaluate(() => ({
-    marks: performance.getEntriesByType('mark').filter((m) => m.name.startsWith('replay:')).map((m) => [m.name.slice(7), Math.round(m.startTime)] as const),
+    marks: performance.getEntriesByType('mark').filter((m) => /^(replay|world):/.test(m.name)).sort((a, b) => a.startTime - b.startTime).map((m) => [m.name, Math.round(m.startTime)] as const),
     fetches: performance
       .getEntriesByType('resource')
       .map((r) => r as PerformanceResourceTiming)
