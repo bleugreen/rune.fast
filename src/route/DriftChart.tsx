@@ -26,7 +26,15 @@ export function DriftChart({ route }: { route: Route }) {
     <figure className={styles.drift}>
       <figcaption className={styles.driftTitle}>Ticks the hiscore had counted beyond the runner’s sessions, at each point of the hiscore’s clock</figcaption>
       <div ref={ref}>
-        <svg width={w} height={H} role="img" aria-label="A step chart: level until Attack 99, then 6 ahead, then 76, then 730 from the window around the death to the finish.">
+        <svg
+          width={w}
+          height={H}
+          role="img"
+          aria-label={`A step chart: level until ${labelled[1]?.skill ?? ''} 99, then ${labelled
+            .slice(1)
+            .map((s) => `${fmtInt(s.drift)} ahead by ${s.skill} 99`)
+            .join(', then ')}, to the finish.`}
+        >
           {levels.map((d) => (
             <g key={d}>
               <line x1={M.left} x2={w - M.right} y1={y(d)} y2={y(d)} className={styles.driftGrid} />
