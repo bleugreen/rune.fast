@@ -31,6 +31,8 @@ export interface RawTurn {
   end: number;
   reason: string;
   senders: string[];
+  /** Direct messages in the briefing that opened the turn. */
+  messages: number;
   waitedOn: string | null;
   waitedOnTests: boolean;
 }

@@ -172,13 +172,13 @@ export function HarnessPage() {
         <p className={styles.prose}>
           An issue waits until something starts it. rs/{a.issue} was filed held, for its coordinator rs/
           {i.reviewerIssue} to start once the last attempt was over. It held for {fmtDuration(i.heldMs)}, and agents
-          left {fmtInt(i.heldComments.length)} comments of evidence on it in that time. At {at(i.start)}, rs/
+          left {fmtInt(i.heldCommentCount)} comments of evidence on it in that time. At {at(i.start)}, rs/
           {i.reviewerIssue} started its one execution.
         </p>
         <p className={styles.prose}>
           An execution runs a recipe, a small graph of nodes. rs/{a.issue}’s was {a.recipe}: a trigger, a builder
           agent and a pull-request node. The builder worked for {fmtDuration(i.workMs)} in {countWord(i.turns.length)}{' '}
-          turns and made {fmtInt(i.calls.length)} verb calls. A turn ends when the agent has nothing to do until
+          turns and made {fmtInt(i.callCount)} verb calls. A turn ends when the agent has nothing to do until
           something happens, and the harness wakes it when that something does. {capitalize(countWord(i.testWakes))} of
           the builder’s turns began when a test run it had left running finished, {countWord(i.messageWakes)} began
           with a message from rs/{i.reviewerIssue}, and {countWord(i.bothWakes)} with both: a command it was waiting
@@ -307,7 +307,7 @@ export function HarnessPage() {
           Some decisions bind every agent that comes after them. A thread proposes a tenet, a statement of how the
           project does something. Only the operator answers it, yes or no, and an answered tenet does not change; a
           later one can supersede it. The threads proposed {fmtInt(T.total)} tenets. The operator answered{' '}
-          {fmtInt(T.answered)}, half of them within {fmtInt(T.medianWaitMinutes)} minutes.
+          {fmtInt(T.answered)}, half of them within {T.medianWaitMinutes <= 1 ? 'a minute' : `${fmtInt(T.medianWaitMinutes)} minutes`}.
         </p>
         <Figure
           title={titles.tenets}

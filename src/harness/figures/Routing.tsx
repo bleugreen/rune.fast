@@ -170,7 +170,7 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
         </text>
         {node('rs3', 6, styles.hollow!)}
         <text className={styles.row} x={rs3[0] + 14} y={rs3[1] + 4}>
-          rs/3 coordinator
+          {`rs/${r.coordinator} coordinator`}
         </text>
         {(['rs22', 'rs23'] as const).map((k) => (
           <g key={k} className={styles.fade} opacity={fixesShown ? 1 : 0.15}>

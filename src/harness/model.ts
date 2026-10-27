@@ -272,7 +272,9 @@ export function buildHarnessModel(d: HarnessData) {
     messageWakes: wakes843.filter((tn) => tn.wake!.kind === 'message').length,
     bothWakes: wakes843.filter((tn) => tn.wake!.kind === 'both').length,
     /** Messages in the briefing that opened the turn woken by both. */
-    bothMessages: i.turns.find((r) => r.reason === 'wait_resolved' && r.senders.length)?.senders.length ?? 0,
+    bothMessages: i.turns.find((r) => r.reason === 'wait_resolved' && r.senders.length)?.messages ?? 0,
+    heldCommentCount: heldComments.length,
+    callCount: calls.length,
   };
 
   /* Fig 4 ---------------------------------------------------------------- */

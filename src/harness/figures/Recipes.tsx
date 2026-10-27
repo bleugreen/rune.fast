@@ -16,7 +16,7 @@ export function Recipes({ m }: { m: HarnessModel }) {
               {r.nodes.map((n, k) => (
                 <span key={k} className={styles.step} data-waits={n.waits}>
                   <span className={styles.node} data-type={n.type} data-waits={n.waits} />
-                  {n.waits ? `${n.name.toLowerCase()} you confirm` : n.name.toLowerCase()}
+                  {n.waits ? `${n.name.toLowerCase()} you confirm` : n.type === 'pr' ? 'pull request' : n.name.toLowerCase()}
                 </span>
               ))}
             </span>

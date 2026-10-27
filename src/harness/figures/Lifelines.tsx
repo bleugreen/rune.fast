@@ -38,7 +38,7 @@ export function Lifelines({ m, label }: { m: HarnessModel; label: string }) {
       <svg className={styles.svg} width={width} height={height} role="img" aria-label={label}>
         {[L.from, ...L.midnights].map((t, j) => (
           <g key={t}>
-            {j > 0 && <line className={styles.hair} x1={x(t)} x2={x(t)} y1={TOP - 8} y2={height} />}
+            {j !== 0 && <line className={styles.hair} x1={x(t)} x2={x(t)} y1={TOP - 8} y2={height} />}
             <text className={styles.tick} x={x(t) + 3} y={TOP - 12}>
               {fmtPacificWeekdayDay(t)}
             </text>

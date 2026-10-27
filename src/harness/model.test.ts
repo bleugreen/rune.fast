@@ -93,7 +93,7 @@ describe('rs/843', () => {
       if (tn.wake?.kind === 'batch' || tn.wake?.kind === 'both') expect(rawTurn.reason).toBe('wait_resolved');
       if (tn.wake?.kind === 'message') expect(rawTurn.reason).toBe('follow_up');
     });
-    expect([i.testWakes, i.messageWakes, i.bothWakes, i.bothMessages]).toEqual([3, 2, 1, 1]);
+    expect([i.testWakes, i.messageWakes, i.bothWakes, i.bothMessages]).toEqual([3, 2, 1, 2]);
   });
 
   test('its turns follow one another and every call falls inside the builder’s hour', () => {
@@ -207,9 +207,10 @@ const decode = (s: string) => s.replace(/&[#\w]+;/g, (e) => ENTITIES[e] ?? e);
 const html = pageHtml();
 
 describe('the taught addresses', () => {
-  test('each appears on the page, whole', () => {
-    const joined = decode(html.replace(/<!-- -->/g, '').replace(/<[^>]+>/g, ''));
-    for (const a of TAUGHT) expect(joined).toContain(a);
+  test('each appears on the page, whole: in the text, or as the accessible name of the figure that typesets it', () => {
+    const page = decode(html.replace(/<!-- -->/g, ''));
+    for (const a of TAUGHT) expect(page).toContain(a);
+    expect(page).toContain(`aria-label="${ADDRESSES.pr}"`);
   });
 
   test('the data carries no address that is not taught', () => {

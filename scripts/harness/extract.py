@@ -57,7 +57,14 @@ def forbidden_patterns() -> list[tuple[str, re.Pattern[str]]]:
 
 
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[a-z]{2,}", re.I)
-ADDRESS_CHAR = re.compile(r"[\w\-./~?=&%#:]")
+
+
+def continues(text: str, at: int) -> bool:
+    """As in scripts/forbidden.ts: an address goes on past a full stop only if more of it follows."""
+    nxt, after = text[at : at + 1], text[at + 1 : at + 2]
+    if nxt and re.match(r"[\w\-/~=&%#]", nxt):
+        return True
+    return bool(nxt and re.match(r"[.?:]", nxt) and after and re.match(r"[\w\-/~]", after))
 
 
 def without_taught(text: str, taught: list[str]) -> str:
@@ -65,8 +72,7 @@ def without_taught(text: str, taught: list[str]) -> str:
     for a in sorted(taught, key=len, reverse=True):
         at = text.find(a)
         while at >= 0:
-            nxt = text[at + len(a) : at + len(a) + 1]
-            if nxt and ADDRESS_CHAR.match(nxt):
+            if continues(text, at + len(a)):
                 at = text.find(a, at + 1)
             else:
                 text = text[:at] + " " * len(a) + text[at + len(a) :]
@@ -346,9 +352,11 @@ def extract(x: Export) -> dict:
             (r[5] for r in ev_rows if r[4] == tid and r[2] == "attention:briefing" and r[5]), None
         )
         senders = []
+        delivered = 0
         if brief:
-            body = json.loads(brief).get("resolved", "")
-            for m in re.findall(r"\[Direct message from (\S+?)\]", body):
+            b = json.loads(brief)
+            delivered = sum(1 for it in b.get("active", []) if it.get("kind") == "message")
+            for m in re.findall(r"\[Direct message from (\S+?)\]", b.get("resolved", "")):
                 p = plain_id(m)
                 if p not in senders:
                     senders.append(p)
@@ -365,8 +373,8 @@ def extract(x: Export) -> dict:
                 waited = commands[0].get("description")
                 tests = any("bun test" in (c.get("command") or "") for c in commands)
         turns.append(
-            {"n": seq, "start": started, "end": end, "reason": reason, "senders": senders, "waitedOn": waited,
-             "waitedOnTests": tests}
+            {"n": seq, "start": started, "end": end, "reason": reason, "senders": senders, "messages": delivered,
+             "waitedOn": waited, "waitedOnTests": tests}
         )
     calls = [
         {"t": r[0], "verb": r[3].replace("mcp__cairn__", "")}
