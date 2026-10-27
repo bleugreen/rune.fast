@@ -7,7 +7,7 @@ import { costInputs } from './data/cost';
 import { timeline } from './data/timeline';
 import { fmtInt, fmtUsd } from './lib/numbers';
 import { fmtDuration } from './lib/time';
-import { HEAD_MARKER, ORIGIN, PAGE_PATHS, SHARE_IMAGE, SITE_NAME, applyPageMeta, metaFor, pageFile, siteMeta, withHead, type PageMeta } from './meta';
+import { AUTHOR, HEAD_MARKER, ORIGIN, PAGE_PATHS, SHARE_IMAGE, SITE_NAME, applyPageMeta, metaFor, pageFile, siteMeta, withHead, type PageMeta } from './meta';
 import { story } from './story/story';
 
 const root = new URL('../', import.meta.url);
@@ -31,6 +31,7 @@ function head(html: string) {
       expect(tags.get(key)?.length ?? 0).toBe(1);
       return tags.get(key)![0]!;
     },
+    all: (key: string) => tags.get(key) ?? [],
     urls: [...h.matchAll(/(?:href|content)="(https?:[^"]*)"/g)].map((m) => m[1]!),
   };
 }
@@ -98,6 +99,10 @@ describe('each page’s built head', () => {
     const url = ORIGIN + p;
     expect(h.titles).toEqual([m.title]);
     expect(h.one('description')).toBe(m.description);
+    expect(h.one('author')).toBe('bleugreen');
+    // Open Graph's article type names its author; the website type and X's card have no field for one.
+    expect(h.all('article:author')).toEqual(p === '/' ? ['https://bleu.green'] : []);
+    expect(h.all('twitter:creator')).toEqual([]);
     expect(h.canonical).toEqual([url]);
     expect(h.one('og:type')).toBe(m.type);
     expect(h.one('og:site_name')).toBe('rune.fast');
@@ -113,7 +118,8 @@ describe('each page’s built head', () => {
     expect(h.one('twitter:description')).toBe(m.description);
     expect(h.one('twitter:image')).toBe(`${ORIGIN}${SHARE_IMAGE.path}`);
     expect(h.one('twitter:image:alt')).toBe(SHARE_IMAGE.alt);
-    for (const u of h.urls) expect(u).toStartWith('https://rune.fast/');
+    // Every URL is the site's, but the story's author's.
+    expect(h.urls.filter((u) => !u.startsWith('https://rune.fast/'))).toEqual(p === '/' ? [AUTHOR.url] : []);
     // Still the shell: the marker is spent, and the app's root and entry are untouched.
     expect(html).not.toContain(HEAD_MARKER);
     expect(html.slice(html.indexOf('</head>'))).toBe(shell.slice(shell.indexOf('</head>')));
