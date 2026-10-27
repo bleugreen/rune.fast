@@ -28,7 +28,7 @@ Four minutes later `main` had created an account named Cairn and logged it in: "
 
 Playtime on this server is counted in ticks, the server's heartbeat, and only while the account is logged in. Log out and the count stops: a run can sit for nine hours while people argue and lose nothing. That Tuesday a tick lasted 300 ms and the record read 2 h 59 m. Two days later the demo slowed its tick to 400 ms, and the same record read 3 h 59 m. The count underneath never moved, 35,916 ticks, and that is the number this story is about.
 
-`main`'s first two questions back were whether Cairn should be the practice account, with the scored run on a fresh one later, and whether helper accounts were fair. "Sure!" and "absolutely! Swarm out my guy :)". By the end of the second day the swarm had priced the whole route, row by row, at 35,467 ticks expected, with 1,227 of those held in reserve for contention, retries and latency. On paper the record was 449 ticks away.
+`main`'s first two questions back were whether Cairn should be the practice account, with the scored run on a fresh one later, and whether helper accounts were fair. "Sure!" and "absolutely! Swarm out my guy :)". The swarm set about pricing the whole route, row by row, and kept repricing it for five days. By the night of the last attempt it stood at 35,467 ticks expected, with 1,227 of those held in reserve for contention, retries and latency. On paper the record was 449 ticks away.
 
 ## 2. The tricks
 
