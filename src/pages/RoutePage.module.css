@@ -65,7 +65,9 @@
   text-wrap: pretty;
 }
 
+/* Tall enough that the reading line, 40% down the window, can pass the last step's end and read the finish. */
 .finish {
+  min-height: 60dvh;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
