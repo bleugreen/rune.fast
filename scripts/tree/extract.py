@@ -35,16 +35,18 @@ from __future__ import annotations
 import argparse
 import collections
 import json
-import re
 import sys
 from pathlib import Path
 
 import duckdb
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "scripts"))
+from issue_filer import filer, record  # noqa: E402  (the filer /harness counts by, too)
+
 OUT = ROOT / "data" / "tree.json"
 TITLES = ROOT / "data" / "tree-titles.json"
-CUT = json.loads((ROOT / "data" / "summary.json").read_text())["cut"]
+CUT = record()
 
 # The classifier's input: the opening of each message, as it was labelled.
 TEXT_CHARS = 700
@@ -93,18 +95,15 @@ def origin_write(x: Export, main_id: str, name: str, created: int) -> str | None
 
 
 def author(principal: str | None, thread_names: set[str]) -> tuple[str, str | int | None]:
-    """('rs/158 coordinator', 158), ('host', 'host') or ('the harness', None) for an issue's author."""
-    a = json.loads(principal) if principal else {}
-    node = a.get("node") or ""
-    m = re.match(r"cairn://p/rs/(\d+)/\d+/(\w+)", node)
-    if m:
-        return f"rs/{m[1]} {m[2]}", int(m[1])
-    m = re.fullmatch(r"cairn://p/rs/([a-z]+)", node)
-    if m and m[1] in thread_names:
-        return m[1], m[1]
-    if a.get("kind") == "machine":
-        return "the harness", None
-    sys.exit(f"extract: an issue author the tree cannot place: {principal}")
+    """('rs/158 coordinator', 158), ('host', 'host') or ('the harness', None) for an issue's filer."""
+    f = filer(principal)
+    if f.kind == "harness":
+        return f.plain, None
+    if f.kind == "thread":
+        if f.thread not in thread_names:
+            sys.exit(f"extract: an issue filed by a thread the export does not have: {principal}")
+        return f.plain, f.thread
+    return f.plain, f.issue
 
 
 def extract(x: Export, kinds: dict[str, str]) -> tuple[dict, dict]:
