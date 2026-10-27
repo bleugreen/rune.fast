@@ -34,8 +34,8 @@ export function StoryFigure({ figure, model, record, className }: Props) {
       return <Clip clip={clipById(figure.id)} className={cls(styles.figure, className)} />;
     case 'link':
       return (
-        <figure className={cls(styles.slot, className)}>
-          <Link to={figure.to} className={styles.slotLink}>
+        <figure className={cls(styles.linkFigure, className)}>
+          <Link to={figure.to} className={styles.link}>
             {figure.text} →
           </Link>
         </figure>
