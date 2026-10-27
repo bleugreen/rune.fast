@@ -33,6 +33,8 @@ const { values: args } = parseArgs({
     timeout: { type: 'string', default: '30000' },
     out: { type: 'string', default: '.world/bench-ready' },
     headed: { type: 'boolean', default: false },
+    // Print window.__replay() after every step, not only on a miss.
+    state: { type: 'boolean', default: false },
   },
 });
 
@@ -108,6 +110,10 @@ async function once(embed: string, run: number): Promise<Result> {
         break;
       }
       console.log(`${embed}#${run} ${label}: ready ${ms} ms (load ${result.load.toFixed(0)})`);
+      if (args.state) {
+        const state = await page.evaluate(() => (window as unknown as { __replay?: () => unknown }).__replay?.());
+        console.log(`  __replay(): ${JSON.stringify(state)}`);
+      }
       if (s > 0) await frame.screenshot({ path: join(args.out, `${embed}-${run}-${s}.png`) });
     }
   } catch (e) {
@@ -131,15 +137,15 @@ async function ready(page: Page, embed: string, from: number): Promise<number | 
 }
 
 async function diagnose(page: Page, embed: string, shot: string): Promise<void> {
-  const d = await page.evaluate(() => {
+  const d = await page.evaluate((id) => {
     const marks = performance.getEntriesByType('mark').filter((m) => /^(replay|world):/.test(m.name));
     const start = marks.find((m) => m.name === 'replay:start')?.startTime ?? 0;
     return {
-      phase: document.querySelector('[data-embed]')?.getAttribute('data-phase'),
+      phase: document.querySelector(`[data-embed="${id}"]`)?.getAttribute('data-phase'),
       marks: marks.map((m) => `${String(Math.round(m.startTime - start)).padStart(7)} ms  ${m.name}`),
       state: (window as unknown as { __replay?: () => unknown }).__replay?.(),
     };
-  });
+  }, embed);
   console.log(`  frame phase: ${d.phase}`);
   for (const m of d.marks) console.log(`  ${m}`);
   console.log(`  __replay(): ${JSON.stringify(d.state)}`);

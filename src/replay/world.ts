@@ -146,6 +146,7 @@ if (import.meta.env.DEV) {
         drawn: !!followed && !!live && live.lastDrawn.has(followed),
         camera: [s.viewer.camera.getPosX(), s.viewer.camera.getPosZ()].map(Math.round),
         player: followed && [followed.x / 128, followed.z / 128].map(Math.round),
+        groundY: followed && s.renderer.getLiveGroundY(followed),
       },
       renderer: s && {
         running: s.renderer.running,
