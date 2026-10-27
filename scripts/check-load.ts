@@ -107,6 +107,17 @@ async function visit(context: BrowserContext, url: string, slow: boolean, cold: 
   const cdp = await context.newCDPSession(page);
   await cdp.send('Network.enable');
   await cdp.send('Network.setCacheDisabled', { cacheDisabled: cold });
+  // The beacon is answered here, through DevTools rather than Playwright's routing, which would
+  // turn the browser's cache off and leave a repeat visit nothing to show.
+  cdp.on('Fetch.requestPaused', (e) => {
+    void cdp.send('Fetch.fulfillRequest', {
+      requestId: e.requestId,
+      responseCode: 200,
+      responseHeaders: [{ name: 'Content-Type', value: 'text/javascript' }],
+      body: '',
+    });
+  });
+  await cdp.send('Fetch.enable', { patterns: [{ urlPattern: `${BEACON_SRC}*` }] });
   if (slow) await cdp.send('Network.emulateNetworkConditions', SLOW);
   await page.goto(url, { waitUntil: 'load', timeout: 120_000 });
   let seen = -1;
@@ -122,7 +133,6 @@ async function visit(context: BrowserContext, url: string, slow: boolean, cold: 
 /** A load of `url` with the cache disabled, or with `repeat`, a second visit after a first has filled the cache. */
 async function load(browser: Browser, url: string, options: BrowserContextOptions, slow: boolean, repeat = false): Promise<Load> {
   const context = await browser.newContext(options);
-  await context.route(`${BEACON_SRC}*`, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
   if (repeat) await (await visit(context, url, slow, false)).close();
   const page = await visit(context, url, slow, !repeat);
   const result = await page.evaluate(() => {
