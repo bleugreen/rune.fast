@@ -5,6 +5,7 @@ import { projectTimeline } from './scripts/public-timeline';
 import { projectCostData, projectRoles } from './scripts/public-cost';
 import { projectTricks } from './scripts/public-tricks';
 import { isStoryMd, storyModule } from './scripts/story-module';
+import { pagesRoutesFile } from './scripts/pages-routes';
 import { pacificDayKey } from './src/lib/time';
 
 /** Archival exports in data/, by path suffix, and the public projection that replaces each in the build. */
@@ -49,7 +50,7 @@ function story(): Plugin {
 
 const site: UserConfig = {
     // .world/ holds the local cache copy and clip output; never under public/, so never in dist/.
-    plugins: [publicData(), story(), worldAssets('.world')],
+    plugins: [publicData(), story(), worldAssets('.world'), pagesRoutesFile()],
     resolve: { dedupe: ['react', 'react-dom'] },
     define: {
       __BUILD_DATE__: JSON.stringify(pacificDayKey(Date.now())),

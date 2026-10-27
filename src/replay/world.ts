@@ -10,6 +10,7 @@ import {
 import { parseChunk, type ChunkData, type ClipChunk, type ClipManifest } from '@rune/world/replay/clip';
 import { ReplayDriver } from '@rune/world/replay/ReplayDriver';
 import type { ReplayEntry } from '../clips/registry';
+import { reloadIfRedeployed } from '../lib/deploy';
 import { WORLD_ASSET_BASE } from './assets';
 import { loadCache } from './cache';
 
@@ -52,6 +53,8 @@ const drivers = new Map<string, ReplayDriver>();
 
 function startWorkers(): RenderDataWorkerPool {
   if (!WebGLMapViewerRenderer.isSupported()) throw new WorldLoadError('This browser has no WebGL2');
+  // The workers and the wasm are named by the build this tab loaded; after a deploy they are gone.
+  void reloadIfRedeployed();
   const pool = RenderDataWorkerPool.create(isSharedMemorySupported ? 4 : 1);
   made.pools++;
   performance.mark('replay:workers-started');
