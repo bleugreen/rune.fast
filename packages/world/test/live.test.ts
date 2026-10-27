@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { INITIAL_GATE, gateFrame, type FeedGateState } from "../src/live/FeedGate";
 import { LivePlayer } from "../src/live/LiveEntity";
+import { Camera } from "../src/mapviewer/Camera";
 import { LiveWorld } from "../src/live/LiveWorld";
 import {
     base37ToName,
@@ -206,6 +207,26 @@ describe("world/controller epochs", () => {
         expect(c.followSlot).toBe(-1);
         handlers.onEpoch(400);
         expect(c.isFollowing()).toBe(false);
+    });
+    test("the follow camera goes to the player when the ground under them is not loaded", () => {
+        // After a seek the followed player can be streamed far from the camera, where no map
+        // square is loaded; holding the camera until their ground loads would wait forever.
+        const { controller: c } = stubController();
+        const camera = new Camera(3212, -5, 3897, -256, 182);
+        const player = new LivePlayer(1);
+        player.name = "Helper One";
+        player.x = 3216 * 128;
+        player.z = 3905 * 128;
+        c.world.players.set(1, player);
+        c.follow(player);
+        const loaded = (e: LivePlayer) => (Math.abs(e.x / 128 - camera.getPosX()) < 32 ? -266 : undefined);
+        c.update(0, camera, 64, loaded as never);
+        const pivotY = camera.getPosY();
+        player.x = 3155 * 128;
+        c.update(0, camera, 64, loaded as never);
+        expect(Math.abs(camera.getPosX() - 3155)).toBeLessThan(48);
+        expect(Math.abs(camera.getPosZ() - 3905)).toBeLessThan(48);
+        expect(camera.getPosY()).toBeCloseTo(pivotY, 5);
     });
     test("a pending follow starts once a roster places the account", () => {
         const { controller: c, handlers } = stubController();

@@ -75,7 +75,8 @@ function world(): Promise<SharedWorld> {
     try {
       await Promise.all(OVERLAY_FONTS.map((font) => document.fonts.load(font)));
       performance.mark('replay:fonts');
-      const cache = await loadCache();
+      // Each downloaded part is progress, so a slow connection is not taken for a stalled load.
+      const cache = await loadCache(undefined, () => advance(progress.phase));
       performance.mark('replay:cache-fetched');
       const viewer = new MapViewer(pool, cache);
       made.viewers++;
@@ -126,6 +127,55 @@ async function fetchChunk(recording: string, chunk: ClipChunk): Promise<ChunkDat
   return parseChunk(text, REVISION);
 }
 
+/** The latest claim's load: the step it is on and when it last moved on (performance.now()). */
+const progress = { phase: 'idle', at: 0 };
+
+/** How far the latest claim's load has got, and when it last moved on: the embed's stall watchdog reads it. */
+export function loadProgress(): { readonly phase: string; readonly at: number } {
+  return progress;
+}
+
+function advance(phase: string): void {
+  progress.phase = phase;
+  progress.at = performance.now();
+}
+
+/** The last stage handed out, for `window.__replay()` in development. */
+const debug: { stage?: Omit<Stage, 'kFrom' | 'kTo'> } = {};
+
+if (import.meta.env.DEV) {
+  (window as unknown as { __replay: () => unknown }).__replay = () => {
+    const s = debug.stage;
+    const followed = s?.controller.getFollowed();
+    const live = s?.renderer.liveRenderer;
+    return {
+      phase: progress.phase,
+      tenant: tenant?.ticket.entry.id,
+      driver: s?.driver.debugState(),
+      follow: s && {
+        name: s.controller.followName,
+        slot: s.controller.followSlot,
+        pending: s.controller.pendingFollow,
+        followed: !!followed,
+        drawn: !!followed && !!live && live.lastDrawn.has(followed),
+        camera: [s.viewer.camera.getPosX(), s.viewer.camera.getPosZ()].map(Math.round),
+        player: followed && [followed.x / 128, followed.z / 128].map(Math.round),
+        groundY: followed && s.renderer.getLiveGroundY(followed),
+      },
+      renderer: s && {
+        running: s.renderer.running,
+        frames: s.renderer.stats.frameCount,
+        program: !!s.renderer.mainProgram,
+        live: !!live,
+        pendingBakes: live?.pendingBakes,
+        mapSquares: s.renderer.mapManager.mapSquares.size,
+        loadingMaps: s.renderer.mapManager.loadingMapIds.size,
+        poolPending: s.pool.pendingTasks,
+      },
+    };
+  };
+}
+
 /** The entry's driver, from the kept ones or new; the most recently used last. */
 function driverFor(entry: ReplayEntry, manifest: ClipManifest): ReplayDriver {
   let driver = drivers.get(entry.id);
@@ -149,6 +199,11 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
   const ticket: Ticket = {
     entry,
     ready: (async () => {
+      const phase = (name: string) => {
+        advance(`${entry.id}: ${name}`);
+        performance.mark(`replay:acquire ${entry.id} ${name}`);
+      };
+      phase('asked');
       const [w, manifest] = await Promise.all([world(), manifestOf(entry.recording)]);
       if (!holds()) throw new Superseded();
       const { viewer, renderer } = w;
@@ -160,13 +215,21 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
       controller.options.showPlayerNames = false;
       controller.options.showFollowedName = !SLOT_ALIAS.test(manifest.follow.name);
       driver.bind(controller);
+      debug.stage = { ...w, driver, controller };
       host.appendChild(renderer.canvas);
       overlay.appendChild(renderer.liveOverlay.canvas);
-      rendererStarted ??= renderer.init();
+      phase('renderer-init');
+      if (!rendererStarted) {
+        rendererStarted = renderer.init();
+        // A failed start is not kept: the next play tries again.
+        rendererStarted.catch(() => (rendererStarted = undefined));
+      }
       await rendererStarted;
       const kFrom = manifest.anchor.kOffset + entry.from;
+      phase('seek');
       await driver.seek(kFrom);
       performance.mark('replay:seeked');
+      phase('seeked');
       if (!holds()) throw new Superseded();
       controller.setPendingFollow(manifest.follow.name);
       renderer.start();

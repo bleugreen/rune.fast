@@ -120,6 +120,14 @@ class ChunkFrameSource implements FrameSource {
     loadedIndexes(): number[] {
         return [...this.chunks.keys()].sort((a, b) => a - b);
     }
+
+    pendingIndexes(): number[] {
+        return [...this.pending.keys()].sort((a, b) => a - b);
+    }
+}
+
+function mark(name: string): void {
+    if (typeof performance !== "undefined") performance.mark(name);
 }
 
 // Plays a published clip into a LiveController: it is the controller's feed (frames arrive
@@ -263,13 +271,17 @@ export class ReplayDriver implements FeedSource, WorldStepper {
         if (!playhead) throw new Error("ReplayDriver is not bound");
         const token = ++this.seeking;
         this.notify(true);
+        const tag = `#${token} k=${k}`;
+        let outcome = "threw";
+        mark(`replay:seek-start ${tag}`);
         try {
             const chunks = this.manifest.chunks;
             const target = Math.min(Math.max(k, this.manifest.window.kStart), this.manifest.window.kEnd);
             let index = chunks.findIndex((c) => c.k1 >= target);
             if (index === -1) index = chunks.length - 1;
+            mark(`replay:seek-chunk ${tag} chunk=${index}`);
             const chunk = await this.source.load(index);
-            if (token !== this.seeking) return false;
+            if (token !== this.seeking) return (outcome = "superseded"), false;
             let local = chunk.frames.findIndex((f) => f.msg.t === "tick" && f.msg.k >= target);
             if (local === -1) local = chunk.frames.length - 1;
             const targetIndex = chunks[index].f0 + local;
@@ -293,18 +305,39 @@ export class ReplayDriver implements FeedSource, WorldStepper {
                 const result = playhead.step();
                 if (result === "end") break;
                 if (result === "stalled") {
-                    await this.source.load(this.source.chunkIndexOf(this.source.position));
-                    if (token !== this.seeking) return false;
+                    const next = this.source.chunkIndexOf(this.source.position);
+                    mark(`replay:seek-stall ${tag} chunk=${next}`);
+                    await this.source.load(next);
+                    if (token !== this.seeking) return (outcome = "superseded"), false;
                     continue;
                 }
                 this.maybeCheckpoint();
             }
             this.controller?.rebase({ keepFollow: true });
+            outcome = "done";
             return true;
         } finally {
             if (token === this.seeking) this.seeking = 0;
+            mark(`replay:seek-${outcome} ${tag} seeking=${this.seeking}`);
             this.notify(true);
         }
+    }
+
+    // What a stuck replay is waiting on, for diagnosis.
+    debugState(): Record<string, unknown> {
+        return {
+            seeking: this.seeking,
+            paused: this.paused,
+            stalled: this.stalled,
+            ended: this.ended,
+            positioned: this.positioned,
+            position: this.source.position,
+            tick: this.playhead?.world.tick,
+            loopCycle: this.playhead?.world.loopCycle,
+            rosterTick: this.playhead?.world.rosterTick,
+            loaded: this.source.loadedIndexes(),
+            pending: this.source.pendingIndexes(),
+        };
     }
 
     // useSyncExternalStore

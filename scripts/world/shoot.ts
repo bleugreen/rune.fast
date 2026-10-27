@@ -55,6 +55,7 @@ try {
     });
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(args.base + args.page);
+    watchReload(page);
     const figure = page.locator(`[data-embed="${id}"]`);
     const frame = figure.locator('[role="button"]');
     const replay = (await figure.getAttribute('data-kind')) === 'replay';
@@ -96,7 +97,24 @@ process.exit(failed ? 1 : 0);
 /** Waits for the replay to settle, after giving a seek time to clear the previous signal. */
 async function ready(page: Page, id: string): Promise<void> {
   await page.waitForTimeout(300);
-  await page.locator(`[data-embed="${id}"] [data-replay-ready]`).waitFor({ timeout });
+  await Promise.race([page.locator(`[data-embed="${id}"] [data-replay-ready]`).waitFor({ timeout }), reloaded.get(page)]);
+}
+
+const reloaded = new WeakMap<Page, Promise<never>>();
+
+/**
+ * Fails the shot at once if the page reloads after its first load. Under `bun run dev`, Vite reloads
+ * the page when a watched file changes, and on macOS the event for a file written just before the
+ * server started can arrive seconds later: edit `data/clips.json`, wait a few seconds, then shoot.
+ */
+function watchReload(page: Page): void {
+  const promise = new Promise<never>((_, reject) => {
+    page.on('framenavigated', (frame) => {
+      if (frame === page.mainFrame()) reject(new Error('the page reloaded (under the dev server: a watched file changed)'));
+    });
+  });
+  promise.catch(() => {});
+  reloaded.set(page, promise);
 }
 
 /** The page's replay:* marks against navigation start, its cache and chunk fetches, and the workers' own timings. */

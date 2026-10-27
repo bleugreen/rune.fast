@@ -2,11 +2,17 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { WorldLoadError } from '@rune/world';
 import type { MediaHandle, MediaProps } from '../clips/Clip';
 import { TICK_MS, type ReplayEntry } from '../clips/registry';
-import { Superseded, acquire, release, type Stage } from './world';
+import { Superseded, acquire, loadProgress, release, type Stage } from './world';
 import styles from './Replay.module.css';
 
 /** If the scene never settles (the account out of the recorded area), show it anyway after this long. */
 const SHOW_AFTER_MS = 3000;
+
+/**
+ * Asked to play and not yet shown, a load that has not moved on for this long has stalled: the frame
+ * goes back to its poster with a message, and playing it again starts the load again.
+ */
+const STALL_MS = 30_000;
 
 /**
  * A window of a published world-feed recording, as the footage inside a clip frame. It borrows the
@@ -26,6 +32,7 @@ const Replay = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function Replay(
   stageRef.current = stage;
   const latest = useRef(props);
   latest.current = props;
+  const shown = useRef(false);
 
   useImperativeHandle(ref, () => ({
     seek: (ms) => {
@@ -36,6 +43,7 @@ const Replay = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function Replay(
 
   useEffect(() => {
     let alive = true;
+    shown.current = false;
     // Moved off the stage by another replay: back to the poster, as at the end.
     const ticket = acquire(entry, host.current!, overlay.current!, () => latest.current.onEnded());
     ticket.ready.then(
@@ -46,8 +54,17 @@ const Replay = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function Replay(
         latest.current.onFailed(e instanceof WorldLoadError ? e.message : 'The replay failed to load');
       },
     );
+    // Never an indefinite dimmed mark: a load that stops moving on is reported, naming where it stopped.
+    const watchdog = setInterval(() => {
+      const { phase, at } = loadProgress();
+      if (shown.current || performance.now() - at < STALL_MS) return;
+      clearInterval(watchdog);
+      console.error(`Replay ${entry.id} stalled: no progress for ${STALL_MS / 1000} s at "${phase}"`);
+      latest.current.onFailed('The replay stopped loading. Play it to try again.');
+    }, 1000);
     return () => {
       alive = false;
+      clearInterval(watchdog);
       release(ticket);
     };
     // The frame's callbacks are read through `latest`: they are new closures on every render.
@@ -64,7 +81,7 @@ const Replay = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function Replay(
     >
       <div ref={host} className={styles.stage} />
       <div ref={overlay} className={styles.overlay} />
-      {stage && <Playback stage={stage} latest={latest} />}
+      {stage && <Playback stage={stage} latest={latest} shownRef={shown} />}
     </div>
   );
 });
@@ -72,7 +89,15 @@ const Replay = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function Replay(
 export default Replay;
 
 /** Plays the stage as the frame asks, and tells the frame where the playhead is. Draws nothing itself. */
-function Playback({ stage, latest }: { stage: Stage; latest: { current: MediaProps<ReplayEntry> } }) {
+function Playback({
+  stage,
+  latest,
+  shownRef,
+}: {
+  stage: Stage;
+  latest: { current: MediaProps<ReplayEntry> };
+  shownRef: { current: boolean };
+}) {
   const { renderer, pool, driver, controller, kFrom, kTo } = stage;
   /** Held at the first tick under the poster until the scene is drawn, so the reader sees the window from its start. */
   const [shown, setShown] = useState(false);
@@ -116,12 +141,19 @@ function Playback({ stage, latest }: { stage: Stage; latest: { current: MediaPro
     return () => cancelAnimationFrame(raf);
   }, [driver, kFrom, kTo, latest]);
 
-  // Shown once the followed account is drawn with no map squares or entity bakes outstanding.
-  // Ready for a screenshot when that has held for eight checks in a row (0.8 s); the attribute
-  // goes again while anything is outstanding, as after a seek.
+  // Shown once the followed account is drawn on loaded ground (so the camera has reached them) with
+  // no map squares or entity bakes outstanding. Ready for a screenshot when that has held for eight
+  // checks in a row (0.8 s); the attribute goes at once when a seek starts, and while anything is
+  // outstanding.
   useEffect(() => {
     const host = renderer.canvas.closest<HTMLElement>('[data-replay]');
     let streak = 0;
+    // A seek from memory can finish between two checks; it must still clear the signal.
+    const unsubscribe = driver.subscribe(() => {
+      if (!driver.getSnapshot().loading) return;
+      streak = 0;
+      host?.removeAttribute('data-replay-ready');
+    });
     let firstFrameAt: number | undefined;
     const once = new Set<string>();
     const mark = (name: string, reached: boolean) => {
@@ -145,6 +177,7 @@ function Playback({ stage, latest }: { stage: Stage; latest: { current: MediaPro
         !!followed &&
         !!live &&
         live.lastDrawn.has(followed) &&
+        renderer.getLiveGroundY(followed) !== undefined &&
         live.pendingBakes === 0 &&
         renderer.mapManager.loadingMapIds.size === 0 &&
         pool.pendingTasks === 0;
@@ -152,6 +185,7 @@ function Playback({ stage, latest }: { stage: Stage; latest: { current: MediaPro
       mark('settled', streak === 1);
       if (streak >= 1 || (firstFrameAt !== undefined && performance.now() - firstFrameAt > SHOW_AFTER_MS)) {
         mark('shown', true);
+        shownRef.current = true;
         setShown(true);
       }
       if (streak >= 8) {
@@ -161,9 +195,10 @@ function Playback({ stage, latest }: { stage: Stage; latest: { current: MediaPro
     }, 100);
     return () => {
       clearInterval(timer);
+      unsubscribe();
       host?.removeAttribute('data-replay-ready');
     };
-  }, [driver, controller, renderer, pool]);
+  }, [driver, controller, renderer, pool, shownRef]);
 
   // Paused before the scene was shown: show it anyway, still, so the frame is not left on its poster.
   useEffect(() => {
