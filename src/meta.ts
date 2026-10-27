@@ -16,6 +16,9 @@ import { story } from './story/story';
 export const ORIGIN = 'https://rune.fast';
 export const SITE_NAME = 'rune.fast';
 
+/** Who runs the site: named in every page's footer and head. */
+export const AUTHOR = { name: 'bleugreen', url: 'https://bleu.green' } as const;
+
 export const PAGE_PATHS = ['/', '/route', '/tricks', '/cost', '/harness'] as const;
 export type PagePath = (typeof PAGE_PATHS)[number];
 
@@ -118,7 +121,11 @@ export const pageFile = (p: PagePath) => (p === '/' ? 'index.html' : `${p.slice(
 
 const attr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** A page's head: its title and description, canonical URL, and the Open Graph and X card tags, every URL absolute. */
+/**
+ * A page's head: its title, description and author, canonical URL, and the Open Graph and X card
+ * tags, every URL absolute. The article (the story) also names its author's URL, as Open Graph's
+ * article type defines; the website type and X's card have no author field to fill.
+ */
 export function headTags(m: PageMeta): string[] {
   const url = ORIGIN + m.path;
   const image = ORIGIN + SHARE_IMAGE.path;
@@ -126,6 +133,7 @@ export function headTags(m: PageMeta): string[] {
   return [
     `<title>${title}</title>`,
     `<meta name="description" content="${description}" />`,
+    `<meta name="author" content="${attr(AUTHOR.name)}" />`,
     `<link rel="canonical" href="${url}" />`,
     `<meta property="og:type" content="${m.type}" />`,
     `<meta property="og:site_name" content="${SITE_NAME}" />`,
@@ -136,6 +144,7 @@ export function headTags(m: PageMeta): string[] {
     `<meta property="og:image:width" content="${SHARE_IMAGE.width}" />`,
     `<meta property="og:image:height" content="${SHARE_IMAGE.height}" />`,
     `<meta property="og:image:alt" content="${attr(SHARE_IMAGE.alt)}" />`,
+    ...(m.type === 'article' ? [`<meta property="article:author" content="${attr(AUTHOR.url)}" />`] : []),
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${title}" />`,
     `<meta name="twitter:description" content="${description}" />`,
