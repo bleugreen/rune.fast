@@ -13,6 +13,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { encodePosterAvif } from './media';
 
 /**
  * The recording runs 4.0 s behind the time in its file name, with no drift over its 28 hours (the tray
