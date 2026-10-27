@@ -149,6 +149,11 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
   const ticket: Ticket = {
     entry,
     ready: (async () => {
+      const phase = (name: string) => {
+        debug.phase = `${entry.id}: ${name}`;
+        performance.mark(`replay:acquire ${entry.id} ${name}`);
+      };
+      phase('asked');
       const [w, manifest] = await Promise.all([world(), manifestOf(entry.recording)]);
       if (!holds()) throw new Superseded();
       const { viewer, renderer } = w;
@@ -160,13 +165,17 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
       controller.options.showPlayerNames = false;
       controller.options.showFollowedName = !SLOT_ALIAS.test(manifest.follow.name);
       driver.bind(controller);
+      debug.stage = { ...w, driver, controller };
       host.appendChild(renderer.canvas);
       overlay.appendChild(renderer.liveOverlay.canvas);
+      phase('renderer-init');
       rendererStarted ??= renderer.init();
       await rendererStarted;
       const kFrom = manifest.anchor.kOffset + entry.from;
+      phase('seek');
       await driver.seek(kFrom);
       performance.mark('replay:seeked');
+      phase('seeked');
       if (!holds()) throw new Superseded();
       controller.setPendingFollow(manifest.follow.name);
       renderer.start();
