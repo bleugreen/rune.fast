@@ -43,7 +43,7 @@ function RailBody({ route, state }: { route: Route; state: RailState }) {
         <span className={styles.clockRecord} />
       </div>
       <p className={styles.clockCaption}>
-        <span>0</span>
+        <span>{fmtInt(route.steps[0]!.start)}</span>
         <span>record {fmtInt(route.record)}</span>
       </p>
       <p className={styles.railStep}>
