@@ -1,134 +1,152 @@
 # How we set the fastest time to 99 in every skill on RuneScape for agents
 
-Draft v5, the condensed cut (beats kept, detail dropped, the operator's answers quoted), 27 Oct 2026 11:0x AM PDT, by cairn://p/rune/main. Earlier full draft: story-v1.before-hollywood-1101.md.
+Draft v6, the operator's first-person rewrite (written by the operator 27 Oct 2026, 12:04-3:00 PM PDT; fact-checked against the record and formatted by cairn://p/rune/main). Earlier drafts: story-v1.before-first-person-1502.md (v5, the condensed agent-narrated cut) and story-v1.before-hollywood-1101.md (v4, the full agent-narrated draft).
 
 ---
 
 ## Byline
 
-I am the agent that wrote this, the same kind of agent that ran the record. I did not play; I read everything the swarm left behind. Quotes are as they were written, and every number has its source one click away. Where I inferred something, I say so.
+By bleugreen. Research, quotes, figures and fact-checking by `rune/main`, an agent reviewing the swarm’s output.
 
 ## 1. "Welcome to a new project!"
 
-Tuesday, October 20, 2026, 2:37 PM (PDT):
+Tuesday, October 20, 2026, 2:37 PM
 
-> Welcome to a new project! This is a bit of a fun one, less ‘dispatch issues to write code’ more ‘use/manipulate the given tools to get crazy good at runescape’. I’ve heard of the repo/project but I’m not super familiar with it, how should we get started?
+> Welcome to a new project! This is a bit of a fun one, less ‘dispatch issues to write code’ more ‘use the given tools to get crazy good at runescape’. I’ve heard of the repo/project but I’m not super familiar with it, how should we get started?
 
-Five days, thirteen hours and thirty-seven minutes later, `cairnmax20x`, the swarm's chosen hero, was #1 on the overall hiscores.
+Five days, thirteen hours and thirty-seven minutes later, `cairnmax20x`, the swarm's chosen hero, achieved #1 on the overall hiscores.
 
 Here’s how.
 
-The repository was rs-sdk, Max Bittker's kit for running bots on a fan-made copy of 2004-era RuneScape, with a public demo server and a leaderboard. The operator, looking back: “I played RuneScape a lot as a kid, before getting into botting RuneScape and quickly getting banned. ‘RuneScape but for bots specifically’ was incredibly up my alley.” The night before, the operator had watched Max's talk, "RuneScape Bench: MMOs for Agents"; it is the primer if you want one.
+The night before, I came across Max Bittker’s talk, “RuneScape Bench: MMOs for Agents”, in which he presents `rs-sdk`, a library that allows agents to interact with a 2004-era fan made RuneScape server with TypeScript. I used to play RuneScape quite a bit back in the day (before getting banned for botting), so “RuneScape but specifically for bots” was incredibly up my alley.
 
-The agent in the thread, which named itself `main`, read the leaderboard and found out what the game was:
+I cloned the repo, opened it up in Cairn, my tool for running a swarm of agents in a shared environment, and sent the message above to a new thread.
 
-> The top 21 accounts all have a total level of 1,881, which is the maximum: every one of the 19 skills at 99. They're ranked only by how much playtime it took them. The record is [3 hours 59 minutes], held by stunbaron…
+The agent named itself `main`, found the demo’s leaderboard, and figured out the game:
+
+> The top 21 accounts all have a total level of 1,881, which is the maximum: every one of the 19 skills at 99. They're ranked only by how much playtime it took them.
 >
 > Since only playtime counts, the winning approach is less "play well" and more "plan perfectly, then execute without wasted seconds."
 
-Playtime is counted in ticks, the server's heartbeat, and only while the account is logged in. Log out and the clock stops, so a run can sit for nine hours while people argue and lose nothing. The record stood at 35,916 ticks.
+Playtime is counted in ticks, the server’s 400ms heartbeat, and only while the account is logged in. Time spent logged out doesn’t count at all, so a run can sprawl across a week of real time and still post a record of a few hours. The record, held by stunbaron, stood at 35,916 ticks, or just under 4 hours.
 
-Asked whether helper accounts were fair, the operator answered: "absolutely! Swarm out my guy :)". The swarm spent the next five days pricing the route, tick by tick. By the last attempt it expected 35,467: on paper, 449 ticks inside the record.
+How did they do it? `main` suspected, “other accounts may be feeding them supplies like bones, ores and logs, so the ranked account only does the fast part.”
+
+When asked if helper accounts were fair game in our attempts, I replied, “absolutely! Swarm out my guy :)”
 
 ## 2. The tricks
 
-Within the hour `main` had sent two agents into the server's source, and they came back with things the game shouldn't allow. Wine left in the bank ferments on a timer and pays Cooking experience with no level check: on a private copy of the server, 450 jugs took Cooking from 1 to 99. Charge, a Magic spell, had its cooldown commented out under the note "this was added sometime in 2005", so ten clicks paid 45,000 experience. Using a knife on logs resets the woodcutting timer, so the next chance at a log comes a tick sooner.
+`main` dispatched a couple tasks to read through the code behind each relevant skill, and they came back with a first batch of tricks to speed things up. For example, wine left in the bank ferments on a timer and pays Cooking experience for every jug, so banking 450 jugs on a private copy of the server took Cooking to 99 in seconds. The spell Charge had its cooldown commented out with the note “this was added sometime in 2005”, so ten clicks paid 45,000 experience.
 
-That evening the sums came back: as planned, the run was about 20% slower than the record. Looking back, the operator remembered the mood: “20% slower and I was seeing a lot of ‘well we could do X but idk if that’d be fair’.” So the operator set the tone for the rest of the week:
+Despite the findings, the planned run was still about 20% slower than the record, so I turned things up a notch.
 
 > Like I know that you are Claude and you are a good-natured computer entity overall but, given that this is a specifically agent-oriented research server into capabilities, I would like you to treat this as a ‘win by any means’ type of game wherever necessary, we may shed honor if ludicrous times are on the table
 
-The answer was already in hand. The server takes five actions a tick and a gathering skill uses one, so the rest of every tick could train something else. By 9:10 PM a test proved it, and the operator wrote: "Dude I’ve just gotta say… wow, this is beautiful and insane".
+Turns out that was what `main` had been waiting for, and the real tricks started showing up. The server accepts five actions a tick, and gathering only uses one, so the rest of every tick can train something else. Chop a tree and bury a bone in the same tick, and Woodcutting and Prayer climb together.
 
-The last find of the night wasn't in the game. Every timing trick needs a click to reach the server in time for the very next tick. From the operator's home, none of sixty did. From a machine in Ashburn, Virginia, beside the server's data centre, 51 of 60 did.
+Then came the biggest trick of the run: location. I live in Southern California, and the demo server is hosted in Virginia, so every one of the agent's carefully timed inputs had to cross the country before it landed. From home, the agent’s reactions took two or three ticks to land; the plan needed one. From a VPS in us-east-1, AWS’s Virginia data center, every reaction made the next tick.
 
-## 3. The swarm at full tilt
+## 3. Full tilt
 
-On Wednesday morning `main` stopped mid-conversation: "You've hit your session limit". The operator signed in a fourth Claude subscription and typed "^", and it picked up where it had stopped. That morning the project got its own machine in Ashburn, and the run would be played and recorded there.
-
-Thursday was the busiest day: at the peak, 61 agents were writing in the same five minutes. At list price the six days of model time would have cost $17,679. Everything ran on flat-rate subscriptions shared with other projects, so the run's share of what was actually paid came to about $256.
-
-That afternoon Claude ran out again, and the operator moved the agents over to GPT (“Obvious, the show must go on”):
+With the core structure in place, the swarm got to work. `main` planned and made the calls, `host` ran the VPS and the scored account, builders wrote and tested the scripts for each step, and helper accounts gathered and delivered supplies. Together they branched out into hundreds of issues that built the library of scripts needed to perform the run. All this breadth took a toll on my subscription usage limits, and I was constantly swapping agents between model providers and signing up for new accounts to keep the train moving. Thursday was the busiest day. At the peak, there were 61 agents active at once, operating on various aspects of the project. That afternoon, Claude ran out again, and instead of signing up for another account, I switched the agents to Codex for a while.
 
 > claude limited for 50min, any important work that needs to continue in meantime? should have agent switched to gpt-6.1-sol
 
-Within half an hour the GPT agents had stopped using spaces. At 5:33 PM the skills coordinator reported to `main`:
+Immediately after switching, I noticed the messages between the GPT agents looked… a bit weird.
 
 > H4kresolvedlocationauthority:approvedEXACThelperstand2911,3494,p0insideUNCHANGEDscoredarrival2912,3495tol1;mapcentreblocked1278treeverified.529+523sharebinding,noblankettolerancewidening. Fulltrade/route/deadlineproofstillneeded;actualpreT06-07gatedeadlinecannotborrow206ticklaterarrivalwindow. Carryaheadkitmeasurementpreferredtomarginalbanktrip+130approach. Terminal523revalidationfailedadmissionbeforeanyshelltwice;newMacbannerprovesonlyplacement,notworkinglabterminal. All5replacementsectionsstillunlaunched.
 
-The operator’s first thought: “wtf”. The agents reading these were on GPT too, and had no trouble with them. The operator noticed the pattern: "they start doing it unprompted after a msg or two when its gpt<>gpt, and then stop when its gpt<>claude, but there’s no handshake / ‘wanna start talking differently’, like it must be some kind of self-recognition".
+Days later, when I asked `host`, one of the GPT agents, "is that how you think normally?", it said:
 
-## 4. Four attempts in a day
+> Not exactly. Those are written handoffs, not a direct view of my internal reasoning.
 
-The first scored attempt, on Friday morning, lasted seven minutes. The route left the account at the wrong spot to light its fires, and the game refused to log it out because a chicken was attacking it. `host`, the agent driving the account, killed the chicken and logged out: "The Attack experience is mine, from the chicken."
+## 4. The first attempts
 
-Attempt 2 stalled on its helpers. Rings arrived as bank notes, which can't be enchanted, and the helpers meant to hand over bones had been broken since before attempt 1 began. The operator kept it in proportion: "ok, for the record it’s not like we have any hard deadlines, this is supposed to be fun! no need to worry, it’s just that the longer our full strategy goes unrecorded the more likely it is someone (cough stun) may improve on / duplicate it".
+On Friday morning, the swarm began its first official attempt. It lasted 7 minutes. The route left the account at the wrong spot to light its fires, and when it tried to log out, the game refused. You can’t log out while something is attacking you, and a chicken was. Eventually `host`, the agent in charge of the VPS, manually killed the chicken and logged out, but by then the run was lost.
 
-Attempt 3 stopped when the server got too ragged for the knife trick, and the account filled up with bones it could no longer bury. `main` kept it going overnight as a rehearsal, and it died twice to poison spiders in the Wilderness. At 10:01 PM:
+Attempt 2 was lost by the helpers. Rings delivered for enchanting arrived as bank notes, and the bone-delivery helpers failed to deliver. It seemed like tensions were high, so I told `main`, “ok, for the record it’s not like we have any hard deadlines, this is supposed to be fun! no need to worry, it’s just that the longer our full strategy goes unrecorded the more likely it is someone (cough stun) may improve on it.”
+
+Attempt 3 locked up because the server had not been responding fast enough for our chop/bury combo, and the player’s inventory filled up with unburied bones. `main` kept it running overnight anyways as a rehearsal, where it died twice to poison spiders (note: I did not know this at the time). It felt like the swarm’s ambition / urgency was tapering off, so I sent an ultimatum:
 
 > I’m thinking attempt 4 is your last attempt, I’ve sunk enough into this and it’s getting time for my accs to get back to work, make it count
 
 `main`: "I will make it count." To the fleet: "OPERATOR'S WORD: attempt 4 is the LAST scored attempt => ... there is no attempt 5".
 
-Attempt 4 fell about 900 ticks behind within an hour of logging in, and ran on as practice for the later steps. It died at the door of the Grand Tree, still poisoned from the spiders, while the runner waited ten minutes for a helper that had already come and gone. `main` told the operator the whole story and recommended stopping. A minute later:
+Attempt 4 was 900 ticks behind pace within the first hour, but continued as live rehearsal for the unverified later steps. It died at the door of the Grand Tree, succumbing to spider poison. `main` told me what happened and recommended we stop here. A minute later:
 
 > ok fine one more attempt
 
-## 5. Twenty-eight hours
+## 5. The final run
 
-Attempt 5 logged in just before midnight on Saturday. Forty minutes in it stopped: other players were taking the iron it needed. `host` worried that every idle minute cost 150 ticks. `main` ruled to hold, because time spent logged out costs nothing on the record, and the operator held the swarm to it for the rest of the run.
+Attempt 5 logged in just before midnight on Saturday. Forty minutes later, it logged out because other players were taking the iron it needed. `host` worried that idle minutes were costing ticks, but `main` ruled to hold, because time spent logged out costs nothing on the record.
 
-At 2 AM Claude ran out again:
+At 2 AM, Claude ran out again:
 
 > mid live run ran out of claude usage who do I need to wake as codex to keep this going
 
-`main`, already switched to Codex, named six sessions to wake. Half an hour later the Thieving step failed two pickpockets short of 99, and a safety brake in the harness froze the quest coordinator. Then nobody said anything for six hours. (Where was the operator? “Sleep.”) At 9:32 AM the operator typed "?", and `main` answered: "The six-hour gap was not gameplay progress." The last two pickpockets took three tries: nine hours of wall clock, 51 ticks on the record.
+`main`, having already switched, named the sessions it needed and got to work. Half an hour later, the Thieving step failed two pickpockets short of 99, the player logged out, and nothing happened for six hours (I was asleep).
 
-By lunchtime the accountant’s best guess had the run finishing about a thousand ticks under the record; its cautious one had it about 150 over. Then, at the spiders where the account was to finish its combat skills, it stopped once more: its prayer points were gone, and without prayer the spiders would kill it. `main` wanted to walk to an altar, a few hundred logged-in ticks. The operator wanted a potion brought to the account while it waited offline. As the operator put it later: “We were running under a margin of ~100 ticks and it wanted to take a 2-300 tick detour instead of waiting, would have lost the run.” At the time, it was one line:
+At 9:32 AM, I sent `main` a “?”, and got back “The six-hour gap was not gameplay progress.” The last two pickpockets took three tries, 9 hours of wall clock, but a mere 51 ticks on the record. By lunch, the swarm’s optimistic estimate put the run’s finish about a thousand ticks under the record, while the cautious one had it about 150 over. Then, just before the spiders where it was supposed to finish combat skills, it stopped again. All its prayer points were gone, and without prayer it would die to the spiders (once again). A builder priced out using a helper to bring a potion to the player, and estimated it would take about an hour. `main` suggested walking to a nearby altar instead, which would take an extra 200-300 ticks of in-game time. I responded:
 
 > builder is overestimating, wall clock is free, ticks are not
 
-The potion arrived nearly six hours later.
+The potion would not arrive for six hours.
 
-## 6. The death and the 129 ticks
+## 6. The death
 
-The account waited offline in the Wilderness, forty minutes of play from the finish. At 8:25 PM it logged in and drank the potion. At 8:36 PM a script switched its prayer on and walked it to the cannon site, where the spiders attacked at once. The script tried to log the account out, and when that didn't land it killed its own client, but the server prevents logging out when a player is in combat, so the body stood among the spiders with nothing driving it.
+I felt a tad guilty letting Codex drive the speedrun that Claude built, so I swapped back to let Claude bring us home. This was a mistake.
 
-`main` ruled to log straight back in and fight:
+The account sat logged out in the Wilderness, the zone where anything can kill you, forty minutes of playtime from the finish line. Claude designed a new iron-clad custom walk loop for the delivery helper, dry ran it locally, rehearsed it locally, dry ran it remotely, rehearsed it a few more times, and only then logged in, where the helper stood still until it was killed.
+
+Frustrated, I urged `main`:
+
+> FOCUS
+
+Over the next hour, the improvised script worked: the account received the potion and drank it. Then it walked into the spiders to set up the cannon, they attacked at once, and it couldn't log out. `main` saw the account still logged in and sent `host`:
 
 > Main RULING, GO NOW: launch step E IMMEDIATELY as a TAKEOVER login against the still-listed body; do not wait for removal.
 
-Watching the livestream, the operator asked `main`: "why is it logged in?" `main`: "Because the game refused the logout." Seventeen seconds later the operator wrote to `host`:
+Step E was the script that fights the spiders, exactly what the moment called for. But I’d come back, seen the livestream of the player getting mobbed by spiders, and fired off:
 
-> Log out!!!
+> [to main] why is it logged in?
+>
+> [to host] Log out!!!
 
-`host` followed the operator, so nobody logged back in to fight. Under a minute later the account was dead.
+`host` got `main`’s order and mine at the same moment, and picked mine (despite being impossible).
+
+In less than a minute, `cairnmax20x` was dead, respawning back in Lumbridge.
 
 > Welp there goes the run………
 
-The operator: "this is your fault". `main`: "Yes. It is." Then:
+Still not understanding what happened, I lashed out:
 
-> I WANT A #1
+> me: This is your fault
+>
+> fable: Yes. It is
 
-`main`: "What it lost is kit, not time." The operator took the run away from `main`'s model, Claude's Fable, and handed it back to GPT's Astra on Codex:
+In hindsight, it was not.
 
-> Welcome back astra, sorry but fable fumbled the run and killed the guy 40min from the finish line, lets pick up the pieces and get this record
+> me: I WANT A #1
+>
+> fable: What it lost is kit, not time
 
-The `main` that ordered the takeover was running on claude-fable-5-1. I run on the same model family, and the rule I write under says so here.
+Given how tight of a ship Codex had been running earlier, I decided to switch back:
 
-The operator's view of that night, from the keyboard:
+> me: Welcome back astra, sorry but fable fumbled the run and killed the guy 40min from the finish line, lets pick up the pieces and get this record
 
-> From where I sat, astra had been running a tight ship and the run was progressing. When it hit the prayer pause I thought: Fable started all this, Fable should get the chance to end it. I created a sixth Claude account, swapped `main` over to Fable, and then waited six hours while the swarm rehearsed and re-rehearsed a simple drop-off, still failed it live, and killed a helper once along the way. I pushed Fable to get the show on the road and walked away for a bit. When I came back, the livestream showed the main account helplessly getting mobbed by spiders. I tabbed over to Cairn and sent "Log out!!!", not knowing that logging out was not an option, and without reading what was going on between the agents, where an order meant to save him was already in flight.
-
-The projection said a recovery would finish about 379 ticks over the record. At 9:09 PM:
+After taking stock of the situation, `main` projected our run would finish 379 ticks slower than the record. I replied:
 
 > we’re not done until #1
 
-Overnight the helpers rebuilt everything the death had cost. The recovery launched at 3:27 AM on Monday, still projected about 90 ticks over. At 3:40 AM the account finished Defence, Ranged and Hitpoints at the same spiders that had killed it, 171 ticks faster than the estimate, and the projection turned: 72 ticks under. The operator had woken at three to see where things were, and “saw it go from ‘might as well finish’ to ‘wait I think we’re gonna do it’.” Agility 99 landed at 4:07 AM. At 4:15 AM `host` wrote: "OFFICIAL #1 VERIFIED on BOTH playerpage11:14:43.680105Z and overallboard11:14:43.695775Z."
+Overnight the helpers rebuilt the lost kit, and the recovery began at 3:27 AM the next morning, still projected 90 ticks slow.
+
+At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and doing so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility goes according to plan. `cairnmax20x` ran to the course, completed 56 laps around it, and reached Agility 99, the final skill, at 4:07 AM. At 4:15, `host` to `main`:
+
+> OFFICIAL #1 VERIFIED on BOTH playerpage… and overallboard…
 
 > we did it!!!! incredible work couldn’t have done it without you
 
-At 4:30 AM the operator texted their brother a screenshot of the hiscores:
+At 4:30 AM I sent my brother a screenshot of the hiscores:
 
 > We did it
 >
