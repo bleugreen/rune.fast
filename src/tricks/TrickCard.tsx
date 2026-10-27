@@ -1,4 +1,5 @@
 import { Clip } from '../clips/Clip';
+import { Threaded } from '../components/Coded';
 import { clipById } from '../clips/registry';
 import { listJoin, type Trick } from './model';
 import { SavingChart } from './SavingChart';

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, type ReactNode } from 'react';
+import { Threaded } from '../components/Coded';
 import { capitalize, countWord, fmtInt, fmtPercent, listWords } from '../lib/numbers';
 import { fmtDuration, fmtPacificDayLong, fmtPacificHm, fmtPacificHms, fmtPacificWeekday, pacificZone } from '../lib/time';
 import { ADDRESSES } from '../harness/addresses';
@@ -45,7 +46,9 @@ function Sources({ lines }: { lines: readonly string[] }) {
       <summary>Sources</summary>
       <div className={styles.sourceText}>
         {lines.map((l, k) => (
-          <p key={k}>{l}</p>
+          <p key={k}>
+            <Threaded text={l} />
+          </p>
         ))}
       </div>
     </details>
@@ -53,6 +56,15 @@ function Sources({ lines }: { lines: readonly string[] }) {
 }
 
 const at = (t: number) => `${fmtPacificHm(t)} on ${fmtPacificWeekday(t)}`;
+
+/** Thread names as a list in prose ('`host`, `markets` and `document`'), each set as code. */
+const threadList = (names: readonly string[]) =>
+  names.map((n, k) => (
+    <Fragment key={n}>
+      {k === 0 ? '' : k === names.length - 1 ? ' and ' : ', '}
+      <code>{n}</code>
+    </Fragment>
+  ));
 
 export function HarnessPage() {
   const m: HarnessModel = useMemo(() => buildHarnessModel(harnessData), []);
@@ -94,11 +106,9 @@ export function HarnessPage() {
       <header>
         <h1 className={styles.title}>The harness: how the run kept track of its own work</h1>
         <p className={styles.dek}>
-          In Claude Code, you are the orchestrator. You remember what each session was for, start the next one, and
-          carry what one session found into the next. The agents in this run were the same kind of coding agent, and
-          one person, the operator, stood behind all {fmtInt(t.jobs)} of their jobs. The operator did not carry that
-          work in their head. Cairn, the harness the run used, carried it. I did not take part in the run; I read it
-          afterwards, through the same addresses its agents used, and this page explains how the harness works on
+          In Claude Code, you are the orchestrator: you remember what each session was for and carry what it found
+          into the next. The run’s agents were the same kind of coding agent, {fmtInt(t.jobs)} jobs of them, with one
+          operator behind them all. Cairn, the harness the run used, did the remembering. This page shows how, on
           objects from the run itself.
         </p>
         <dl className={styles.facts}>
@@ -138,7 +148,7 @@ export function HarnessPage() {
         </p>
         <p className={styles.prose}>
           Because the objects live outside the agents, the work does not end when an agent does. The builder’s session
-          ended at {fmtPacificHm(i.end)}. At {fmtPacificHm(a.merged)} a different agent, the {i.mergedBy} thread,
+          ended at {fmtPacificHm(i.end)}. At {fmtPacificHm(a.merged)} a different agent, the <code>{i.mergedBy}</code> thread,
           merged the pull request it had left behind.
         </p>
         <Sources lines={[...s.address!, ...s.head!]} />
@@ -148,8 +158,8 @@ export function HarnessPage() {
         <h2 className={styles.sectionTitle}>Threads talk, issues work</h2>
         <p className={styles.prose}>
           A thread is a long-lived agent that a person talks to. It has a name where an issue has a number, and it has
-          no end. The run had {countWord(t.threads)}. main held the
-          speedrun itself, and {listWords(m.otherThreads)} each held one part of the project. Most of what the operator
+          no end. The run had {countWord(t.threads)}. <code>main</code> held the
+          speedrun itself, and {threadList(m.otherThreads)} each held one part of the project. Most of what the operator
           typed went to them: {fmtInt(o.toThreads)} of {fmtInt(o.messages)} messages.
         </p>
         <p className={styles.prose}>
@@ -168,7 +178,8 @@ export function HarnessPage() {
           together. Coordinators filed {fmtInt(t.coordinatorFiled)} of the {fmtInt(t.issues)} issues, so the work
           forms a tree: the operator at the top, the threads below, coordinators below the threads, and the agents
           doing the work at the leaves.
-          The first red mark on main’s line is rs/{r.coordinator}, a coordinator for quest routes that main filed at{' '}
+          The first red mark on <code>main</code>’s line is rs/{r.coordinator}, a coordinator for quest routes that{' '}
+          <code>main</code> filed at{' '}
           {at(m.lifelines.marks.rs3)}. The section on asking and answering comes back to it.
         </p>
         <p className={styles.prose}>
@@ -215,7 +226,7 @@ export function HarnessPage() {
           version, at {fmtPacificHm(i.versions[0]!)}, opened pull request #{i.pr}. rs/{i.reviewerIssue} reviewed it by
           message, and the builder answered each round by writing a new version of the artifact,{' '}
           {countWord(i.versions.length)} in all. At {fmtPacificHm(i.review)} a comment on the issue recorded “Final
-          independent review approved”, and at {fmtPacificHm(i.merged)} the {i.mergedBy} thread merged the pull
+          independent review approved”, and at {fmtPacificHm(i.merged)} the <code>{i.mergedBy}</code> thread merged the pull
           request, which closed the issue.
         </p>
         <p className={styles.prose}>
@@ -248,10 +259,17 @@ export function HarnessPage() {
           kinds of object at once.
         </p>
         <p className={styles.prose}>
-          Here is a call main made at {fmtPacificHms(m.write.t)} on the first afternoon. The game client running in its
+          Here is a call <code>main</code> made at {fmtPacificHms(m.write.t)} on the first afternoon. The game client running in its
           terminal had hung, in the fletching-menu bug the story tells.
         </p>
-        <Figure title={titles.write} sub="The main thread’s call, its items as sent (the new issue’s description shortened)">
+        <Figure
+          title={titles.write}
+          sub={
+            <>
+              The <code>main</code> thread’s call, its items as sent (the new issue’s description shortened)
+            </>
+          }
+        >
           <WriteCard
             m={m}
             glosses={[
@@ -266,14 +284,14 @@ export function HarnessPage() {
           />
         </Figure>
         <p className={styles.prose}>
-          The first two items replace the client. A terminal has an address like everything else, so main could delete
-          it and create it again the way it would a file. The third item asks the harness to wake main when the new
-          client prints “{subscribe.phrase}”, so main could end its turn instead of watching the output. The{' '}
-          <code>~</code> in these targets means the agent making the call, so <code>{ADDRESSES.wakes}</code> is
-          main’s own list of wake subscriptions. The fourth item files rs/{filed.issue}, the project’s first issue, by
+          The first two items replace the client. A terminal has an address like everything else, so <code>main</code>{' '}
+          could delete it and create it again the way it would a file. The third item asks the harness to wake{' '}
+          <code>main</code> when the new client prints “{subscribe.phrase}”, so <code>main</code> could end its turn
+          instead of watching the output. The <code>~</code> in these targets means the agent making the call, so{' '}
+          <code>{ADDRESSES.wakes}</code> is <code>main</code>’s own list of wake subscriptions. The fourth item files rs/{filed.issue}, the project’s first issue, by
           appending it to the issues collection, and names the recipe to start on it. Filing an issue is a write like
           any other, and so is merging a pull request. (The builder that took rs/{filed.issue} found the hang began with
-          a malformed call in main’s own script, which neither client rejected.)
+          a malformed call in <code>main</code>’s own script, which neither client rejected.)
         </p>
         <p className={styles.prose}>
           The verb an agent used most shows what its job was. Builders ran commands above all:{' '}
@@ -300,11 +318,17 @@ export function HarnessPage() {
         </p>
         <p className={styles.prose}>
           These are {countWord(r.spanMinutes)} minutes on the first evening around rs/{r.coordinator}, the quest-route
-          coordinator, with main above it, the operator above main, and its {fmtInt(r.childCount)} child issues below.
+          coordinator, with <code>main</code> above it, the operator above <code>main</code>, and its{' '}
+          {fmtInt(r.childCount)} child issues below.
         </p>
         <Figure
           title={titles.routing}
-          sub={`The rs/${r.coordinator} coordinator, its parent thread main, its child issues, and the two fixes it started`}
+          sub={
+            <>
+              The rs/{r.coordinator} coordinator, its parent thread <code>main</code>, its child issues, and the two fixes it
+              started
+            </>
+          }
         >
           <Routing m={m} label={titles.routing} />
         </Figure>
@@ -313,7 +337,8 @@ export function HarnessPage() {
           minutes was one answer to it, {fmtInt(r.answerSeconds)} seconds after it was asked. Everything else was
           agents messaging agents. Two of them acted on
           the same fixes at once. rs/{r.coordinator} started rs/{r.started[0]} and rs/{r.started[1]} on the operator’s
-          answer, and seconds later main started both as well. Supersession settled which start counted: main’s became
+          answer, and seconds later <code>main</code> started both as well. Supersession settled which start counted:{' '}
+          <code>main</code>’s became
           execution {r.mainExecution} of each, and rs/{r.coordinator}’s are marked superseded.
         </p>
         <p className={styles.prose}>
@@ -372,10 +397,11 @@ export function HarnessPage() {
           The documentation describes tenets as gates: a filing waits until the operator rules on it. In the run,
           only {countWord(T.gates.length)} worked that way ({listWords(T.gates.map((n) => `#${n}`))}). The rest were
           standing rules, and standing rules change: a later tenet supersedes an earlier one, and the ledger draws each
-          supersession as a curve. The rule on merging moved twice. Tenet {m.mergeChain[0]} said the main thread merges
-          child pull requests; tenet {m.mergeChain[1]} superseded it, and tenet {m.mergeChain[2]} superseded that. By
-          the end main had merged {fmtInt(m.merges.main)} pull requests by write call, coordinators{' '}
-          {fmtInt(m.merges.coordinators)} and the integration thread {fmtInt(m.merges.integration)}, among them rs/
+          supersession as a curve. The rule on merging moved twice. Tenet {m.mergeChain[0]} said the <code>main</code>{' '}
+          thread merges child pull requests; tenet {m.mergeChain[1]} superseded it, and tenet {m.mergeChain[2]}{' '}
+          superseded that. By the end <code>main</code> had merged {fmtInt(m.merges.main)} pull requests by write call,
+          coordinators {fmtInt(m.merges.coordinators)} and the <code>integration</code> thread{' '}
+          {fmtInt(m.merges.integration)}, among them rs/
           {a.issue}’s.
         </p>
         <p className={styles.prose}>The operator declined {countWord(T.declined)}, and said why.</p>
@@ -406,7 +432,7 @@ export function HarnessPage() {
         </p>
         <Quote words={q.publish!.words} by={`rs/${q.publish!.issue}’s builder, ${at(q.publish!.t)}`} />
         <p className={styles.prose}>
-          {capitalize(countWord(m.oneOffMinutes))} minutes later main answered, “{q.oneOff!.words}”, and the branch was
+          {capitalize(countWord(m.oneOffMinutes))} minutes later <code>main</code> answered, “{q.oneOff!.words}”, and the branch was
           published.
         </p>
         <Sources lines={[...s.git!, ...s.friction!]} />

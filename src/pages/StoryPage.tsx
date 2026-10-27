@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { timeline } from '../data/timeline';
 import { buildChartModel, chartAnchors, recordFacts } from '../attempts/model';
+import { Threaded } from '../components/Coded';
 import { fmtInt } from '../lib/numbers';
 import { inlineTokens } from '../story/draft';
 import { story } from '../story/story';

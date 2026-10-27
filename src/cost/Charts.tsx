@@ -1,5 +1,6 @@
 import { scaleBand, scaleLinear, scalePoint, scaleUtc } from 'd3-scale';
 import { max } from 'd3-array';
+import type { ReactNode } from 'react';
 import { useWidth } from '../lib/useWidth';
 import { fmtInt, fmtUsd } from '../lib/numbers';
 import { fmtPacificHm, fmtPacificWeekdayDay, pacificMidnights } from '../lib/time';
