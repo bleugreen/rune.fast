@@ -1,4 +1,5 @@
 import raw from '../../data/clips.json';
+import { fmtPacificClockRange, fmtPacificDayMonYear, pacificZone, parseUtc } from '../lib/time';
 
 /** One clip, as data/clips.json registers it. */
 export interface ClipEntry {
@@ -12,8 +13,10 @@ export interface ClipEntry {
   seconds: number;
   /** What is on screen. */
   caption: string;
-  /** When it was recorded: UTC for the run, the lab and its UTC for a lab clip. */
-  time: string;
+  /** When the footage was recorded, first and last frame, in UTC as the recording stamps it. */
+  recorded: readonly [string, string];
+  /** Footage from the lab rather than the run. */
+  lab?: boolean;
   /** The run step it shows, in plain words. */
   step: string;
   /** Where the footage comes from, in plain words. */
@@ -32,6 +35,16 @@ export function clipById(id: string): ClipEntry {
   const c = byId.get(id);
   if (!c) throw new Error(`No clip '${id}' in data/clips.json`);
   return c;
+}
+
+/**
+ * When a clip was recorded, as its caption prints it: 'Lab, 23 Oct 2026, 2:50:03–2:50:16 PM'.
+ * With `zone`, the Pacific zone follows, for the one clip that names its page's zone.
+ */
+export function clipWhen(c: ClipEntry, zone = false): string {
+  const [a, b] = c.recorded.map(parseUtc) as [number, number];
+  const when = `${fmtPacificDayMonYear(a)}, ${fmtPacificClockRange(a, b, true)}${zone ? ` ${pacificZone(a)}` : ''}`;
+  return c.lab ? `Lab, ${when}` : when;
 }
 
 /** The server tick on screen at this point of the clip: the last tick that began at or before it. */

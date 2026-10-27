@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import { tickAt, type ClipEntry } from './registry';
+import { clipWhen, tickAt, type ClipEntry } from './registry';
 import styles from './Clip.module.css';
 
 /** rest: the poster; loading: asked to play, no frame yet; then playing or paused. */
@@ -12,9 +12,10 @@ const SEEK_SECONDS = 1;
  * controls: the poster and one play mark at rest; on play, a hairline progress rule
  * in the accent and, for a lab clip, the server tick. Click or Space plays and pauses,
  * the arrows step a second. It never autoplays or loops, and it returns to the poster
- * when it ends.
+ * when it ends. `zone` names the Pacific zone after the recording time, where this
+ * clip's time is the first one on its page.
  */
-export function Clip({ clip, className }: { clip: ClipEntry; className?: string }) {
+export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: string; zone?: boolean }) {
   const video = useRef<HTMLVideoElement>(null);
   const [phase, setPhase] = useState<Phase>('rest');
   const [ms, setMs] = useState(0);
@@ -107,7 +108,7 @@ export function Clip({ clip, className }: { clip: ClipEntry; className?: string 
       <figcaption className={styles.caption} id={captionId}>
         <span className={styles.what}>{clip.caption}</span>
         <span className={styles.when}>
-          {clip.time} · {clip.step}
+          {clipWhen(clip, zone)} · {clip.step}
         </span>
         {clip.ticks && (
           <span className={styles.tick} aria-hidden={!started}>
