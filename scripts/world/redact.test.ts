@@ -129,7 +129,7 @@ describe('the clip table', () => {
   const seconds = (id: string) => (Date.parse(CLIPS[id]!.window.to) - Date.parse(CLIPS[id]!.window.from)) / 1000;
 
   test('both death windows are 10 to 15 s, and hold a death and its respawn', () => {
-    for (const id of ['spider-death', 'grand-tree-death']) {
+    for (const id of ['spider-death', 'attempt-4-death']) {
       expect(seconds(id)).toBeGreaterThanOrEqual(10);
       expect(seconds(id)).toBeLessThanOrEqual(15);
       expect(CLIPS[id]!.death).toBeDefined();
@@ -138,7 +138,7 @@ describe('the clip table', () => {
 
   test('the spiders follow the record account; the Grand Tree follows attempt 4 by its slot', () => {
     expect(CLIPS['spider-death']!.follow).toBe('record');
-    expect(CLIPS['grand-tree-death']!.follow).toBe('env');
+    expect(CLIPS['attempt-4-death']!.follow).toBe('env');
   });
 
   test('every mark falls inside its window', () => {

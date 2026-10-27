@@ -54,7 +54,8 @@ export const CLIPS: Record<string, ClipConfig> = {
   },
   // 24 Oct: attempt 4's account, not the record account, poisoned at the Grand Tree door while
   // the runner waited. Poison lands every 12 s, so the window holds one splat (HP 2 to 0).
-  'grand-tree-death': {
+  // The id is published and scanned like everything else: a player that day was named "tree".
+  'attempt-4-death': {
     window: { from: '2026-10-24T14:23:18.000Z', to: '2026-10-24T14:23:33.000Z' },
     follow: 'env',
     slot: 994,
