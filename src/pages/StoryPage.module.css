@@ -148,6 +148,10 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+/* Already in the mono face: code keeps the line's size rather than base.css's optical 0.86em. */
+.sourceText code {
+  font-size: inherit;
+}
 .sourceText p + p {
   margin-top: var(--space-2);
 }

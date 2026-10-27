@@ -62,7 +62,7 @@ export function Lifelines({ m, label }: { m: HarnessModel; label: string }) {
                 v ? <rect key={b} className={styles.faint} x={x(L.from) + b * bw + 1} width={bw - 2} y={y + 0.5} height={v * k} /> : null,
               )}
               <text className={styles.row} x={0} y={narrow ? y - BAR - 9 : y - 2}>
-                {r.name}
+                {coordinators ? r.name : <tspan className={styles.mono}>{r.name}</tspan>}
                 {narrow && (
                   <tspan className={styles.rowSub} dx={8}>
                     {sub(r)}

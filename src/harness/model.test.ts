@@ -11,7 +11,7 @@ import { fmtInt, fmtPercent } from '../lib/numbers';
 import { HOUR, MINUTE, SECOND, fmtPacificHm, fmtPacificHms } from '../lib/time';
 import { HarnessPage } from '../pages/HarnessPage';
 import { ADDRESSES, TAUGHT } from './addresses';
-import { axisAt, buildHarnessModel, timeAt } from './model';
+import { axisAt, buildHarnessModel } from './model';
 import type { RawHarnessData } from './types';
 
 const data = raw as unknown as RawHarnessData;
@@ -126,14 +126,15 @@ describe('rs/843', () => {
       last = f;
     }
     expect([axisAt(i.segments, i.filed), axisAt(i.segments, i.merged)]).toEqual([0, 1]);
-    // Inside a segment, the drawn axis and the clock map back and forth.
-    for (const tt of [i.start + 10 * MINUTE, i.review]) expect(timeAt(i.segments, axisAt(i.segments, tt))).toBeCloseTo(tt, -1);
   });
 
-  test('the arrow keys stop at each phase, each turn and the review', () => {
-    for (const p of i.phases) expect(i.marks).toContain(axisAt(i.segments, p.at));
-    expect(i.marks.length).toBeGreaterThanOrEqual(i.turns.length + 2);
-    expect([...i.marks].sort((x, y) => x - y)).toEqual([...i.marks]);
+  test('its wakes are labelled in two runs: three test runs, then three wakes by the reviewer', () => {
+    expect(i.wakeRuns.map((w) => [w.source, w.turns.map((tn) => tn.n)])).toEqual([
+      ['tests', [2, 3, 4]],
+      [i.reviewer, [5, 6, 7]],
+    ]);
+    // Every turn after the first is marked, once.
+    expect(i.wakeRuns.flatMap((w) => w.turns.map((tn) => tn.n))).toEqual(i.turns.slice(1).map((tn) => tn.n));
   });
 
   test('its recipe is the build recipe the run stored', () => {

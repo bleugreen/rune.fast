@@ -48,7 +48,7 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-number',
     dates: '20 Oct 2026',
-    figures: [{ figure: { kind: 'ladder' }, after: 'The number that never moved was 35,916 ticks' }],
+    figures: [{ figure: { kind: 'ladder' }, after: 'The count underneath never moved, 35,916 ticks' }],
     pulled: ['sounds like a plan', 'Sure!', 'absolutely! Swarm out my guy :)'],
     links: [{ text: 'RuneScape Bench: MMOs for Agents', href: 'https://www.youtube.com/watch?v=cNm4zyUtWj0' }],
   },
@@ -62,7 +62,7 @@ export const SECTION_META: readonly SectionMeta[] = [
   {
     id: 'the-swarm',
     dates: '21–22 Oct',
-    figures: [{ figure: { kind: 'cost' }, after: 'The day cost $5,448' }],
+    figures: [{ figure: { kind: 'cost' }, after: 'came to about $256' }],
     pulled: [],
     links: [],
   },

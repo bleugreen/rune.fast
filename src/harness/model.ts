@@ -69,8 +69,6 @@ const SHARES: Readonly<Record<SegmentKey, number>> = { held: 0.2, work: 0.68, wa
 /** The break between two segments, as a fraction of the axis. */
 export const AXIS_GAP = 0.02;
 
-export type Phase = 'held' | 'running' | 'open' | 'merged';
-
 export interface Wake {
   /** What resumed the turn: a command batch it was waiting on finishing, a message, or both at once. */
   kind: 'batch' | 'message' | 'both';
@@ -94,13 +92,26 @@ export function axisAt(segments: readonly AxisSegment[], t: number): number {
   return 1;
 }
 
-/** The time under a point of the drawn axis; inside a break, the end of the segment before it. */
-export function timeAt(segments: readonly AxisSegment[], f: number): number {
-  for (const s of segments) {
-    if (f <= s.offset) return s.from;
-    if (f <= s.offset + s.share) return s.from + ((f - s.offset) / s.share) * (s.to - s.from);
+/**
+ * Where a turn's wake came from, as Fig 3 labels it: test runs, another command, or the agent that
+ * messaged it. A wake by a command and a message at once is labelled by its sender.
+ */
+export function wakeSource(w: Wake): string {
+  if (w.kind !== 'batch') return w.from[0]!;
+  return w.tests ? 'tests' : 'command';
+}
+
+/** Consecutive wakes from the same source, as one labelled run of marks. */
+export function wakeRuns(turns: readonly Turn[]): { source: string; turns: Turn[] }[] {
+  const runs: { source: string; turns: Turn[] }[] = [];
+  for (const tn of turns) {
+    if (!tn.wake) continue;
+    const source = wakeSource(tn.wake);
+    const last = runs.at(-1);
+    if (last?.source === source && last.turns.at(-1)!.n === tn.n - 1) last.turns.push(tn);
+    else runs.push({ source, turns: [tn] });
   }
-  return segments.at(-1)!.to;
+  return runs;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -234,12 +245,6 @@ export function buildHarnessModel(d: HarnessData) {
   for (const c of calls) callCounts[c.verb] += 1;
   const comments = i.comments.map(ms);
   const heldComments = comments.filter((c) => c < bStart);
-  const phases: { key: Phase; at: number }[] = [
-    { key: 'held', at: filed },
-    { key: 'running', at: bStart },
-    { key: 'open', at: prOpened },
-    { key: 'merged', at: merged },
-  ];
   const wakes843 = turns.filter((tn) => tn.wake);
   const issue = {
     filed,
@@ -263,11 +268,7 @@ export function buildHarnessModel(d: HarnessData) {
     calls,
     callCounts,
     versions: i.versions.map(ms),
-    phases,
-    /** Where the arrow keys stop: the start of each phase, each turn and the review. */
-    marks: [...new Set([0, ...phases.map((p) => axisAt(segments, p.at)), ...turns.map((tn) => axisAt(segments, tn.start)), axisAt(segments, review), 1])].sort(
-      (x, y) => x - y,
-    ),
+    wakeRuns: wakeRuns(turns),
     testWakes: wakes843.filter((tn) => tn.wake!.kind === 'batch' && tn.wake!.tests).length,
     messageWakes: wakes843.filter((tn) => tn.wake!.kind === 'message').length,
     bothWakes: wakes843.filter((tn) => tn.wake!.kind === 'both').length,

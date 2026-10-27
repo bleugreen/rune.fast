@@ -77,6 +77,10 @@
 .sources summary:hover {
   color: var(--ink);
 }
+/* Already in the mono face: code keeps the line's size rather than base.css's optical 0.86em. */
+.sources ul code {
+  font-size: inherit;
+}
 .sources ul {
   margin: var(--space-2) 0 0;
   padding: 0;

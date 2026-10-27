@@ -2,15 +2,16 @@ import { useEffect, useMemo, useRef } from 'react';
 import { countWord, listWords } from '../../lib/numbers';
 import { fmtPacificHms } from '../../lib/time';
 import { edgeKey, type HarnessModel, type NodeKey, type RouteStep } from '../model';
-import { keysLabel, launchedStep, shownSteps, stepTimeline, usePlayer, useReducedMotion } from '../player';
+import { Threaded } from '../../components/Coded';
+import { stepAt, useAutoplay, type Loop } from '../autoplay';
 import { arrivalDelay, dotDelay, EASE_OUT, TRAVEL_MS, useChartWidth } from './frame';
 import styles from './Figures.module.css';
 
 const H = 300;
 /** Each step's slot in playback. Real times are printed, not simulated. */
 const SLOT = 1100;
-/** A reduced-motion Play only highlights, so it can take longer over each step. */
-const REDUCED_SLOT = 1600;
+/** How long the finished tree stays up before the steps play again. */
+const HOLD = 4000;
 
 type Point = readonly [number, number];
 
@@ -42,20 +43,19 @@ export function stepText(s: RouteStep, m: HarnessModel): string {
 
 /**
  * The routing tree around rs/3 for four minutes on the first evening: the operator, the main thread,
- * rs/3's coordinator and its child issues, and the two fixes it started. Played, each step's
- * message travels its edge: questions up to the person, decisions down, reports up.
+ * rs/3's coordinator and its child issues, and the two fixes it started. It plays itself while on
+ * screen, and loops: each step's message travels its edge, questions up to the person, decisions
+ * down, reports up. At rest, and under reduced motion, every edge is drawn at once.
  */
 export function Routing({ m, label }: { m: HarnessModel; label: string }) {
   const [ref, width] = useChartWidth();
   const r = m.routing;
   const n = r.steps.length;
-  const reduced = useReducedMotion();
-  // Under reduced motion, Play keeps a slower beat over each step and nothing travels.
-  const tl = useMemo(() => stepTimeline(n, reduced ? REDUCED_SLOT : SLOT), [n, reduced]);
-  const player = usePlayer(tl);
-  const { state } = player;
-  const shown = state.started ? shownSteps(n, state.t) : n;
-  const current = state.started && shown > 0 ? r.steps[shown - 1]! : null;
+  const loop = useMemo<Loop>(() => ({ steps: n, slot: SLOT, hold: HOLD }), [n]);
+  const { frame, ref: watch } = useAutoplay(loop);
+  const { state, launch } = frame;
+  const shown = state.started ? stepAt(loop, state.elapsed) : n;
+  const current = state.started ? r.steps[shown - 1]! : null;
 
   // Layout
   const cx = Math.round(width / 2) - (width < 420 ? 30 : 60);
@@ -97,19 +97,16 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
   const started = r.steps.findIndex((s) => s.kind === 'start');
   const fixesShown = !state.started || shown > started;
 
-  // Travel: the step just reached, by play or the Step button, sends its dots along its edges.
-  // Anything else (the keyboard, a reset) snaps, and takes any dots still in flight with it.
+  // Travel: the step just reached sends its dots along its edges. A return to rest (reduced motion
+  // switched on) takes any dots still in flight with it; a pause lets them land.
   const dots = useRef<SVGGElement>(null);
   const flights = useRef(new Set<Animation>());
-  const launched = launchedStep(n, state, reduced);
-  const launching = launched !== null;
+  const launching = launch !== null;
   useEffect(() => {
     const g = dots.current;
-    if (launched === null || !g) {
-      flights.current.forEach((a) => a.cancel());
-      return;
-    }
-    const s = r.steps[launched - 1]!;
+    if (!state.started) flights.current.forEach((a) => a.cancel());
+    if (launch === null || !g) return;
+    const s = r.steps[launch - 1]!;
     s.to.forEach((to, j) => {
       const key = routeEdge(s.from, to);
       const probe = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -133,8 +130,8 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
         dot.remove();
       };
     });
-    // Keyed on the rendered state alone: a reduced-motion change while a step sits launched must not fly it again.
-  }, [state]);
+    // Keyed on the frame alone: each frame launches at most once, whatever else re-renders the figure.
+  }, [frame]);
 
   // An arrival ring waits for its own dot when one is launched for it, and leaves at once. The
   // step's edges light at once, as the route the message is taking.
@@ -153,19 +150,10 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
   );
 
   return (
-    <div
-      ref={(el) => {
-        ref(el);
-        player.ref(el);
-      }}
-      className={`${styles.root} ${styles.player}`}
-      role="group"
-      tabIndex={0}
-      aria-label={`${label}. ${keysLabel(reduced)}`}
-      aria-keyshortcuts="Space ArrowLeft ArrowRight Home End"
-      onKeyDown={player.onKeyDown}
-    >
-      <svg className={styles.svg} width={width} height={H} role="img" aria-label={label}>
+    <div ref={ref} className={styles.root}>
+      {/* The tree alone is watched: with the step list beneath, the whole figure is taller than
+          a phone screen, and could never be mostly in view. */}
+      <svg ref={watch} className={styles.svg} width={width} height={H} role="img" aria-label={label}>
         {[...edges].map(([key, [a, b]]) => {
           const d = edgePath(key, a, b);
           const dash = dashed(key) ? '3 3' : undefined;
@@ -183,7 +171,7 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
           the operator
         </text>
         {node('main', 6, styles.hollow!)}
-        <text className={styles.row} x={pt('main')[0] + 14} y={pt('main')[1] + 4}>
+        <text className={`${styles.row} ${styles.mono}`} x={pt('main')[0] + 14} y={pt('main')[1] + 4}>
           main
         </text>
         {node('rs3', 6, styles.hollow!)}
@@ -211,32 +199,22 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
         </text>
         <g ref={dots} />
       </svg>
-      <p className={styles.caption} aria-live="polite">
+      {/* The playing caption repeats the list below, which is the figure's text for a screen reader. */}
+      <p className={styles.caption} aria-hidden="true">
         {current ? (
           <>
             <span className={styles.time}>{fmtPacificHms(current.t)}</span>
-            {stepText(current, m)}
+            <Threaded text={stepText(current, m)} />
           </>
         ) : (
-          'Press Play, or step through the exchange.'
+          `Every edge the ${countWord(n)} messages took, ${fmtPacificHms(r.steps[0]!.t)} to ${fmtPacificHms(r.steps.at(-1)!.t)}. They are listed in order below.`
         )}
       </p>
-      <div className={styles.controls}>
-        <button type="button" className={styles.button} onClick={player.toggle}>
-          {state.playing ? 'Pause' : 'Play'}
-        </button>
-        <button type="button" className={styles.button} onClick={() => player.step(1, 'step')}>
-          Step
-        </button>
-        <button type="button" className={styles.button} onClick={player.reset}>
-          Reset
-        </button>
-      </div>
       <ol className={styles.steps}>
         {r.steps.map((s, k) => (
           <li key={k} aria-current={current === s ? 'step' : undefined}>
             <span className={styles.stepTime}>{fmtPacificHms(s.t)}</span>
-            {stepText(s, m)}
+            <Threaded text={stepText(s, m)} />
           </li>
         ))}
       </ol>

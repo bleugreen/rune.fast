@@ -1,5 +1,6 @@
 import { scaleBand, scaleLinear, scalePoint, scaleUtc } from 'd3-scale';
 import { max } from 'd3-array';
+import type { ReactNode } from 'react';
 import { useWidth } from '../lib/useWidth';
 import { fmtInt, fmtUsd } from '../lib/numbers';
 import { fmtPacificHm, fmtPacificWeekdayDay, pacificMidnights } from '../lib/time';
@@ -69,11 +70,16 @@ export function DayChart({ days, firstLead, label }: { days: readonly DayCost[];
 }
 
 export function DayLegend() {
-  const items: [string, string][] = [
+  const items: [string, ReactNode][] = [
     ['coord', 'managers'],
     ['work', 'workers'],
     ['thread', 'threads'],
-    ['other', 'carry and document'],
+    [
+      'other',
+      <>
+        carry and <code>document</code>
+      </>,
+    ],
   ];
   return (
     <span className={styles.legend}>
