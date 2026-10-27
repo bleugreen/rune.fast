@@ -41,6 +41,7 @@ export function pagesRoutesFile(): Plugin {
   return {
     name: 'rune:pages-routes',
     apply: 'build',
+    applyToEnvironment: (environment) => environment.name === 'client',
     configResolved(config) {
       outDir = resolve(config.root, config.build.outDir);
     },

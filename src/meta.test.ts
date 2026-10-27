@@ -7,8 +7,23 @@ import { costInputs } from './data/cost';
 import { timeline } from './data/timeline';
 import { fmtInt, fmtUsd } from './lib/numbers';
 import { fmtDuration } from './lib/time';
-import { AUTHOR, PAGE_ONLY } from './lib/site';
-import { HEAD_MARKER, ORIGIN, PAGE_PATHS, SHARE_IMAGE, SITE_NAME, applyPageMeta, metaFor, pageFile, siteMeta, withHead, type PageMeta } from './meta';
+import { AUTHOR, NOT_FOUND, NOT_FOUND_TITLE, PAGE_ONLY, prerenderedAt } from './lib/site';
+import {
+  HEAD_MARKER,
+  ORIGIN,
+  PAGE_PATHS,
+  ROOT,
+  SHARE_IMAGE,
+  SITE_NAME,
+  applyPageMeta,
+  metaFor,
+  pageFile,
+  siteMeta,
+  withBody,
+  withHead,
+  withNotFoundHead,
+  type PageMeta,
+} from './meta';
 import { story } from './story/story';
 
 const root = new URL('../', import.meta.url);
@@ -144,6 +159,25 @@ describe('each page’s built head', () => {
     expect(() => withHead(`<head>${HEAD_MARKER}${HEAD_MARKER}</head>`, meta['/'])).toThrow();
   });
 
+  test('Nothing here’s HTML is titled, kept out of search, and keeps only its own marked tags', () => {
+    const marked = shell.replace('</head>', `  <link rel="modulepreload" href="/assets/NotFound-x.js" ${PAGE_ONLY}="*">\n  <link rel="modulepreload" href="/assets/tree-x.js" ${PAGE_ONLY}="/">\n  </head>`);
+    const html = withNotFoundHead(marked);
+    expect(head(html).titles).toEqual([NOT_FOUND_TITLE]);
+    expect(head(html).one('robots')).toBe('noindex');
+    expect(head(html).all('description')).toEqual([]);
+    expect(head(html).canonical).toEqual([]);
+    expect(html).toContain('/assets/NotFound-x.js');
+    expect(html).not.toContain('/assets/tree-x.js');
+  });
+
+  test('a page is rendered into the shell’s root, marked as the page it is', () => {
+    expect(shell.split(ROOT).length).toBe(2);
+    const html = withBody(withHead(shell, meta['/route']), '/route', '<main><h1>The route</h1></main>');
+    expect(html).toContain('<div id="root" data-prerendered="/route"><main><h1>The route</h1></main></div>');
+    expect(html).not.toContain(ROOT);
+    expect(() => withBody('<body></body>', '/', '')).toThrow();
+  });
+
   test('the shell carries no title or description of its own for the build to duplicate', () => {
     expect(shell).not.toContain('<title');
     expect(shell).not.toContain('name="description"');
@@ -157,6 +191,13 @@ describe('in the browser', () => {
     expect(metaFor('/harness/')).toBe(meta['/harness']);
     expect(metaFor('/nope')).toBeNull();
     expect(metaFor('/route/deeper')).toBeNull();
+  });
+
+  test('a page is hydrated from its own HTML; any other path from Nothing here’s', () => {
+    expect(prerenderedAt('/')).toBe('/');
+    expect(prerenderedAt('/cost/')).toBe('/cost');
+    expect(prerenderedAt('/attempts')).toBe(NOT_FOUND);
+    expect(prerenderedAt('/route/deeper')).toBe(NOT_FOUND);
   });
 
   test('the document takes the page’s title and description, creating the description if the shell has none', () => {

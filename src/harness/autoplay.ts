@@ -67,8 +67,12 @@ export function launchedStep(l: Loop, prev: AutoState, next: AutoState): number 
 
 const REDUCED = '(prefers-reduced-motion: reduce)';
 
+/**
+ * Whether the reader asks for reduced motion. False on the first render, as the build's prerender
+ * draws it with no reader to ask, and the reader's answer once mounted.
+ */
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(() => typeof matchMedia !== 'undefined' && matchMedia(REDUCED).matches);
+  const [reduced, setReduced] = useState(false);
   useEffect(() => {
     if (typeof matchMedia === 'undefined') return;
     const m = matchMedia(REDUCED);

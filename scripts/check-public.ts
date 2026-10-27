@@ -7,8 +7,8 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { TAUGHT } from '../src/harness/addresses';
-import { HEAD_MARKER, PAGE_PATHS, headTags, pageFile, siteMeta } from '../src/meta';
+import { ADDRESS_HEAD, TAUGHT } from '../src/harness/addresses';
+import { HEAD_MARKER, NOT_FOUND_FILE, PAGE_PATHS, headTags, pageFile, siteMeta } from '../src/meta';
 import { FORBIDDEN, withoutAddresses } from './forbidden';
 import { filesUnder, pagesRoutes } from './pages-routes';
 
@@ -20,10 +20,16 @@ function* files(dir: string): Generator<string> {
   }
 }
 
+const ENTITIES: Readonly<Record<string, string>> = { '&quot;': '"', '&#x27;': "'", '&#39;': "'", '&lt;': '<', '&gt;': '>', '&amp;': '&' };
+/** A page's HTML with its character references as the reader gets them, so an escaped quote ends an address as a quote does. */
+const decoded = (html: string) => html.replace(/&(?:quot|#x27|#39|lt|gt|amp);/g, (e) => ENTITIES[e]!);
+
 let hits = 0;
 for (const f of files('dist')) {
-  // The harness page's taught addresses are subject matter; any other address still fails.
-  const text = withoutAddresses(readFileSync(f, 'utf8'), TAUGHT);
+  // The harness page's taught addresses are subject matter, and its HTML sets the head of one as a
+  // segment of its own; any other address still fails.
+  const raw = readFileSync(f, 'utf8');
+  const text = withoutAddresses(f.endsWith('.html') ? decoded(raw) : raw, [...TAUGHT, ADDRESS_HEAD]);
   for (const [what, re] of FORBIDDEN) {
     const m = re.exec(text);
     if (m) {
@@ -52,17 +58,20 @@ if (routes === undefined || JSON.stringify(JSON.parse(routes)) !== JSON.stringif
   console.error('check-public: dist/_routes.json is missing or does not match the build (scripts/pages-routes.ts)');
 }
 
-// Each page's own HTML with its own head, and the same app beneath it (scripts/page-heads.ts).
-const shellBody = (html: string) => html.slice(html.indexOf('</head>'));
+// Each page's own HTML with its own head, the same app, and the page itself in the app's root
+// (scripts/page-heads.ts); Nothing here's for every other path.
 const home = existsSync('dist/index.html') ? readFileSync('dist/index.html', 'utf8') : '';
+const entry = /<script type="module"[^>]*><\/script>/.exec(home)?.[0] ?? '<no entry script>';
 const meta = siteMeta();
-for (const p of PAGE_PATHS) {
-  const f = join('dist', pageFile(p));
+const pages = [...PAGE_PATHS.map((p) => [pageFile(p), p, headTags(meta[p])] as const), [NOT_FOUND_FILE, '*', ['<meta name="robots" content="noindex" />']] as const];
+for (const [file, page, head] of pages) {
+  const f = join('dist', file);
   const html = existsSync(f) ? readFileSync(f, 'utf8') : '';
-  const missing = headTags(meta[p]).filter((t) => !html.includes(t));
-  if (!html || missing.length || html.includes(HEAD_MARKER) || shellBody(html) !== shellBody(home)) {
+  const missing = head.filter((t) => !html.includes(t));
+  const rendered = html.includes(`<div id="root" data-prerendered="${page}"><div`);
+  if (!html || missing.length || html.includes(HEAD_MARKER) || !html.includes(entry) || !rendered) {
     hits++;
-    console.error(`check-public: ${f} is missing, lacks its head (${missing[0] ?? 'the marker is unspent'}), or is not the shell`);
+    console.error(`check-public: ${f} is missing, lacks its head (${missing[0] ?? 'or the marker is unspent'}), its entry script, or its page in the root`);
   }
 }
 
@@ -71,5 +80,5 @@ if (hits) {
   process.exit(1);
 }
 console.log(
-  'check-public: dist/ carries no forbidden identifiers, the replay licences and wasm are present, _routes.json matches the build, and every page has its own head',
+  'check-public: dist/ carries no forbidden identifiers, the replay licences and wasm are present, _routes.json matches the build, and every page has its own head and its page rendered in',
 );

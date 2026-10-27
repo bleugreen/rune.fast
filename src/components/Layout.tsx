@@ -8,9 +8,9 @@ import styles from './Layout.module.css';
 
 /**
  * The site's route tree: every page inside the Layout. A page that fails shows the error page in
- * its place, under the masthead; only a failure of the Layout itself loses the masthead. On a tab's
- * first load of a page in its own chunk, nothing shows until the chunk is in, so the masthead and
- * the page appear together.
+ * its place, under the masthead; only a failure of the Layout itself loses the masthead. A tab's
+ * landing page is already in its HTML, and src/main.tsx loads its chunk before the router starts,
+ * so the fallback below draws only where that load failed.
  */
 export function siteRoutes(pages: RouteObject[]): RouteObject[] {
   return [

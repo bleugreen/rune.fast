@@ -1,43 +1,53 @@
-import { StrictMode, Suspense, lazy } from 'react';
-import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router-dom';
+import { StrictMode } from 'react';
+import { createRoot, hydrateRoot } from 'react-dom/client';
+import { createBrowserRouter, matchRoutes, RouterProvider, type RouteObject } from 'react-router-dom';
 import './styles/tokens.css';
 import './styles/base.css';
-import { siteRoutes } from './components/Layout';
 import { startAnalytics } from './lib/analytics';
 import { recovery } from './lib/deploy';
-import { StoryPage } from './pages/StoryPage';
-
-/* The tokens and share-image screens exist only in development; the production build drops them. */
-const Tokens = import.meta.env.DEV ? lazy(() => import('./dev/Tokens')) : null;
-const Share = import.meta.env.DEV ? lazy(() => import('./dev/Share')) : null;
-
-/*
- * The story is where most readers land, so it is in the entry. Every other page (and Nothing here,
- * which names the site from src/meta.ts) is its own chunk with its data, loaded when it is visited; one that fails to load (a deploy since the tab opened)
- * reaches the routes' errorElement, which reloads once.
- */
-const pages: RouteObject[] = [
-  { index: true, element: <StoryPage /> },
-  { path: 'route', lazy: async () => ({ Component: (await import('./pages/RoutePage')).RoutePage }) },
-  { path: 'tricks', lazy: async () => ({ Component: (await import('./pages/TricksPage')).TricksPage }) },
-  { path: 'cost', lazy: async () => ({ Component: (await import('./pages/CostPage')).CostPage }) },
-  { path: 'harness', lazy: async () => ({ Component: (await import('./pages/HarnessPage')).HarnessPage }) },
-  ...(Tokens ? [{ path: 'tokens', element: <Suspense><Tokens /></Suspense> }] : []),
-  ...(Share ? [{ path: 'share', element: <Suspense><Share /></Suspense> }] : []),
-  { path: '*', lazy: async () => ({ Component: (await import('./pages/NotFound')).NotFound }) },
-];
+import { prerenderedAt } from './lib/site';
+import { siteRouteTree } from './routes';
 
 // Vite's preload helper fires this when a lazily loaded chunk or its stylesheet does not load,
 // which after a deploy is a chunk name the new deploy no longer has.
 window.addEventListener('vite:preloadError', () => recovery.reload());
 
-const router = createBrowserRouter(siteRoutes(pages));
-
 startAnalytics();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>,
-);
+const routes = siteRouteTree();
+
+/**
+ * Loads the landing page's own chunk before the first render, so the router starts with the page
+ * rather than an empty fallback, and hydration finds what the server drew. The page's HTML
+ * modulepreloads that chunk (vite.config.ts), so it downloads beside the entry. True if it loaded;
+ * a route whose chunk fails stays lazy, and the router's own load of it reaches the errorElement.
+ */
+async function resolveLanding(): Promise<boolean> {
+  const lazy = (matchRoutes(routes, window.location) ?? []).filter((m) => typeof m.route.lazy === 'function');
+  const loaded = await Promise.all(
+    lazy.map(async ({ route }) => {
+      try {
+        const own = await (route.lazy as () => Promise<Partial<RouteObject>>)();
+        Object.assign(route, { ...own, lazy: undefined });
+        return true;
+      } catch {
+        return false;
+      }
+    }),
+  );
+  return loaded.every(Boolean);
+}
+
+void resolveLanding().then((landed) => {
+  const root = document.getElementById('root')!;
+  const app = (
+    <StrictMode>
+      <RouterProvider router={createBrowserRouter(routes)} />
+    </StrictMode>
+  );
+  // The build renders each page into its own HTML (scripts/page-heads.ts) and marks the root with
+  // the page it drew. Anywhere else (the dev server, a page served at a path not its own) the app
+  // renders from scratch, replacing whatever the root holds.
+  if (landed && root.firstChild && root.dataset.prerendered === prerenderedAt(window.location.pathname)) hydrateRoot(root, app);
+  else createRoot(root).render(app);
+});

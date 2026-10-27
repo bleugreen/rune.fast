@@ -2,7 +2,7 @@ import { recordFacts } from './attempts/model';
 import { buildCostModel } from './cost/model';
 import { costInputs } from './data/cost';
 import { timeline } from './data/timeline';
-import { AUTHOR, PAGE_ONLY } from './lib/site';
+import { AUTHOR, NOT_FOUND, NOT_FOUND_TITLE, PAGE_ONLY, PAGE_PATHS, SITE_NAME, pageAt, type PagePath, type PrerenderedPath } from './lib/site';
 import { fmtInt, fmtUsd } from './lib/numbers';
 import { inlineTokens } from './story/draft';
 import { story } from './story/story';
@@ -14,11 +14,9 @@ import { story } from './story/story';
  * unfurler runs no JavaScript and reads only the HTML it is served.
  */
 
-export const ORIGIN = 'https://rune.fast';
-export const SITE_NAME = 'rune.fast';
+export { PAGE_PATHS, SITE_NAME, type PagePath };
 
-export const PAGE_PATHS = ['/', '/route', '/tricks', '/cost', '/harness'] as const;
-export type PagePath = (typeof PAGE_PATHS)[number];
+export const ORIGIN = 'https://rune.fast';
 
 /** One preview image for every page: public/share.png, shot from the dev-only /share screen by scripts/render-share.ts. */
 export const SHARE_IMAGE = {
@@ -95,8 +93,8 @@ export function siteMeta(): Readonly<Record<PagePath, PageMeta>> {
 
 /** The page a client-side path is, if it is one: '/route' and '/route/' are the Route page. */
 export function metaFor(pathname: string): PageMeta | null {
-  const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
-  return (PAGE_PATHS as readonly string[]).includes(path) ? siteMeta()[path as PagePath] : null;
+  const page = pageAt(pathname);
+  return page ? siteMeta()[page] : null;
 }
 
 /** Sets the document's title and description to a page's. */
@@ -116,6 +114,13 @@ export function applyPageMeta(doc: Document, m: PageMeta): void {
  * (route/index.html) only at '/route/', and answers '/route' with a redirect there.
  */
 export const pageFile = (p: PagePath) => (p === '/' ? 'index.html' : `${p.slice(1)}.html`);
+
+/**
+ * The file Pages serves for every path that is no file and no page: with a top-level 404.html in
+ * the deploy, Pages answers such a path with it and status 404, where without one it would serve
+ * index.html, now the story's own HTML, as a single-page app's fallback.
+ */
+export const NOT_FOUND_FILE = '404.html';
 
 const attr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -158,12 +163,34 @@ const pageOnlyTag = new RegExp(`[ \\t]*<[^>]*\\b${PAGE_ONLY}="([^"]*)"[^>]*>\\n?
  * without the tags marked for another page.
  */
 export function withHead(shell: string, m: PageMeta): string {
+  return writeHead(shell, m.path, headTags(m));
+}
+
+/** The Nothing here page's head: its title, and no description, canonical URL or preview to offer. */
+export function withNotFoundHead(shell: string): string {
+  return writeHead(shell, NOT_FOUND, [`<title>${attr(NOT_FOUND_TITLE)}</title>`, '<meta name="robots" content="noindex" />']);
+}
+
+function writeHead(shell: string, page: PrerenderedPath, tags: readonly string[]): string {
   const at = shell.indexOf(HEAD_MARKER);
   if (at < 0 || shell.indexOf(HEAD_MARKER, at + 1) >= 0) {
     throw new Error(`page heads: the shell must carry ${HEAD_MARKER} exactly once (index.html)`);
   }
   const indent = /[ \t]*$/.exec(shell.slice(0, at))![0];
-  const head = shell.slice(0, at) + headTags(m).join(`\n${indent}`) + shell.slice(at + HEAD_MARKER.length);
+  const head = shell.slice(0, at) + tags.join(`\n${indent}`) + shell.slice(at + HEAD_MARKER.length);
   const end = head.indexOf('</head>');
-  return head.slice(0, end).replace(pageOnlyTag, (tag, path: string) => (path === m.path ? tag : '')) + head.slice(end);
+  return head.slice(0, end).replace(pageOnlyTag, (tag, path: string) => (path === page ? tag : '')) + head.slice(end);
+}
+
+/** The app's root in the shell (index.html), empty until the build renders a page into it. */
+export const ROOT = '<div id="root"></div>';
+
+/**
+ * A page's HTML with the page rendered into the app's root, marked with the page it is, so the
+ * client hydrates it only at a path that is that page (src/main.tsx).
+ */
+export function withBody(html: string, page: PrerenderedPath, body: string): string {
+  const at = html.indexOf(ROOT);
+  if (at < 0 || html.indexOf(ROOT, at + 1) >= 0) throw new Error(`page heads: the shell must carry ${ROOT} exactly once (index.html)`);
+  return `${html.slice(0, at)}<div id="root" data-prerendered="${attr(page)}">${body}</div>${html.slice(at + ROOT.length)}`;
 }
