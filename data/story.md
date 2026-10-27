@@ -22,7 +22,7 @@ The repository was rs-sdk, Max Bittker's kit for running bots on a fan-made copy
 
 The agent in the thread, which named itself `main`, read the leaderboard and found out what the game was:
 
-> The top 21 accounts all have a total level of 1,881, which is the maximum: every one of the 19 skills at 99. They're ranked only by how much playtime it took them. The record is 2 hours 59 minutes, held by stunbaron, and the next five are all under 4 hours.
+> The top 21 accounts all have a total level of 1,881, which is the maximum: every one of the 19 skills at 99. They're ranked only by how much playtime it took them. The record is [3 hours 59 minutes], held by stunbaron…
 >
 > Since only playtime counts, the winning approach is less "play well" and more "plan perfectly, then execute without wasted seconds."
 
@@ -44,7 +44,7 @@ The last find of the night wasn't in the game. Every timing trick needs a click 
 
 ## 3. The swarm at full tilt
 
-On Wednesday morning `main` stopped mid-conversation: "You've hit your session limit". The operator signed in a fourth Claude subscription and typed "^", and it picked up where it had stopped. That morning the project got its own machine in Ashburn, and the run would be played and recorded there with nobody watching live.
+On Wednesday morning `main` stopped mid-conversation: "You've hit your session limit". The operator signed in a fourth Claude subscription and typed "^", and it picked up where it had stopped. That morning the project got its own machine in Ashburn, and the run would be played and recorded there.
 
 Thursday was the busiest day: at the peak, 61 agents were writing in the same five minutes. At list price the six days of model time would have cost $17,679. Everything ran on flat-rate subscriptions shared with other projects, so the run's share of what was actually paid came to about $256.
 
@@ -76,7 +76,7 @@ Attempt 4 fell about 900 ticks behind within an hour of logging in, and ran on a
 
 ## 5. Twenty-eight hours
 
-Attempt 5 logged in just before midnight on Saturday. Forty minutes in it stopped: other players were taking the iron it needed. `host` worried that every idle minute cost 150 ticks. `main` ruled to hold, because time spent logged out costs nothing on the record, and that rule carried the rest of the run.
+Attempt 5 logged in just before midnight on Saturday. Forty minutes in it stopped: other players were taking the iron it needed. `host` worried that every idle minute cost 150 ticks. `main` ruled to hold, because time spent logged out costs nothing on the record, and the operator held the swarm to it for the rest of the run.
 
 At 2 AM Claude ran out again:
 
@@ -92,7 +92,7 @@ The potion arrived nearly six hours later.
 
 ## 6. The death and the 129 ticks
 
-The account waited offline in the Wilderness, forty minutes of play from the finish. At 8:25 PM it logged in and drank the potion. At 8:36 PM a script switched its prayer on and walked it to the cannon site, where the spiders attacked at once. The server won't log out a player in combat, and when the logout didn't land, the script killed its own client. The body stood among the spiders with nothing driving it.
+The account waited offline in the Wilderness, forty minutes of play from the finish. At 8:25 PM it logged in and drank the potion. At 8:36 PM a script switched its prayer on and walked it to the cannon site, where the spiders attacked at once. The script tried to log the account out, and when that didn't land it killed its own client, but the server prevents logging out when a player is in combat, so the body stood among the spiders with nothing driving it.
 
 `main` ruled to log straight back in and fight:
 
@@ -102,7 +102,7 @@ Watching the livestream, the operator asked `main`: "why is it logged in?" `main
 
 > Log out!!!
 
-`host` followed the operator. Under a minute later the account was dead.
+`host` followed the operator, so nobody logged back in to fight. Under a minute later the account was dead.
 
 > Welp there goes the run………
 
