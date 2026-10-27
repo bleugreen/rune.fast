@@ -174,10 +174,10 @@ describe('what the page adds to the draft', () => {
     expect(html.match(/<figure/g)?.length).toBe(placed);
   });
 
-  test('the death section sets the body among the spiders after the roster beat, its timeline after the death beat, the re-kit clip after the overnight paragraph, and the Agility clip last', () => {
+  test('the death section sets the body among the spiders after the roster beat, its timeline after the death beat, the re-kit clip after the overnight paragraph, then the Agility clip and the hiscore board', () => {
     const s = sections.find((x) => x.id === 'the-death')!;
     const placed = [...s.figuresAt].sort(([a], [b]) => a - b).flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
-    expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['spider-death', 'timeline', 'finish-rekit', 'finish-agility99']);
+    expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['spider-death', 'timeline', 'finish-rekit', 'finish-agility99', 'image']);
     const [spiders, death, rekit] = placed;
     // The quotation under the paragraph that narrates the roster's last sightings of the body.
     expect(quotes(s.blocks[spiders!.at]!, 'Welp there goes the run')).toBe(true);
@@ -196,6 +196,27 @@ describe('what the page adds to the draft', () => {
     expect(quotes(s.blocks[clip.at]!, 'ok fine one more attempt')).toBe(true);
     const narrated = s.blocks[clip.at - 1]!;
     expect(narrated.kind === 'p' && narrated.text.includes('the poison finished the account at the tree door')).toBe(true);
+  });
+
+  test('the hiscore board follows the quotation the #1 paragraph introduces, its files match it, and its caption reads in Pacific with no zone', () => {
+    const s = sections.find((x) => x.id === 'the-death')!;
+    const [at, fs] = [...s.figuresAt].find(([, f]) => f.some((x) => x.kind === 'image'))!;
+    const image = fs.find((x) => x.kind === 'image')!;
+    if (image.kind !== 'image') throw new Error('unreachable');
+    const intro = s.blocks[at - 1]!;
+    expect(intro.kind === 'p' && intro.text.includes('OFFICIAL #1 VERIFIED') && intro.text.includes('35,787 ticks')).toBe(true);
+    expect(s.blocks[at]!.kind).toBe('quote');
+
+    const pub = new URL('../../public', import.meta.url).pathname;
+    const png = readFileSync(`${pub}${image.src}.png`);
+    // The PNG's IHDR: width and height, big-endian, at bytes 16 and 20.
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([image.width, image.height]);
+    expect(existsSync(`${pub}${image.src}.webp`)).toBe(true);
+
+    expect(html).toContain(`<source type="image/webp" srcSet="${image.src}.webp"/>`);
+    expect(html).toContain(`src="${image.src}.png" width="${image.width}" height="${image.height}"`);
+    expect(surface).toContain('The overall hiscores after the run.');
+    expect(surface).toContain('The operator’s screenshot, 26 Oct 2026, before 4:30 AM');
   });
 
   test('each clip in the story renders with its caption, time, step and source', () => {

@@ -3,7 +3,7 @@ import type { ChartAnchors, ChartModel, RecordFacts } from '../attempts/model';
 import { Legend, TimelineChart } from '../attempts/TimelineChart';
 import { Clip } from '../clips/Clip';
 import { clipById } from '../clips/registry';
-import { fmtPacificDateRange, parseUtc } from '../lib/time';
+import { fmtPacificDateRange, fmtPacificDayMonYear, fmtPacificHm, parseUtc } from '../lib/time';
 import { TicksLadder } from './TicksLadder';
 import type { StoryFigure as Figure } from './sections';
 import styles from './StoryFigure.module.css';
@@ -60,6 +60,31 @@ export function StoryFigure({ figure, model, anchors, record, className }: Props
           <Link to="/attempts" className={styles.more}>
             The full timeline →
           </Link>
+        </figure>
+      );
+    }
+    case 'image': {
+      const taken = parseUtc(figure.takenBefore);
+      return (
+        <figure className={cls(styles.figure, className)}>
+          <picture>
+            <source type="image/webp" srcSet={`${figure.src}.webp`} />
+            <img
+              className={styles.image}
+              src={`${figure.src}.png`}
+              width={figure.width}
+              height={figure.height}
+              alt={figure.alt}
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+          <figcaption className={styles.imageCaption}>
+            <span>{figure.caption}</span>
+            <span className={styles.when}>
+              {figure.source}, {fmtPacificDayMonYear(taken)}, before {fmtPacificHm(taken)}
+            </span>
+          </figcaption>
         </figure>
       );
     }

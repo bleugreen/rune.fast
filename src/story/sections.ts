@@ -9,7 +9,22 @@ export type StoryFigure =
   /** The cost page's day chart, linked. */
   | { kind: 'cost' }
   /** The attempts chart, cropped to the section's hours (instants given in UTC; the chart reads Pacific). */
-  | { kind: 'timeline'; crop: readonly [string, string] };
+  | { kind: 'timeline'; crop: readonly [string, string] }
+  /**
+   * A still under public/, served as WebP with a PNG fallback: `src` names both files less
+   * the extension, and `width` and `height` are their pixels. `takenBefore` (UTC) is the
+   * latest instant the picture can have been taken, which is all its evidence fixes.
+   */
+  | {
+      kind: 'image';
+      src: string;
+      width: number;
+      height: number;
+      alt: string;
+      caption: string;
+      source: string;
+      takenBefore: string;
+    };
 
 interface SectionMeta {
   /** The section's anchor on the page. */
@@ -74,6 +89,22 @@ export const SECTION_META: readonly SectionMeta[] = [
     dates: '25–26 Oct',
     figures: [
       { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'incredible work couldn’t have done it without you' },
+      // The board behind the #1 paragraph. That paragraph ends in a colon, so the board follows the
+      // quotation it introduces, after the Agility clip: the level-up came first, then the board.
+      // The operator texted this same screenshot at 4:30 AM, which bounds when it was taken.
+      {
+        figure: {
+          kind: 'image',
+          src: '/figures/hiscores-overall-20261026',
+          width: 634,
+          height: 794,
+          alt: 'The game’s Overall Hiscores table. Rank 1, cairnmax20x, level 1,881, time 3h 58m 34s. Rank 2, stunbaron, level 1,881, time 3h 59m 26s. Ranks 3 to 21 are other accounts at level 1,881, with times from 4h 01m 38s to 230h 39m 57s.',
+          caption: 'The overall hiscores after the run.',
+          source: 'The operator’s screenshot',
+          takenBefore: '2026-10-26T11:30Z',
+        },
+        after: 'incredible work couldn’t have done it without you',
+      },
       // The body among the spiders and the respawn the roster saw, after the quotation that paragraph introduces.
       { figure: { kind: 'clip', id: 'spider-death' }, after: 'Welp there goes the run' },
       // The death gap and the recovery, after the quotation the death beat ends on (its paragraph ends in a colon).

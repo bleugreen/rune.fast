@@ -39,3 +39,32 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/*
+ * A still is never drawn wider than its own pixels, so a screenshot's text is not scaled up,
+ * and no wider than 28rem: a screenshot is a receipt beside the prose, and the whole of it
+ * and its caption should fit one screen.
+ */
+.image {
+  display: block;
+  width: auto;
+  max-width: min(100%, 28rem);
+  height: auto;
+}
+
+.imageCaption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.when {
+  font-size: var(--label-sm);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums lining-nums;
+}
