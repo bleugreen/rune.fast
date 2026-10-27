@@ -353,7 +353,8 @@ describe('the operator’s screen opens the page', () => {
     expect(text).toContain(
       'The operator’s screen at 1:00 PM PDT on Wednesday 21 October: eighteen of the swarm’s agents side by side. Each pane is one issue’s planner, builder or coordinator, and one is the main thread.',
     );
-    expect(text).toContain('In one pane a machine’s ID and address are blocked out. Open the screen full size to read the panes.');
+    expect(text).toContain('main thread. Open the screen full size to read the panes.');
+    expect(text).not.toContain('blocked out');
   });
 
   test('its sources say how the moment was read, in plain words', () => {

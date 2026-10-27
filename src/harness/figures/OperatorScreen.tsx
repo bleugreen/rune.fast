@@ -45,7 +45,9 @@ export function OperatorScreen({ m, className, children }: { m: HarnessModel; cl
           .
         </span>
         <span className={styles.screenNote}>
-          In one pane a machine’s ID and address are blocked out. <a href={full} target="_blank" rel="noopener">Open the screen full size</a>{' '}
+          <a href={full} target="_blank" rel="noopener">
+            Open the screen full size
+          </a>{' '}
           to read the panes.
         </span>
       </figcaption>
