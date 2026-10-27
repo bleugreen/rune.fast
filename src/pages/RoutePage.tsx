@@ -4,6 +4,7 @@ import { fmtInt } from '../lib/numbers';
 import { fmtPacificDayLong, pacificZone, parseUtc } from '../lib/time';
 import { route } from '../route/data';
 import { DriftChart } from '../route/DriftChart';
+import { MAX_LEVEL } from '../route/log';
 import type { Route } from '../route/model';
 import { finishWords, LEDGER_WORDS, opening, WORDS, type OpeningFacts } from '../route/prose';
 import { Rail, Strip } from '../route/Rail';
@@ -25,7 +26,7 @@ export function openingFacts(t: Timeline): OpeningFacts {
   const quote = a5.events.find((e) => e.quote?.includes(QUOTED));
   const last99 = a5.events.find((e) => e.type === 'result' && e.title.includes('all 19 skills 99'));
   if (!quote || !last99) throw new Error('The timeline no longer holds the opening’s quote or the last 99');
-  return { start: parseUtc(a5.start.utc), last99: parseUtc(last99.utc), quote: QUOTED };
+  return { name: a5.name, start: parseUtc(a5.start.utc), last99: parseUtc(last99.utc), quote: QUOTED };
 }
 
 /** 'Saturday 24 October', 'Monday': the second date drops what the first already said. */
@@ -74,7 +75,7 @@ export function RoutePage() {
           <div className={styles.flow}>
             <header className={styles.head}>
               <h1 className={styles.title}>The route</h1>
-              <p className={styles.dek}>Attempt 5 step by step, on the clock the hiscore keeps.</p>
+              <p className={styles.dek}>{facts.name} step by step, on the clock the hiscore keeps.</p>
               {opening(route, facts, days(facts), pacificZone(facts.start)).map((text, i) => (
                 <p key={i} className={styles.prose}>
                   {text}
@@ -89,7 +90,7 @@ export function RoutePage() {
             <section className={styles.finish} aria-labelledby="finish-title">
               <p className={styles.kicker}>The finish</p>
               <h2 id="finish-title" className={styles.finishTitle}>
-                Agility 99, and the two clocks
+                {`${route.stamps.at(-1)!.skill} ${MAX_LEVEL}, and the two clocks`}
               </h2>
               {finish.before.map((text, i) => (
                 <p key={i} className={styles.prose}>

@@ -519,6 +519,8 @@ export function stretchWords(r: Route): [string, string] {
 }
 
 export interface OpeningFacts {
+  /** The attempt as the timeline names it. */
+  name: string;
   start: number;
   last99: number;
   /** The operator's words, as the timeline quotes them. */

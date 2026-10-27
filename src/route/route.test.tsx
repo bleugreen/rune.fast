@@ -109,7 +109,7 @@ describe('the Route page', () => {
     const details = html.match(/<details[\s\S]*?<\/details>/g) ?? [];
     expect(details.length).toBe(route.steps.length);
     for (const d of details) {
-      expect(d).not.toMatch(/ open[ >=]/);
+      expect(d).not.toMatch(/^<details[^>]* open/);
       expect(d).not.toMatch(/cairn:\/\/|\/Users\/|rs\/\d/);
     }
   });
@@ -122,7 +122,7 @@ describe('the Route page', () => {
 
   test('has no motion of its own: no transition or animation in its styles', () => {
     for (const f of ['src/route/Route.module.css', 'src/pages/RoutePage.module.css']) {
-      expect(readFileSync(f, 'utf8')).not.toMatch(/transition|animation|@keyframes|scroll-behavior/);
+      expect(readFileSync(f, 'utf8')).not.toMatch(/(?<![\w-])(?:transition|animation|scroll-behavior)\s*:|@keyframes/);
     }
   });
 

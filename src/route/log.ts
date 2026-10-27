@@ -35,6 +35,9 @@ export const SKILLS = [
 ] as const;
 export type Skill = (typeof SKILLS)[number];
 
+/** The top level of every skill. */
+export const MAX_LEVEL = 99;
+
 export interface LogFile {
   name: string;
   sha256: string;
