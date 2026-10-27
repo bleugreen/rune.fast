@@ -9,6 +9,8 @@
   gap: var(--space-3) var(--space-7);
   align-items: start;
   padding: var(--space-6) 0;
+  /* A deep link lands with the card's top a little below the window's edge. */
+  scroll-margin-top: var(--space-4);
 }
 
 .text {

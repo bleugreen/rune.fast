@@ -51,18 +51,6 @@
   border-bottom-color: var(--ink);
 }
 
-.soon {
-  color: var(--ink-faint);
-  font-weight: 400;
-}
-.soonTag {
-  margin-left: 0.3em;
-  font-size: 0.8em;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  font-style: normal;
-}
-
 .main {
   flex: 1;
 }
@@ -92,10 +80,4 @@
 }
 .credits a {
   color: inherit;
-}
-
-@media (max-width: 40rem) {
-  .soon {
-    display: none;
-  }
 }
