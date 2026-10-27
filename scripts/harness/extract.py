@@ -349,6 +349,7 @@ def extract(x: Export) -> dict:
                 if p not in senders:
                     senders.append(p)
         waited = None
+        tests = False
         if reason == "wait_resolved":
             prev_tid = turn_rows[i - 1][0]
             runs = [r for r in x.all(
@@ -356,9 +357,12 @@ def extract(x: Export) -> dict:
                 bj, prev_tid,
             )]
             if runs:
-                waited = json.loads(runs[-1][0])["commands"][0].get("description")
+                commands = json.loads(runs[-1][0])["commands"]
+                waited = commands[0].get("description")
+                tests = any("bun test" in (c.get("command") or "") for c in commands)
         turns.append(
-            {"n": seq, "start": started, "end": end, "reason": reason, "senders": senders, "waitedOn": waited}
+            {"n": seq, "start": started, "end": end, "reason": reason, "senders": senders, "waitedOn": waited,
+             "waitedOnTests": tests}
         )
     calls = [
         {"t": r[0], "verb": r[3].replace("mcp__cairn__", "")}
