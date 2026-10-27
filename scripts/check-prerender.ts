@@ -185,25 +185,28 @@ async function developmentBuild(): Promise<string> {
 }
 
 /**
- * dist/ in Pages' own server, functions/ and _routes.json included, at a free port. Its logs go to
- * a scratch directory: wrangler's default is under the user's preferences, not always writable.
+ * dist/ in Pages' own server, functions/ and _routes.json included, at a free port. Wrangler is a
+ * tool on the machine, not a dependency (Pages installs every devDependency on each deploy): the
+ * one on the PATH, or else bunx fetches it. Its logs go to a scratch directory: wrangler's default
+ * is under the user's preferences, not always writable.
  */
 async function pagesDev(dir: string): Promise<{ base: string; stop(): void }> {
   const probe = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch: () => new Response() });
   const port = probe.port;
   probe.stop(true);
-  const proc = Bun.spawn(['node_modules/.bin/wrangler', 'pages', 'dev', dir, '--ip', '127.0.0.1', '--port', String(port)], {
+  const wrangler = Bun.which('wrangler') ? ['wrangler'] : ['bunx', 'wrangler@4'];
+  const proc = Bun.spawn([...wrangler, 'pages', 'dev', dir, '--ip', '127.0.0.1', '--port', String(port)], {
     env: { ...process.env, WRANGLER_SEND_METRICS: 'false', WRANGLER_LOG_PATH: mkdtempSync(join(tmpdir(), 'rune-wrangler-')) },
     stdout: 'ignore',
     stderr: 'pipe',
   });
   const base = `http://127.0.0.1:${port}`;
-  for (const until = Date.now() + 60_000; Date.now() < until; await Bun.sleep(250)) {
+  for (const until = Date.now() + 180_000; Date.now() < until; await Bun.sleep(250)) {
     if (proc.exitCode !== null) throw new Error(`wrangler pages dev exited ${proc.exitCode}: ${await new Response(proc.stderr).text()}`);
     if ((await fetch(`${base}/`).catch(() => null))?.ok) return { base, stop: () => proc.kill() };
   }
   proc.kill();
-  throw new Error('wrangler pages dev did not answer within a minute');
+  throw new Error('wrangler pages dev did not answer within three minutes');
 }
 
 /**
