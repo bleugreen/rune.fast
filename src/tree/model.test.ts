@@ -13,10 +13,14 @@ const threads = units.filter((u) => u.kind === 'thread');
 const named = (name: string) => units.find((u) => u.kind === 'thread' && u.name === name)!;
 const sum = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0);
 
-const desk = layout(tree, { width: 1220, height: 495, compact: false });
-const phone = layout(tree, { width: 350, height: 506, compact: true });
+/** Beside the title on a 1440x900 screen: 900 less 14rem tall, 0.85 times as wide, the days on the right. */
+const desk = layout(tree, { width: 575, height: 676, compact: false, axis: 'right' });
+/** Above the title, between the phone and the side-by-side widths. */
+const tablet = layout(tree, { width: 880, height: 440, compact: false, axis: 'left' });
+const phone = layout(tree, { width: 350, height: 506, compact: true, axis: 'left' });
 const LAYOUTS: ReadonlyArray<readonly [string, Layout]> = [
   ['desktop', desk],
+  ['tablet', tablet],
   ['phone', phone],
 ];
 
@@ -196,12 +200,13 @@ describe.each(LAYOUTS)('layout, %s', (_, L) => {
     expect(L.y(tree.span)).toBeCloseTo(L.height - L.bottom, 9);
   });
 
-  test('every drawn point is inside the figure', () => {
+  test('every drawn point is inside the figure, clear of the day labels’ gutter', () => {
     for (const { xy } of L.paths) {
       for (let k = 0; k < xy.length; k += 2) {
-        expect(xy[k]! >= 0 && xy[k]! <= L.width && xy[k + 1]! >= 0 && xy[k + 1]! <= L.height).toBe(true);
+        expect(xy[k]! >= L.left && xy[k]! <= L.width - L.right && xy[k + 1]! >= 0 && xy[k + 1]! <= L.height).toBe(true);
       }
     }
+    expect(L.axis === 'left' ? L.left > L.right : L.right > L.left).toBe(true);
   });
 
   test('the day rules are the Pacific midnights, labelled from TUE 20 to MON 26', () => {
@@ -210,7 +215,7 @@ describe.each(LAYOUTS)('layout, %s', (_, L) => {
   });
 
   test('it is deterministic for a given size', () => {
-    const again = layout(tree, { width: L.width, height: L.height, compact: L.compact });
+    const again = layout(tree, { width: L.width, height: L.height, compact: L.compact, axis: L.axis });
     expect(again.slot).toEqual(L.slot);
     expect(again.limbs).toEqual(L.limbs);
     expect(again.labels).toEqual(L.labels);
