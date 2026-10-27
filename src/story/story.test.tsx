@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, matchRoutes } from 'react-router-dom';
 import { clipById, clipSource, clipSrc, clipWhen } from '../clips/registry';
-import { AUTHOR } from '../lib/site';
+import { AUTHOR, pageAt } from '../lib/site';
 import { StoryPage } from '../pages/StoryPage';
+import { siteRouteTree } from '../routes';
 import { inlineTokens, sourceTable } from './draft';
 import { CREDIT, SECTION_META, quotes, storyByline, storySections } from './sections';
 import { plainReceiptLines, plainSourceLines } from './sources';
@@ -259,7 +260,7 @@ describe('what the page adds to the draft', () => {
   test('the swarm section closes on the cost link, after host’s answer, not between the usage limits and the quotation they lead into', () => {
     const s = sections.find((x) => x.id === 'the-swarm')!;
     const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
-    expect(placed.map(({ f }) => f.kind)).toEqual(['cost']);
+    expect(placed.map(({ f }) => (f.kind === 'link' ? f.to : f.kind))).toEqual(['/cost']);
     const at = placed[0]!.at;
     expect(at).toBe(s.blocks.length - 1);
     expect(quotes(s.blocks[at]!, 'Not exactly. Those are written handoffs, not a direct view of my internal reasoning.')).toBe(true);
@@ -278,9 +279,35 @@ describe('what the page adds to the draft', () => {
   test('the tricks section sets the wine on screen after the sentence that tells it, then the link to the tricks page', () => {
     const s = sections.find((x) => x.id === 'the-tricks')!;
     const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
-    expect(placed.map(({ f }) => (f.kind === 'clip' ? (f.id ?? 'tricks link') : f.kind))).toEqual(['wine-relog', 'tricks link']);
+    expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind === 'link' ? f.to : f.kind))).toEqual(['wine-relog', '/tricks']);
     const told = s.blocks[placed[0]!.at]!;
     expect(told.kind === 'p' && told.text.includes('wine left in the bank ferments on a timer')).toBe(true);
+  });
+
+  test('every link figure is an in-app link, set once, to a path the site’s router serves as one of its pages', () => {
+    const links = SECTION_META.flatMap((s) => s.figures.flatMap(({ figure: f }) => (f.kind === 'link' ? [f] : [])));
+    expect(links.map((l) => l.to)).toEqual(['/tricks', '/cost', '/route']);
+    for (const { to, text } of links) {
+      expect(pageAt(to)).toBe(to);
+      const leaf = matchRoutes(siteRouteTree(), to)?.at(-1)?.route;
+      expect(leaf?.path).toBe(to.slice(1));
+      const anchors = html.match(new RegExp(`<a [^>]*>${text} →</a>`, 'g')) ?? [];
+      expect(anchors).toHaveLength(1);
+      expect(anchors[0]).toContain(`href="${to}"`);
+      expect(anchors[0]).not.toContain('target=');
+    }
+  });
+
+  test('the attempts section opens on the link to the route, after attempt 1’s paragraph and before attempt 2’s', () => {
+    const s = sections.find((x) => x.id === 'four-attempts')!;
+    expect(s.figuresAt.get(0)).toEqual([{ kind: 'link', to: '/route', text: 'The route, step by step' }]);
+    const [first, second] = s.blocks;
+    if (first?.kind !== 'p' || second?.kind !== 'p') throw new Error('the section no longer opens on two paragraphs');
+    expect(first.text.startsWith('On Friday morning, the swarm began its first official attempt.')).toBe(true);
+    expect(first.text.endsWith('but by then the run was lost.')).toBe(true);
+    const link = surface.indexOf('The route, step by step →');
+    expect(surface.indexOf(readerText(first.text))).toBeLessThan(link);
+    expect(link).toBeLessThan(surface.indexOf(readerText(second.text)));
   });
 
   test('the attempts section sets attempt 4’s death after the quotation its paragraph introduces', () => {
@@ -316,7 +343,7 @@ describe('what the page adds to the draft', () => {
   });
 
   test('each clip in the story renders with its caption, time, step and source', () => {
-    const ids = SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' && f.figure.id ? [f.figure.id] : [])));
+    const ids = SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' ? [f.figure.id] : [])));
     expect(ids.length).toBeGreaterThan(0);
     for (const id of ids) {
       const c = clipById(id);

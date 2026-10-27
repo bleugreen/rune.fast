@@ -105,7 +105,7 @@ describe('the clip registry', () => {
     const placed = [
       ...TRICKS.flatMap((t) => (t.clip ? [t.clip] : [])),
       ...STEPS.flatMap((s) => s.clips),
-      ...SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' && f.figure.id ? [f.figure.id] : []))),
+      ...SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' ? [f.figure.id] : []))),
       ...TOKENS_CLIPS,
     ];
     expect(new Set(placed)).toEqual(new Set(CLIPS.map((c) => c.id)));

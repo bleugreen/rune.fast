@@ -31,19 +31,12 @@ export function StoryFigure({ figure, model, record, className }: Props) {
         </figure>
       );
     case 'clip':
-      if (figure.id) return <Clip clip={clipById(figure.id)} className={cls(styles.figure, className)} />;
+      return <Clip clip={clipById(figure.id)} className={cls(styles.figure, className)} />;
+    case 'link':
       return (
         <figure className={cls(styles.slot, className)}>
-          <Link to="/tricks" className={styles.slotLink}>
-            The tricks, measured →
-          </Link>
-        </figure>
-      );
-    case 'cost':
-      return (
-        <figure className={cls(styles.slot, className)}>
-          <Link to="/cost" className={styles.slotLink}>
-            What each day cost →
+          <Link to={figure.to} className={styles.slotLink}>
+            {figure.text} →
           </Link>
         </figure>
       );

@@ -3,7 +3,7 @@
   min-width: 0;
 }
 
-/* A reserved space for a figure still to come: hairlines only, so it reads as a page, not a wireframe. */
+/* A figure's space that holds a link to another page: hairlines only, so it reads as a page, not a wireframe. */
 .slot {
   height: 7rem;
   margin: var(--space-5) 0 var(--space-6);
