@@ -87,7 +87,13 @@ for (let step = 0; step < Number(args.switches) * embeds.length; step++) {
 await browser.close();
 
 const last = rows.at(-1)!;
-if (last.contexts !== 1) failed = !!console.error(`expected one WebGL2 context, the page made ${last.contexts}`) || true;
-if (last.workers > 4) failed = !!console.error(`expected one pool (at most 4 workers), the page made ${last.workers}`) || true;
+if (last.contexts !== 1) {
+  console.error(`expected one live WebGL2 context, the page holds ${last.contexts}`);
+  failed = true;
+}
+if (last.workers > 4) {
+  console.error(`expected one pool (at most 4 workers), the page made ${last.workers}`);
+  failed = true;
+}
 for (const e of errors.slice(0, 10)) console.error(`page error: ${e}`);
 process.exit(failed ? 1 : 0);
