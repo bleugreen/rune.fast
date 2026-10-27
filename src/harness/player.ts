@@ -25,6 +25,8 @@ export interface PlayerState {
   /** False until the reader first plays or steps: the figure shows its printed, complete state. */
   started: boolean;
   via: Via;
+  /** Where the position stood at the last render, so what changed can be read from the state alone. */
+  prev?: { t: number; started: boolean };
 }
 
 export const REST: PlayerState = { t: 1, playing: false, started: false, via: 'jump' };
@@ -64,19 +66,31 @@ export function step(s: PlayerState, tl: Timeline, dir: 1 | -1, via: Via = 'step
 /** Where the clock stands before the reader first starts it: before the beginning, so the first step is a change. */
 export const BEFORE = -1;
 
+/** `next` as it is rendered after `prev`: carrying where `prev` stood. */
+export function after(prev: PlayerState, next: PlayerState): PlayerState {
+  return { ...next, prev: { t: prev.t, started: prev.started } };
+}
+
 /**
- * The stretch a change of state should animate across, from where the position was to where it
- * is now, or null when the change should snap: under reduced motion, from the keyboard, a scrub, a
- * jump or a reset, and any move backwards. From rest the stretch starts before the beginning.
+ * The stretch a rendered state should animate across, from where the last render had the position
+ * to where it is now, or null when the change should snap: under reduced motion, from the keyboard,
+ * a scrub, a jump or a reset, and any step backwards. A play from rest, or one that restarted a
+ * finished figure, travels from before the beginning, so its first step travels too.
  */
-export function travelSpan(
-  prev: Pick<PlayerState, 't' | 'started'>,
-  next: PlayerState,
-  reduced: boolean,
-): readonly [number, number] | null {
+export function travelSpan(next: PlayerState, reduced: boolean): readonly [number, number] | null {
   if (reduced || !next.started || (next.via !== 'play' && next.via !== 'step')) return null;
-  const from = prev.started ? prev.t : BEFORE;
+  const prev = next.prev ?? { t: BEFORE, started: false };
+  const restarted = next.via === 'play' && next.t < prev.t;
+  const from = !prev.started || restarted ? BEFORE : prev.t;
   return next.t > from ? [from, next.t] : null;
+}
+
+/** For a figure of `n` equal steps: the step whose messages leave now (1-based), or null when nothing travels. */
+export function launchedStep(n: number, next: PlayerState, reduced: boolean): number | null {
+  const span = travelSpan(next, reduced);
+  if (!span) return null;
+  const to = shownSteps(n, span[1]);
+  return to === shownSteps(n, span[0]) + 1 ? to : null;
 }
 
 export function seek(s: PlayerState, t: number, via: Via = 'scrub'): PlayerState {
@@ -128,6 +142,7 @@ export function useReducedMotion(): boolean {
 export function usePlayer(tl: Timeline, onFrame?: (t: number) => void) {
   const [state, setState] = useState<PlayerState>(REST);
   const live = useRef<PlayerState>(REST);
+  const rendered = useRef<PlayerState>(REST);
   const frame = useRef(onFrame);
   frame.current = onFrame;
   const reduced = useReducedMotion();
@@ -143,7 +158,11 @@ export function usePlayer(tl: Timeline, onFrame?: (t: number) => void) {
         next.started !== prev.started ||
         next.via !== prev.via ||
         markIndex(tl, next.t) !== markIndex(tl, prev.t);
-      if (discrete || !next.playing) setState(next);
+      if (discrete || !next.playing) {
+        const shown = after(rendered.current, next);
+        rendered.current = shown;
+        setState(shown);
+      }
     },
     [tl],
   );

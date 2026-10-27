@@ -1,6 +1,22 @@
 import { describe, expect, test } from 'bun:test';
 import { arrivalDelay, dotDelay, TRAVEL_MS } from './figures/frame';
-import { advance, markIndex, nextMark, pause, play, REST, seek, shownSteps, step, stepTimeline, travelSpan, type PlayerState, type Timeline } from './player';
+import {
+  advance,
+  after,
+  launchedStep,
+  markIndex,
+  nextMark,
+  pause,
+  play,
+  REST,
+  seek,
+  shownSteps,
+  step,
+  stepTimeline,
+  travelSpan,
+  type PlayerState,
+  type Timeline,
+} from './player';
 
 const tl: Timeline = { duration: 1000, marks: [0, 0.25, 0.5, 0.9, 1] };
 
@@ -113,34 +129,55 @@ describe('a figure of equal steps', () => {
 describe('what travels', () => {
   const n = 8;
   const steps = stepTimeline(n, 1100);
-  const moved = (prev: PlayerState, next: PlayerState, reduced = false) => {
-    const span = travelSpan(prev, next, reduced);
-    return span ? shownSteps(n, span[1]) - shownSteps(n, span[0]) : 0;
-  };
+  /** The step whose messages leave when the figure renders `next` after `prev`. */
+  const launch = (prev: PlayerState, next: PlayerState, reduced = false) => launchedStep(n, after(prev, next), reduced);
+  const finished: PlayerState = { t: 1, playing: false, started: true, via: 'play' };
 
-  test('the first Step after load or reset travels one step', () => {
-    expect(moved(REST, step(REST, steps, 1))).toBe(1);
+  test('the first Step after load or reset launches step one', () => {
+    expect(launch(REST, step(REST, steps, 1))).toBe(1);
   });
 
-  test('play travels its first step at once, and each step it crosses', () => {
+  test('play launches its first step at once, and each step it crosses', () => {
     const p = play(REST);
-    expect(moved(REST, p)).toBe(1);
-    const later = { ...p, t: 1 / n + 0.001 };
-    expect(moved(p, later)).toBe(1);
+    expect(launch(REST, p)).toBe(1);
+    expect(launch(p, { ...p, t: 1 / n + 0.001 })).toBe(2);
+  });
+
+  test('Play again on a finished figure launches step one, as from rest', () => {
+    const again = play(finished);
+    expect(again.t).toBe(0);
+    expect(launch(finished, again)).toBe(1);
+  });
+
+  test('each Step press launches the next step', () => {
+    let s = REST;
+    for (let k = 1; k <= n; k++) {
+      const next = step(s, steps, 1);
+      expect(launch(s, next)).toBe(k);
+      s = next;
+    }
   });
 
   test('the keyboard, scrubbing, jumps, reset, going back and reduced motion never travel', () => {
     const at = step(step(REST, steps, 1), steps, 1);
-    expect(travelSpan(at, step(at, steps, 1, 'key'), false)).toBeNull();
-    expect(travelSpan(at, seek(at, 0.9, 'scrub'), false)).toBeNull();
-    expect(travelSpan(at, seek(at, 0.9, 'jump'), false)).toBeNull();
-    expect(travelSpan(at, REST, false)).toBeNull();
-    expect(travelSpan(at, step(at, steps, -1), false)).toBeNull();
-    expect(travelSpan(at, step(at, steps, 1), true)).toBeNull();
+    for (const next of [step(at, steps, 1, 'key'), seek(at, 0.9, 'scrub'), seek(at, 0.9, 'jump'), REST, step(at, steps, -1)]) {
+      expect(travelSpan(after(at, next), false)).toBeNull();
+      expect(launch(at, next)).toBeNull();
+    }
+    expect(launch(at, step(at, steps, 1), true)).toBeNull();
+    expect(launch(REST, play(REST), true)).toBeNull();
   });
 
-  test('each arrival ring fades in just before its own dot lands', () => {
-    for (let j = 0; j < 8; j++) expect(arrivalDelay(j) - dotDelay(j)).toBe(TRAVEL_MS - 40);
-    expect(dotDelay(7)).toBeGreaterThan(dotDelay(0));
+  test('pausing or scrolling away mid-step launches nothing', () => {
+    const p = advance(play(REST), 300, steps);
+    expect(launch(p, pause(p))).toBeNull();
+  });
+
+  test('each arrival ring starts where its own dot visibly stops, after the dot leaves', () => {
+    for (let j = 0; j < 8; j++) {
+      expect(arrivalDelay(j)).toBeGreaterThan(dotDelay(j));
+      expect(arrivalDelay(j)).toBeLessThan(dotDelay(j) + TRAVEL_MS);
+      expect(arrivalDelay(j) - dotDelay(j)).toBe(arrivalDelay(0));
+    }
   });
 });

@@ -17,8 +17,12 @@ export const TRAVEL_MS = 600;
 export const STAGGER = 40;
 /** When the j-th dot of a step leaves. */
 export const dotDelay = (j: number) => j * STAGGER;
-/** When its arrival ring starts to fade in: just before that dot lands, so the two finish together. */
-export const arrivalDelay = (j: number) => dotDelay(j) + TRAVEL_MS - 40;
+/**
+ * When its arrival ring starts to fade in: where the dot visibly stops. On this ease-out the dot
+ * has covered about 97 percent of its edge two thirds of the way through, so the ring starts there
+ * and its 160 ms fade ends as the dot settles.
+ */
+export const arrivalDelay = (j: number) => dotDelay(j) + Math.round((TRAVEL_MS * 2) / 3);
 
 export function useChartWidth() {
   const [ref, measured] = useWidth<HTMLDivElement>();

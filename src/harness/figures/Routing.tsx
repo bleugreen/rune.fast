@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { countWord, listWords } from '../../lib/numbers';
 import { fmtPacificHms } from '../../lib/time';
 import { edgeKey, type HarnessModel, type NodeKey, type RouteStep } from '../model';
-import { keysLabel, shownSteps, stepTimeline, travelSpan, usePlayer, useReducedMotion } from '../player';
+import { keysLabel, launchedStep, shownSteps, stepTimeline, usePlayer, useReducedMotion } from '../player';
 import { arrivalDelay, dotDelay, EASE_OUT, TRAVEL_MS, useChartWidth } from './frame';
 import styles from './Figures.module.css';
 
@@ -101,19 +101,15 @@ export function Routing({ m, label }: { m: HarnessModel; label: string }) {
   // Anything else (the keyboard, a reset) snaps, and takes any dots still in flight with it.
   const dots = useRef<SVGGElement>(null);
   const flights = useRef(new Set<Animation>());
-  const prevPos = useRef({ t: state.t, started: state.started });
-  const span = travelSpan(prevPos.current, state, reduced);
-  const launching = span !== null && shownSteps(n, span[1]) === shownSteps(n, span[0]) + 1;
+  const launched = launchedStep(n, state, reduced);
+  const launching = launched !== null;
   useEffect(() => {
-    const span = travelSpan(prevPos.current, state, reduced);
-    prevPos.current = { t: state.t, started: state.started };
     const g = dots.current;
-    if (!span) {
+    if (launched === null || !g) {
       flights.current.forEach((a) => a.cancel());
       return;
     }
-    if (!g || shownSteps(n, span[1]) !== shownSteps(n, span[0]) + 1) return;
-    const s = r.steps[shownSteps(n, span[1]) - 1]!;
+    const s = r.steps[launched - 1]!;
     s.to.forEach((to, j) => {
       const key = routeEdge(s.from, to);
       const probe = document.createElementNS('http://www.w3.org/2000/svg', 'path');

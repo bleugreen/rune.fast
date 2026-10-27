@@ -45,10 +45,8 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
   // A wake travels when the playhead crosses its turn's start in play or by the Step button.
   // The keyboard, a scrub or a jump snaps, and settles any wake still dropping.
   const wakeEls = useRef(new Map<number, SVGGElement>());
-  const prevPos = useRef({ t: state.t, started: state.started });
   useEffect(() => {
-    const span = travelSpan(prevPos.current, state, reduced);
-    prevPos.current = { t: state.t, started: state.started };
+    const span = travelSpan(state, reduced);
     const markers = (n: number) => [...(wakeEls.current.get(n)?.querySelectorAll<SVGElement>('[data-from]') ?? [])];
     if (!span) {
       for (const tn of i.turns) for (const el of markers(tn.n)) el.getAnimations().forEach((a) => a.cancel());
