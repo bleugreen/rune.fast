@@ -9,10 +9,53 @@
       "height": 3018
     },
     "masks": [
-      { "x": 1058, "y": 2886, "width": 228, "height": 26, "what": "rs/149’s pane, its comment on itself: the rehearsal machine’s instance ID" },
-      { "x": 1411, "y": 2886, "width": 123, "height": 26, "what": "the same line: the machine’s public IP address" },
-      { "x": 1477, "y": 2958, "width": 55, "height": 23, "what": "its message to rs/147 two lines down: the start of the same instance ID" }
+      {
+        "x": 1058,
+        "y": 2886,
+        "width": 228,
+        "height": 26,
+        "what": "rs/149’s pane, its comment on itself: the rehearsal machine’s instance ID"
+      },
+      {
+        "x": 1411,
+        "y": 2886,
+        "width": 123,
+        "height": 26,
+        "what": "the same line: the machine’s public IP address"
+      },
+      {
+        "x": 1477,
+        "y": 2958,
+        "width": 55,
+        "height": 23,
+        "what": "its message to rs/147 two lines down: the start of the same instance ID"
+      }
     ],
-    "renditions": []
+    "renditions": [
+      {
+        "use": "column",
+        "type": "image/avif",
+        "width": 2048,
+        "height": 1277,
+        "src": "figures/operator-screen.2048.986830ee.avif",
+        "bytes": 258223
+      },
+      {
+        "use": "column",
+        "type": "image/jpeg",
+        "width": 2048,
+        "height": 1277,
+        "src": "figures/operator-screen.2048.611a2e27.jpg",
+        "bytes": 431661
+      },
+      {
+        "use": "full",
+        "type": "image/webp",
+        "width": 4842,
+        "height": 3018,
+        "src": "figures/operator-screen.4842.8feac467.webp",
+        "bytes": 659348
+      }
+    ]
   }
 ]
