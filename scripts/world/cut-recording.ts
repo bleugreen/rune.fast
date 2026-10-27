@@ -131,6 +131,7 @@ for (const c of CUTS) {
   }
   const still = c.posterDetail ? `${CANVAS},${c.posterDetail}` : CANVAS;
   ff('-ss', offset(c.poster), '-i', recording, '-frames:v', '1', '-vf', still, '-q:v', '3', `public/clips/${c.id}.jpg`);
+  encodePosterAvif(`public/clips/${c.id}.jpg`);
   const added = JSON.parse(run(['bun', 'scripts/world/publish-videos.ts', '--add', c.id, cut, `--dir=${args.dir}`])) as Record<string, unknown>;
   console.log(JSON.stringify({ ...added, recorded: [c.from, c.to], skip: c.skip }));
 }

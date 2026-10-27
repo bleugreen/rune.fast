@@ -34,7 +34,10 @@ export interface Provenance {
 
 interface Footage extends Provenance {
   id: string;
-  /** Under public/, as the page requests it: the still the frame shows at rest. */
+  /**
+   * Under public/, as the page requests it: the still the frame shows at rest, a JPEG, with an AVIF
+   * of it beside it (`posterAvif`) for the browsers that take one.
+   */
   poster: string;
   /** The frame's size in pixels; the frame keeps this aspect at any width. */
   width: number;
@@ -114,6 +117,9 @@ export function clipSource(c: Pick<Provenance, 'source'>): string {
   const name = SOURCE_NAMES[label];
   return commit ? `${name}, rs-sdk ${commit.slice(0, 7)}` : name;
 }
+
+/** The poster's AVIF, beside its JPEG under public/ (scripts/world/posters.ts encodes it). */
+export const posterAvif = (c: Pick<ClipEntry, 'poster'>) => c.poster.replace(/\.jpg$/, '.avif');
 
 /** Where the page fetches a video: its key under the world assets. */
 export function clipSrc(v: VideoEntry): string {
