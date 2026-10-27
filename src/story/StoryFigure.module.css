@@ -39,3 +39,28 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/* A still is never drawn wider than its own pixels, so a screenshot's text is not scaled up. */
+.image {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.imageCaption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.when {
+  font-size: var(--label-sm);
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums lining-nums;
+}
