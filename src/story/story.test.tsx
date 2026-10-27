@@ -73,7 +73,7 @@ describe('the draft, placed verbatim', () => {
 
   test('code spans and emphasis are set, not shown as backticks and asterisks', () => {
     for (const [, code] of draft.slice(0, draft.indexOf('## Receipts')).matchAll(/`([^`\n]+)`/g)) {
-      expect(html).toContain(`<code>${code!.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}</code>`);
+      expect(html).toContain(`<code>${code!.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')}</code>`);
     }
     expect(html).toContain('<em>more</em>');
     expect(surface).not.toContain('`');
