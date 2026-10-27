@@ -10,7 +10,8 @@
  *   bun scripts/world/publish-videos.ts --pull                   fetch the registered videos .world/clips/ lacks
  *
  * --dir names the local mirror (default .world), --base the served world assets
- * (default https://assets.mage.md/world/).
+ * (default https://assets.mage.md/world/), and --only a comma-separated list of ids, so an upload
+ * puts exactly the videos it was cleared for and a check reports on just those.
  */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -31,10 +32,14 @@ const { values: args, positionals } = parseArgs({
     pull: { type: 'boolean', default: false },
     dir: { type: 'string', default: '.world' },
     base: { type: 'string', default: 'https://assets.mage.md/world/' },
+    only: { type: 'string' },
   },
 });
 
-const videos = CLIPS.filter((c): c is VideoEntry => c.kind === 'video');
+const only = args.only?.split(',').map((id) => id.trim());
+const unknown = only?.filter((id) => !CLIPS.some((c) => c.id === id && c.kind === 'video'));
+if (unknown?.length) throw new Error(`--only names no registered video: ${unknown.join(', ')}`);
+const videos = CLIPS.filter((c): c is VideoEntry => c.kind === 'video' && (!only || only.includes(c.id)));
 const local = (v: VideoEntry) => join(args.dir, v.src);
 let failures = 0;
 const bad = (line: string) => {

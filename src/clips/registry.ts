@@ -3,12 +3,19 @@ import { fmtPacificClockRange, fmtPacificDayMonYear, pacificZone, parseUtc } fro
 import { WORLD_ASSET_BASE } from '../replay/assets';
 
 /** Where footage comes from, as its caption names it. */
-export type SourceLabel = 'run feed' | 'finish recording' | 'lab film';
+export type SourceLabel = 'run feed' | 'screen recording' | 'lab film';
+
+/** How a caption line names each source. */
+const SOURCE_NAMES: Record<SourceLabel, string> = {
+  'run feed': 'Run feed',
+  'screen recording': 'The run host’s screen recording',
+  'lab film': 'Lab film',
+};
 
 export interface ClipSource {
   /**
    * run feed: the swarm's recording of the demo server's world feed, replayed in 3D.
-   * finish recording: the run host's screen recording of attempt 5.
+   * screen recording: the run host's screen recording of attempt 5, all 28 hours of it.
    * lab film: a capture made in the lab, from the rs-sdk fork at `commit`.
    */
   label: SourceLabel;
@@ -96,10 +103,10 @@ export function clipWhen(c: Pick<Provenance, 'recorded'>, zone = false): string 
   return `${fmtPacificDayMonYear(a)}, ${fmtPacificClockRange(a, b, true)}${zone ? ` ${pacificZone(a)}` : ''}`;
 }
 
-/** The caption's source: 'Finish recording', 'Run feed', or 'Lab film, rs-sdk 3546291'. */
+/** The caption's source: 'The run host’s screen recording', 'Run feed', or 'Lab film, rs-sdk 3546291'. */
 export function clipSource(c: Pick<Provenance, 'source'>): string {
   const { label, commit } = c.source;
-  const name = label.charAt(0).toUpperCase() + label.slice(1);
+  const name = SOURCE_NAMES[label];
   return commit ? `${name}, rs-sdk ${commit.slice(0, 7)}` : name;
 }
 

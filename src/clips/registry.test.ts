@@ -33,7 +33,7 @@ describe('the clip registry', () => {
     });
 
     test('names its source, and a lab film the commit it was made from', () => {
-      expect(['run feed', 'finish recording', 'lab film']).toContain(c.source.label);
+      expect(['run feed', 'screen recording', 'lab film']).toContain(c.source.label);
       if (c.source.label === 'lab film') expect(c.source.commit).toMatch(/^[0-9a-f]{40}$/);
       else expect(c.source.commit).toBeUndefined();
       expect(c.source.label === 'run feed').toBe(c.kind === 'replay');
@@ -98,6 +98,11 @@ describe('the clip registry', () => {
     ];
     expect(new Set(placed)).toEqual(new Set(CLIPS.map((c) => c.id)));
   });
+
+  test('a clip illustrates one technique at most on the tricks page', () => {
+    const onCards = TRICKS.flatMap((t) => (t.clip ? [t.clip] : []));
+    expect(onCards.filter((id, i) => onCards.indexOf(id) !== i)).toEqual([]);
+  });
 });
 
 describe('the caption line', () => {
@@ -106,7 +111,9 @@ describe('the caption line', () => {
     expect(clipWhen(clipById('finish-rekit'), true)).toBe('26 Oct 2026, 3:27:15–3:27:27 AM PDT');
     expect(clipWhen(clipById('levelup-firemaking'))).toBe('23 Oct 2026, 2:50:03–2:50:16 PM');
     expect(clipWhen(clipById('finish-agility99'), true)).toBe('26 Oct 2026, 4:07:41–4:07:55 AM PDT');
-    expect(clipSource(clipById('finish-rekit'))).toBe('Finish recording');
+    expect(clipSource(clipById('finish-rekit'))).toBe('The run host’s screen recording');
+    expect(clipSource(clipById('wine-relog'))).toBe('The run host’s screen recording');
+    expect(clipWhen(clipById('wine-relog'))).toBe('25 Oct 2026, 1:26:01–1:26:16 PM');
     expect(clipSource(clipById('levelup-firemaking'))).toBe('Lab film, rs-sdk 3546291');
     for (const c of CLIPS) if (c.kind === 'replay') expect(clipSource(c)).toBe('Run feed');
   });

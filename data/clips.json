@@ -107,7 +107,7 @@
     ],
     "step": "The recovery’s re-kit",
     "source": {
-      "label": "finish recording",
+      "label": "screen recording",
       "note": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the SDK log stamps on screen."
     }
   },
@@ -127,7 +127,7 @@
     ],
     "step": "The cannon step, the run’s last combat",
     "source": {
-      "label": "finish recording",
+      "label": "screen recording",
       "note": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the SDK log stamps on screen."
     }
   },
@@ -147,8 +147,128 @@
     ],
     "step": "Agility 75 to 99, the run’s last step",
     "source": {
-      "label": "finish recording",
+      "label": "screen recording",
       "note": "The run host’s screen recording of attempt 5, cropped to the game canvas and scaled to three quarters; times from the SDK log stamps on screen."
+    }
+  },
+  {
+    "id": "wine-relog",
+    "kind": "video",
+    "src": "clips/wine-relog.36ef6c2f.mp4",
+    "bytes": 1781234,
+    "poster": "/clips/wine-relog.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 14.267,
+    "caption": "Cooking 60 from the first firing of the banked wine, a relog through the title screen, and Cooking 99 a few seconds after the account is back; the login form is cut out.",
+    "recorded": [
+      "2026-10-25T20:26:01.500Z",
+      "2026-10-25T20:26:16.500Z"
+    ],
+    "step": "The wine step, Cooking 60 to 99",
+    "source": {
+      "label": "screen recording",
+      "note": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the recording’s own clock, which runs 4 s behind its file name. The game’s login form, which shows the account name and the password’s length, is cut out with the frame or two around it (0.73 s), marked by a dip to black."
+    }
+  },
+  {
+    "id": "stun-pack",
+    "kind": "video",
+    "src": "clips/stun-pack.7fca05e9.mp4",
+    "bytes": 2928755,
+    "poster": "/clips/stun-pack.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 15,
+    "caption": "Just after the courier’s trade lands, the knights stun the account between pickpockets, and it spends each stun casting Superheat on the ore and Charge: Magic 82 to 84, Smithing 4 to 7.",
+    "recorded": [
+      "2026-10-25T09:18:44Z",
+      "2026-10-25T09:18:59Z"
+    ],
+    "step": "Thieving at the knights, with the stun pack",
+    "source": {
+      "label": "screen recording",
+      "note": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the recording’s own clock, which runs 4 s behind its file name."
+    }
+  },
+  {
+    "id": "charge-stuns",
+    "kind": "video",
+    "src": "clips/charge-stuns.e9e2112d.mp4",
+    "bytes": 1569779,
+    "poster": "/clips/charge-stuns.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 14.5,
+    "caption": "Charge cast one or two at a time between the knights’ stuns, each cast a “You feel charged with magic power” line, while Magic climbs from 85 to 90.",
+    "recorded": [
+      "2026-10-25T09:19:01Z",
+      "2026-10-25T09:19:15.500Z"
+    ],
+    "step": "Thieving at the knights, with the stun pack",
+    "source": {
+      "label": "screen recording",
+      "note": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the recording’s own clock, which runs 4 s behind its file name."
+    }
+  },
+  {
+    "id": "protect-from-melee",
+    "kind": "video",
+    "src": "clips/protect-from-melee.85652ac1.mp4",
+    "bytes": 1053699,
+    "poster": "/clips/protect-from-melee.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 15,
+    "caption": "The end of the cannon session among the spiders: the Protect from Melee icon stays over the account and the spiders’ hits on it land as blue zeros while the cannon kills them, until Ranged reaches 99 and the account picks the cannon up.",
+    "recorded": [
+      "2026-10-26T10:40:32Z",
+      "2026-10-26T10:40:47Z"
+    ],
+    "step": "The cannon step, the run’s last combat",
+    "source": {
+      "label": "screen recording",
+      "note": "The run host’s screen recording of attempt 5, cropped to the game canvas; the poster is a detail of the clip’s third second at two and a half times; times from the recording’s own clock, which runs 4 s behind its file name."
+    }
+  },
+  {
+    "id": "dragon-slayer-stop",
+    "kind": "video",
+    "src": "clips/dragon-slayer-stop.1155f673.mp4",
+    "bytes": 1314090,
+    "poster": "/clips/dragon-slayer-stop.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 15,
+    "caption": "The end of the fight with Elvarg: the prayer runs out, the quest completes, and the “Your strength level is now 99” page stays open until the client logs out.",
+    "recorded": [
+      "2026-10-25T20:35:39.500Z",
+      "2026-10-25T20:35:54.500Z"
+    ],
+    "step": "Dragon Slayer, and attempt 5’s stop on its level-up page",
+    "source": {
+      "label": "screen recording",
+      "note": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the recording’s own clock, which runs 4 s behind its file name."
+    }
+  },
+  {
+    "id": "spider-stop",
+    "kind": "video",
+    "src": "clips/spider-stop.13a61c5e.mp4",
+    "bytes": 1743804,
+    "poster": "/clips/spider-stop.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 15,
+    "caption": "Among the spiders with no prayer points: the account has just drunk its antipoison, turns back south away from them, and logs out.",
+    "recorded": [
+      "2026-10-25T21:34:41Z",
+      "2026-10-25T21:34:56Z"
+    ],
+    "step": "The cannon step, attempt 5’s stop with no prayer",
+    "source": {
+      "label": "screen recording",
+      "note": "The run host’s screen recording of attempt 5, cropped to the game canvas; times from the recording’s own clock, which runs 4 s behind its file name."
     }
   },
   {
