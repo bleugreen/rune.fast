@@ -71,6 +71,11 @@ describe('the data', () => {
     }
   });
 
+  test('no clip is on more than one card the page shows', () => {
+    const clips = TRICKS.filter((t) => t.kind !== 'rejected' && t.clip).map((t) => t.clip!);
+    expect(clips.filter((c, i) => clips.indexOf(c) !== i)).toEqual([]);
+  });
+
   test('the level-up and cannon cards carry their clips', () => {
     const byId = new Map(TRICKS.map((t) => [t.id, t]));
     expect(byId.get('level-up-dismissal')!.clip).toBe('levelup-firemaking');
@@ -114,14 +119,14 @@ describe('order and headline', () => {
   });
 
   test('the page claim', () => {
-    expect(headlineFacts(TRICKS)).toEqual({ used: 20, halved: 9 });
+    expect(headlineFacts(TRICKS)).toEqual({ used: 19, halved: 9 });
   });
 
   test('the headline is the title and the subtitle, with nothing between them and the first group', () => {
     const html = renderToStaticMarkup(createElement(TricksPage));
     const header = html.match(/<header[^>]*>([\s\S]*?)<\/header>/)![1]!;
     const text = (s: string) => s.replace(/<[^>]+>/g, '\n').split('\n').map((x) => x.trim()).filter(Boolean);
-    expect(text(header)).toEqual(['Twenty techniques that made the run', 'Nine of them cut a cost in half or more']);
+    expect(text(header)).toEqual(['Nineteen techniques that made the run', 'Nine of them cut a cost in half or more']);
     const between = html.slice(html.indexOf('</header>') + '</header>'.length, html.indexOf('<h2'));
     expect(text(between)).toEqual([]);
   });
