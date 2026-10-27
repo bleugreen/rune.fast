@@ -18,7 +18,7 @@ Five days, thirteen hours and thirty-seven minutes later, `cairnmax20x`, the swa
 
 Here’s how.
 
-The repository was rs-sdk, Max Bittker's kit for running bots on a fan-made copy of 2004-era RuneScape, with a public demo server and a leaderboard. The operator, looking back: “I played RuneScape a lot as a kid, before getting into botting RuneScape and quickly getting banned. ‘RuneScape but for bots specifically’ was incredibly up my alley.”
+The repository was rs-sdk, Max Bittker's kit for running bots on a fan-made copy of 2004-era RuneScape, with a public demo server and a leaderboard. The operator, looking back: “I played RuneScape a lot as a kid, before getting into botting RuneScape and quickly getting banned. ‘RuneScape but for bots specifically’ was incredibly up my alley.” The night before, the operator had watched Max's talk, "RuneScape Bench: MMOs for Agents"; it is the primer if you want one.
 
 The agent in the thread, which named itself `main`, read the leaderboard and found out what the game was:
 
