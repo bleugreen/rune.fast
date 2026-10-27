@@ -96,7 +96,7 @@ The potion would not arrive for six hours.
 
 ## 6. The death
 
-I felt a tad guilty letting Codex drive the speedrun that Claude built, so I swapped back to let Claude bring us home. This was a mistake.
+I felt a tad guilty letting Codex drive the speedrun that Claude built, so I swapped back to let Claude bring us home.
 
 The account sat logged out in the Wilderness, the zone where anything can kill you, forty minutes of playtime from the finish line. Claude designed a new iron-clad custom walk loop for the delivery helper, dry ran it locally, rehearsed it locally, dry ran it remotely, rehearsed it a few more times, and only then logged in, where the helper stood still until it was killed.
 
@@ -142,9 +142,9 @@ After taking stock of the situation, `main` projected our run would finish 379 t
 
 > we’re not done until #1
 
-Overnight the helpers rebuilt the lost kit, and the recovery began at 3:27 AM the next morning, still projected 90 ticks slow.
+Overnight the helpers rebuilt the lost kit, and the recovery began at 3:27 AM the next morning, still projected about 100 ticks slow.
 
-At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and doing so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility goes according to plan. `cairnmax20x` ran to the course, completed 56 laps around it, and reached Agility 99, the final skill, at 4:07 AM, 129 ticks (51.6 seconds) under the record. At 4:15, `host` to `main`:
+At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and doing so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility goes according to plan. `cairnmax20x` ran to the course, completed 56 laps around it, faster than planned, and reached Agility 99, the final skill, at 4:07 AM, 129 ticks (51.6 seconds) under the record. At 4:15, `host` to `main`:
 
 > OFFICIAL #1 VERIFIED on BOTH playerpage… and overallboard…
 
@@ -154,12 +154,10 @@ At 4:30 AM I sent my brother a screenshot of the hiscores:
 
 > We did it
 >
-> Codex brought the run back from the dead
->
 > Im da king of runescape
 
 ## Receipts (for the sources disclosure on each section; not page prose)
 
 Every quote in sections 2-6 has its source (URI, speaker, stored time) in the per-section dig tables at /Users/mitch/rs-document/work/digs/section-N.md (N = 2..6), produced by read-only Investigate tasks cairn://p/rune/main/task/dig-section, dig-section-3, -4, -5, -6 on 26 Oct 2026 and checked against the live store. Key anchors: S1 first message event 2026-10-20T21:37:42Z to the #1 capture 2026-10-26T11:14:43.680Z (cairn://p/rs/843 #55) = 5 d 13 h 37 m 01 s; the opening exchange cairn://p/rs/main/chat turns 1-3; the talk https://www.youtube.com/watch?v=cNm4zyUtWj0; tick 300 then 400 ms from 2026-10-22 19:56:29Z (RUN-ORDER.md line 29); route 35,467.4 expected with 1,226.6 reserve (cairn://p/rs/843 #4-#5). S2 rs/main/chat turns 6, 8, 10, 11, 13, 14, 17, 33, 38, 60, 75, 76, 130, 149; cairn://p/rs/9, rs/5, rs/47; wine.rs2 lines 8 and 22; charge.rs2 lines 8-12; cairn://p/rs/tenets/6. S3 rs/main/chat turns 223-229, 239, 245, 945-946, 1089-1092, 2873, 2876; cairn://p/rs/186/1/coordinator/messages 17:16:48-17:33:04 PDT 22 Oct and its provider_change at 16:54:34 PDT; cairn://p/rs/tenets/12; pages/v3-data/summary.json (day_usd, total 17,679.12; the 479-turn concurrency figure is withdrawn: it counted turns held open by idle sessions; the activity series is pages/v3-data/swarm-activity.json, distinct runs with a model-output event per 5-minute bucket, peak 87 at Fri 23 Oct 15:07 PDT, Thursday peak 61; subscriptions: six Claude Max plans by the end plus one ChatGPT Pro plan, $1,400 a month, prorated over the 5.57-day window to about $256 (operator, cairn://p/rune/main/chat 26 Oct 15:44 PDT)); extract/event-graph-v2.json counted by Pacific calendar day (pages/v3-data/swarm-days-pacific.json: Thu 22 Oct 269 spawns, 8,840 messages). S4 work/attempts-timeline.json A1-A4 and R3; cairn://p/rs/main/messages 23 Oct 17:40-17:49Z; rs/main/chat turns 1649-1669, 1806, ~2011, 2276-2285; cairn://p/rs/642; rs/761. S5 timeline A5; cairn://p/rs/843 #2-#37; rs/host/chat lines 9909-11463; rs/185/2/coordinator/chat lines 4012-4027; rs/main/chat lines 28356-29351; rs/847, rs/849, rs/850. S6 cairn://p/rs/main/chat/raw and host/chat/raw sequences listed in digs/section-6.md (anchor: host raw seq 761 createdAt 1792986043 = 03:40:43.623Z); cairn://p/rs/main/messages 25 Oct 20:28-21:11 PDT and 26 Oct 03:20-04:15 PDT; cairn://p/rs/158/2/coordinator/messages 03:45:18Z; cairn://p/rs/tenets/39; cairn://p/rs/843 #48-#56; main's model id claude-fable-5-1 on every main event in run 210700d0; the operator's account of the night: cairn://p/rune/main/chat 26 Oct 16:17 PDT, polished for spelling and sentence shape with the operator's approval (16:18 PDT); operator typos in quoted lines corrected at the operator's request (16:18 PDT).
 
-Numbers I did NOT use because I could not source them: the exact login instant of attempt 5; the rehearsal's final playtime; how the 562 ticks split; the exact second of attempt 4's death.
+Numbers I did NOT use because I could not source them: the exact login instant of attempt 5; the rehearsal's final playtime; the exact second of attempt 4's death.

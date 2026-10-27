@@ -1,4 +1,4 @@
-import { AUTHOR } from '../lib/site';
+import { AUTHOR, type PagePath } from '../lib/site';
 import type { DraftSection, Story, StoryBlock } from './draft';
 
 /** Words that link out, and where to. */
@@ -37,10 +37,10 @@ export function storyByline(byline: string): StoryByline {
 export type StoryFigure =
   /** The record against this run, in ticks. */
   | { kind: 'ladder' }
-  /** A 10-15 s clip from data/clips.json; with no id yet, a slot that links to the tricks page. */
-  | { kind: 'clip'; id?: string }
-  /** The cost page's day chart, linked. */
-  | { kind: 'cost' }
+  /** A 10-15 s clip from data/clips.json. */
+  | { kind: 'clip'; id: string }
+  /** A line in a figure's space that links, in the app, to another of the site's pages; the page sets an arrow after `text`. */
+  | { kind: 'link'; to: PagePath; text: string }
   /** The timeline chart of every attempt's logged-in time, cropped to the section's hours (instants given in UTC; the chart reads Pacific). */
   | { kind: 'timeline'; crop: readonly [string, string] }
   /**
@@ -91,7 +91,7 @@ export const SECTION_META: readonly SectionMeta[] = [
     figures: [
       // The section's first trick on screen in the run itself, then the link to the rest of them.
       { figure: { kind: 'clip', id: 'wine-relog' }, after: 'wine left in the bank ferments on a timer' },
-      { figure: { kind: 'clip' }, after: 'wine left in the bank ferments on a timer' },
+      { figure: { kind: 'link', to: '/tricks', text: 'The tricks, measured' }, after: 'wine left in the bank ferments on a timer' },
     ],
     pulled: [],
     links: [],
@@ -100,7 +100,7 @@ export const SECTION_META: readonly SectionMeta[] = [
     id: 'the-swarm',
     dates: '21–22 Oct',
     // The usage limits run through the whole section, out to host's answer that closes it, so the cost link comes last.
-    figures: [{ figure: { kind: 'cost' }, after: 'Those are written handoffs, not a direct view of my internal reasoning' }],
+    figures: [{ figure: { kind: 'link', to: '/cost', text: 'What each day cost' }, after: 'Those are written handoffs, not a direct view of my internal reasoning' }],
     pulled: [],
     links: [],
   },
@@ -108,6 +108,8 @@ export const SECTION_META: readonly SectionMeta[] = [
     id: 'four-attempts',
     dates: '23–24 Oct',
     figures: [
+      // The plan, step by step, as the attempts to run it begin: after attempt 1's paragraph.
+      { figure: { kind: 'link', to: '/route', text: 'The route, step by step' }, after: 'but by then the run was lost' },
       { figure: { kind: 'timeline', crop: ['2026-10-23T17:00Z', '2026-10-24T17:00Z'] }, after: 'ok fine one more attempt' },
       // Attempt 4's death at the Grand Tree door, which the paragraph before the quotation narrates.
       { figure: { kind: 'clip', id: 'attempt-4-death' }, after: 'ok fine one more attempt' },
