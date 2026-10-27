@@ -70,7 +70,7 @@
     "kind": "game-mechanic exploit",
     "group": "game",
     "what_normally": "Pickpocketing a knight sometimes fails, and a failure stuns the thief for 11 ticks in which they cannot steal.",
-    "what_instead": "In the run each stocked stun cast Superheat Item on ore twice, then Charge, then fletched arrows, while a courier beside the knights brought the ore, food and arrowheads; Magic and Fletching both reached 99 inside the Thieving step. The lab measured the first form, three bone burials with Charge and arrows in every stun: Thieving took no longer, and 470 to 510 ticks of other work moved inside it.",
+    "what_instead": "In the run each stocked stun cast Superheat Item on ore twice, then Charge, then fletched arrows, while a courier beside the knights traded in the first load of runes and ore but never managed a top-up, so Superheat ran out of ore at Smithing 41; Magic and Fletching both reached 99 inside the Thieving step. The lab measured the first form, three bone burials with Charge and arrows in every stun: Thieving took no longer, and 470 to 510 ticks of other work moved inside it.",
     "why_allowed": "The stun blocks stealing, not burying, casting or fletching.",
     "saving": {
       "label": "Ticks to train Thieving from 57 to 99",
@@ -95,6 +95,7 @@
       "rs-sdk speedrun/runner/chain.ts line 1190 at the run commit 10215624 (S18: the stun pack with Superheat, 2 casts a stun, and Charge unlocked)",
       "rs-sdk speedrun/skills/thieving.ts lines 45-90 at 10215624 (the pack, and its Superheat form in place of the burials)",
       "cairn://p/rs/host/messages, 25 Oct 09:36Z (the courier's asks: copper, tin, iron, sharks and arrow tips; Magic 99 and Fletching 99 at the stop)",
+      "data/route-log.json, attempt 5's fourth runner launch: one hand-off at the knights' anchor before the Thieving band, no top-up interval in its 2,223 ticks, and Smithing 41 at its last Superheat level-up",
       "the run host’s screen recording of attempt 5, 25 Oct 09:18:44-09:20:06Z, cropped to the game canvas (the courier's trade, stuns, Charge, Smithing levels from Superheat, Magic 99)",
       "the run host’s screen recording of attempt 5, 25 Oct 09:18:44-09:18:59Z, cropped to the game canvas (the clip: Magic 82 to 84, Smithing 4 to 7)"
     ],
