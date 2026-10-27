@@ -1,28 +1,27 @@
-import { useEffect, useMemo, useRef, type PointerEvent } from 'react';
 import { countWord } from '../../lib/numbers';
 import { fmtDuration, fmtPacificHm, fmtPacificWeekday } from '../../lib/time';
-import { axisAt, AXIS_GAP, type HarnessModel, type Phase } from '../model';
-import { keysLabel, travelSpan, usePlayer } from '../player';
-import { EASE_OUT, NARROW, TRAVEL_MS, useChartWidth } from './frame';
+import { axisAt, AXIS_GAP, type HarnessModel } from '../model';
+import { NARROW, useChartWidth } from './frame';
 import styles from './Figures.module.css';
 
 const H = 258;
 const LEFT = 46;
 const RIGHT = 10;
 const Y = { recipe: 26, source: 74, turn: 98, read: 122, run: 140, write: 158, pr: 182, axis: 222 };
-/** Playback length at full speed: long enough to read the status word at each phase. */
-const DURATION = 11_000;
 const LANES = ['read', 'run', 'write'] as const;
 
-const PHASE_WORD = (p: Phase, pr: number) => ({ held: 'held', running: 'running', open: `PR #${pr} open`, merged: 'merged' })[p];
-const PHASE_BUTTON = (p: Phase) => ({ held: 'held', running: 'running', open: 'PR open', merged: 'merged' })[p];
+/** A run of wakes' label: what woke those turns. */
+function wakeLabel(source: string, count: number, narrow: boolean): string {
+  if (source === 'tests') return narrow ? 'tests done' : `${countWord(count)} test runs finishing`;
+  if (source === 'command') return narrow ? 'command' : 'a command finishing';
+  return narrow ? source : `messages from ${source}, the coordinator`;
+}
 
 /**
  * rs/843 from filing to merge on a three-part broken axis: the 27 hours it was held, compressed;
  * the builder's hour, expanded, with its turns, verb calls and pull-request versions; and the
- * wait for merge, compressed. Above it, the recipe its execution ran, with the node that holds the
- * issue lit. Played, a playhead crosses it; each turn after the first begins with a wake, which
- * drops into the builder's lane from what sent it.
+ * wait for merge, compressed. Above it, the recipe its execution ran. Each turn after the first
+ * carries a mark for the wake that began it, and the marks are labelled by what sent them.
  */
 export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
   const [ref, width] = useChartWidth();
@@ -32,46 +31,6 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
   const x1 = width - RIGHT;
   const X = (f: number) => x0 + f * (x1 - x0);
   const at = (t: number) => X(axisAt(i.segments, t));
-  const tl = useMemo(() => ({ duration: DURATION, marks: i.marks }), [i]);
-  const head = useRef<HTMLDivElement>(null);
-  const player = usePlayer(tl, (f) => {
-    if (head.current) head.current.style.transform = `translateX(${X(f)}px)`;
-  });
-  const { state, reduced } = player;
-  const f = state.t;
-  const reached = (t: number) => axisAt(i.segments, t) <= f + 1e-9;
-  const phase = i.phases.reduce((k, p, j) => (reached(p.at) ? j : k), 0);
-
-  // A wake travels when the playhead crosses its turn's start in play or by the Step button.
-  // The keyboard, a scrub or a jump snaps, and settles any wake still dropping.
-  const wakeEls = useRef(new Map<number, SVGGElement>());
-  useEffect(() => {
-    const span = travelSpan(state, reduced);
-    const markers = (n: number) => [...(wakeEls.current.get(n)?.querySelectorAll<SVGElement>('[data-from]') ?? [])];
-    if (!span) {
-      for (const tn of i.turns) for (const el of markers(tn.n)) el.getAnimations().forEach((a) => a.cancel());
-      return;
-    }
-    for (const tn of i.turns) {
-      const pos = axisAt(i.segments, tn.start);
-      if (!tn.wake || pos <= span[0] || pos > span[1] + 1e-9) continue;
-      for (const el of markers(tn.n)) {
-        el.getAnimations().forEach((a) => a.cancel());
-        el.animate([{ transform: `translateY(${Number(el.dataset.from)}px)`, opacity: 0.2 }, { transform: 'translateY(0)', opacity: 1 }], {
-          duration: TRAVEL_MS,
-          easing: EASE_OUT,
-        });
-      }
-    }
-    // Keyed on the rendered state alone: a reduced-motion change must not drop a wake again.
-  }, [state, i]);
-
-  const scrub = (e: PointerEvent<SVGSVGElement>) => {
-    if (e.type === 'pointermove' && !e.currentTarget.hasPointerCapture(e.pointerId)) return;
-    if (e.type === 'pointerdown') e.currentTarget.setPointerCapture(e.pointerId);
-    const box = e.currentTarget.getBoundingClientRect();
-    player.seek((e.clientX - box.left - x0) / (x1 - x0), 'scrub');
-  };
 
   const recipeGap = narrow ? 64 : 104;
   const recipeX = (k: number) => (narrow ? x1 - 2 * recipeGap - 14 : (x0 + x1) / 2 + 40) + k * recipeGap;
@@ -79,68 +38,41 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
   const held = seg.held!;
   const work = seg.work!;
   const wait = seg.wait!;
-  const workX = (t: number) => at(t);
   const axisLabels: { x: number; text: string; anchor: 'start' | 'middle' | 'end'; y?: number }[] = [
     { x: X(held.offset), text: `${fmtPacificWeekday(i.filed).slice(0, 3)} ${fmtPacificHm(i.filed)}`, anchor: 'start' },
     // The held span is named above its own stretch of axis, clear of the clock times below it.
     { x: X(held.offset + held.share / 2), text: `held ${fmtDuration(i.heldMs)}`, anchor: 'middle', y: Y.axis - 6 },
     { x: X(work.offset), text: `${fmtPacificWeekday(i.start).slice(0, 3)} ${fmtPacificHm(i.start)}`, anchor: 'start' },
-    { x: workX(i.prOpened), text: fmtPacificHm(i.prOpened), anchor: 'middle' },
-    { x: workX(i.end), text: fmtPacificHm(i.end), anchor: 'middle' },
+    { x: at(i.prOpened), text: fmtPacificHm(i.prOpened), anchor: 'middle' },
+    { x: at(i.end), text: fmtPacificHm(i.end), anchor: 'middle' },
     { x: X(wait.offset + wait.share), text: fmtPacificHm(i.merged), anchor: 'end' },
   ];
   const breaks = [held.offset + held.share + AXIS_GAP / 2, work.offset + work.share + AXIS_GAP / 2].map(X);
+  // Wake labels sit on one line above the turns. The first run's label ends at its last mark, into
+  // the room over the long first turn; the others start at their first mark.
+  const bracketY = Y.source + 6;
+  const markTop = Y.turn - 12;
 
   return (
-    <div
-      ref={(el) => {
-        ref(el);
-        player.ref(el);
-      }}
-      className={`${styles.root} ${styles.player}`}
-      role="group"
-      tabIndex={0}
-      aria-label={`${label}. ${keysLabel(reduced)}`}
-      aria-keyshortcuts="Space ArrowLeft ArrowRight Home End"
-      onKeyDown={player.onKeyDown}
-    >
-      <div className={styles.stage}>
-      <svg
-        className={`${styles.svg} ${styles.scrub}`}
-        width={width}
-        height={H}
-        role="img"
-        aria-label={label}
-        onPointerDown={scrub}
-        onPointerMove={scrub}
-      >
-        {/* The recipe the execution ran, the node holding the issue lit */}
-        <text className={styles.status} x={0} y={Y.recipe + 4}>
-          {PHASE_WORD(i.phases[phase]!.key, i.pr)}
-        </text>
-        <text className={styles.lane} x={0} y={Y.recipe + 18}>
-          status
+    <div ref={ref} className={styles.root}>
+      <svg className={styles.svg} width={width} height={H} role="img" aria-label={label}>
+        {/* The recipe the execution ran */}
+        <text className={styles.lane} x={0} y={Y.recipe + 3}>
+          recipe
         </text>
         <line className={styles.inkLine} x1={recipeX(0)} x2={recipeX(i.recipe.length - 1)} y1={Y.recipe} y2={Y.recipe} />
-        {i.recipe.map((n, k) => {
-          const merged = i.phases[phase]!.key === 'merged';
-          const on = !merged && k === phase;
-          const done = merged || k < phase;
-          return (
-            <g key={n.name}>
-              <circle className={styles.hollow} cx={recipeX(k)} cy={Y.recipe} r={6.5} />
-              <circle className={`${styles.ink} ${styles.fade}`} cx={recipeX(k)} cy={Y.recipe} r={6.5} opacity={done ? 1 : 0} />
-              <circle className={`${styles.accent} ${styles.fade}`} cx={recipeX(k)} cy={Y.recipe} r={6.5} opacity={on ? 1 : 0} />
-              <text className={styles.lane} x={recipeX(k)} y={Y.recipe + 22} textAnchor="middle">
-                {n.type === 'pr' ? 'pull request' : n.name.toLowerCase()}
-              </text>
-            </g>
-          );
-        })}
+        {i.recipe.map((n, k) => (
+          <g key={n.name}>
+            <circle className={styles.hollow} cx={recipeX(k)} cy={Y.recipe} r={6.5} />
+            <text className={styles.lane} x={recipeX(k)} y={Y.recipe + 22} textAnchor="middle">
+              {n.type === 'pr' ? 'pull request' : n.name.toLowerCase()}
+            </text>
+          </g>
+        ))}
 
         {/* Lanes */}
         <text className={styles.lane} x={0} y={Y.source + 3}>
-          {i.reviewer}
+          woken by
         </text>
         <text className={styles.lane} x={0} y={Y.turn + 3}>
           turns
@@ -153,7 +85,6 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
             </text>
           </g>
         ))}
-        <line className={styles.hair} x1={X(work.offset)} x2={X(work.offset + work.share)} y1={Y.source} y2={Y.source} />
         <text className={styles.lane} x={0} y={Y.pr + 3}>
           PR
         </text>
@@ -190,25 +121,40 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
           merged
         </text>
 
-        {/* Wakes: what began each turn after the first */}
+        {/* Wakes: what began each turn after the first, a mark on the turn and a label above */}
         {i.turns.map((tn) =>
           tn.wake ? (
-            <g
-              key={tn.n}
-              ref={(el) => {
-                if (el) wakeEls.current.set(tn.n, el);
-                else wakeEls.current.delete(tn.n);
-              }}
-            >
+            <g key={tn.n}>
               {tn.wake.kind !== 'message' && (
-                <rect data-from={Y.run - Y.turn} className={styles.accent} x={at(tn.start) - 2.75} y={Y.turn - 9.5} width={5.5} height={5.5} />
+                <rect className={styles.accent} x={at(tn.start) - 2.75} y={Y.turn - 9.5} width={5.5} height={5.5} />
               )}
               {tn.wake.kind !== 'batch' && (
-                <circle data-from={Y.source - Y.turn} className={styles.accent} cx={at(tn.start) + (tn.wake.kind === 'both' ? 6 : 0)} cy={Y.turn - 7} r={2.9} />
+                <circle className={styles.accent} cx={at(tn.start) + (tn.wake.kind === 'both' ? 6 : 0)} cy={Y.turn - 7} r={2.9} />
               )}
             </g>
           ) : null,
         )}
+        {i.wakeRuns.map((w, k) => {
+          const xs = w.turns.map((tn) => at(tn.start));
+          const first = xs[0]!;
+          const last = xs.at(-1)!;
+          return (
+            <g key={k}>
+              <line className={styles.hair} x1={first} x2={last} y1={bracketY} y2={bracketY} />
+              {xs.map((x) => (
+                <line key={x} className={styles.hair} x1={x} x2={x} y1={bracketY} y2={markTop} />
+              ))}
+              <text
+                className={styles.tick}
+                x={k === 0 ? last + 2 : first - 2}
+                y={Y.source + 2}
+                textAnchor={k === 0 ? 'end' : 'start'}
+              >
+                {wakeLabel(w.source, w.turns.length, narrow)}
+              </text>
+            </g>
+          );
+        })}
 
         {/* The axis, broken twice */}
         {i.segments.map((s) => (
@@ -222,42 +168,7 @@ export function IssueLife({ m, label }: { m: HarnessModel; label: string }) {
             {l.text}
           </text>
         ))}
-
       </svg>
-      {/* The playhead, and the veil over what is ahead of it: an HTML layer of its own, moved by
-          transform each frame without repainting the chart beneath. */}
-      <div
-        ref={head}
-        className={styles.headLayer}
-        aria-hidden="true"
-        style={{ top: Y.source - 14, height: Y.axis + 18 - Y.source, transform: `translateX(${X(f)}px)`, opacity: state.started ? 1 : 0 }}
-      >
-        <div className={styles.veilBox} style={{ top: 2, height: Y.pr + 18 - Y.source }} />
-        <div className={styles.headLine} />
-      </div>
-      </div>
-      <div className={styles.controls}>
-        {reduced ? (
-          i.phases.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              className={styles.button}
-              aria-pressed={i.phases[phase]!.key === p.key}
-              onClick={() => player.seek(axisAt(i.segments, p.at), 'jump')}
-            >
-              {PHASE_BUTTON(p.key)}
-            </button>
-          ))
-        ) : (
-          <button type="button" className={styles.button} onClick={player.toggle}>
-            {state.playing ? 'Pause' : state.started && f >= 1 ? 'Replay' : 'Play'}
-          </button>
-        )}
-        <span className={styles.hint}>
-          {reduced ? 'or Space and the arrow keys, event by event' : 'drag across it to scrub; the arrow keys step event by event'}
-        </span>
-      </div>
       <p className={styles.key}>
         <span>
           <svg width={8} height={8} aria-hidden="true">

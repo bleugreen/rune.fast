@@ -7,34 +7,6 @@
   overflow: visible;
   font-family: var(--font-sans);
 }
-/* A played chart with a moving layer over it; the veil runs off the right edge and is clipped there. */
-.stage {
-  position: relative;
-  overflow: hidden;
-}
-.headLayer {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  pointer-events: none;
-  will-change: transform;
-}
-.veilBox {
-  position: absolute;
-  left: 0.5px;
-  width: 100%;
-  background: var(--paper);
-  opacity: 0.74;
-}
-.headLine {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -0.5px;
-  width: 1px;
-  background: var(--accent);
-}
-
 /* Type inside the charts */
 .tick {
   font-size: 10px;
@@ -63,11 +35,6 @@
 }
 .note {
   font-size: 10.5px;
-  font-weight: 600;
-  fill: var(--accent);
-}
-.status {
-  font-size: 13px;
   font-weight: 600;
   fill: var(--accent);
 }
@@ -126,53 +93,10 @@
   stroke-width: var(--stroke-thin);
 }
 
-/* Motion: opacity and transform only. Under reduced motion nothing travels, and a state
-   change is a short opacity change (base.css zeroes other transitions). */
+/* Motion: opacity and transform only. Under reduced motion the routing figure does not play,
+   and base.css zeroes other transitions. */
 .fade {
   transition: opacity 160ms ease-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .fade {
-    transition: opacity 120ms ease-out 0s !important;
-  }
-}
-
-/* A played figure: focusable, scrubbable, with its controls beneath */
-.player {
-  outline-offset: 6px;
-}
-.scrub {
-  touch-action: pan-y;
-  cursor: ew-resize;
-}
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-  font-family: var(--font-sans);
-  font-size: var(--label);
-  color: var(--ink-muted);
-}
-.button {
-  font: inherit;
-  font-weight: 500;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--ink);
-  background: none;
-  border: var(--stroke-thin) solid var(--ink);
-  border-radius: 0;
-  padding: 0.3rem 0.7rem;
-  cursor: pointer;
-}
-.button[aria-pressed='true'] {
-  color: var(--paper);
-  background: var(--ink);
-}
-.hint {
-  margin-left: var(--space-2);
 }
 
 /* Fig 1: the address, typeset */

@@ -206,7 +206,7 @@ export function HarnessPage() {
         </p>
         <Figure
           title={titles.issue}
-          sub="The time axis is broken twice: the hours held and the wait for merge are squeezed, the builder’s hour stretched. Press Play to light the recipe node that holds the issue."
+          sub="The time axis is broken twice: the hours held and the wait for merge are squeezed, the builder’s hour stretched. The mark above a turn shows what woke the builder for it."
         >
           <IssueLife m={m} label={titles.issue} />
         </Figure>

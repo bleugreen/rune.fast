@@ -8,9 +8,9 @@ export const NARROW = 560;
 /** The page's one curve for things that travel: a strong ease-out, so motion lands rather than drifts. */
 export const EASE_OUT = 'cubic-bezier(0.22, 1, 0.36, 1)';
 /**
- * How long a travelling dot takes along its edge. Longer than a UI transition on purpose: these are
- * explanations the reader starts, seen once a visit, and the eye has to follow the dot from sender
- * to recipient across most of the figure.
+ * How long a travelling dot takes along its edge. Longer than a UI transition on purpose: the dot
+ * is an explanation, not feedback, and the eye has to follow it from sender to recipient across
+ * most of the figure.
  */
 export const TRAVEL_MS = 600;
 /** Between the dots of one fan-out. */
