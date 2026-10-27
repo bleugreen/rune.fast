@@ -1,0 +1,12 @@
+{
+  "script": "speedrun/skills/woodcutting.ts",
+  "opts": { "technique": "knife", "route": "taverley", "to": 99, "bury": true, "prayerTo": 0 },
+  "setup": {
+    "clearInventory": true,
+    "stats": { "woodcutting": 73, "prayer": 70, "attack": 70, "strength": 70, "defence": 70, "hitpoints": 70 },
+    "give": { "rune_axe": 1, "knife": 1, "logs": 1, "bones": 20 },
+    "tele": [2920, 3406, 0],
+    "settleTicks": 5
+  },
+  "seconds": 50
+}

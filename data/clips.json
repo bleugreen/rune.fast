@@ -92,6 +92,53 @@
     "ticks": [[0,58],[386,59],[784,60],[1186,61],[1585,62],[1985,63],[2384,64],[2785,65],[3184,66],[3585,67],[3996,68],[4389,69],[4790,70],[5190,71],[5591,72],[5991,73],[6394,74],[6797,75],[7195,76],[7596,77],[7995,78],[8397,79],[8796,80],[9195,81],[9594,82],[9996,83]]
   },
   {
+    "id": "lab-bury",
+    "kind": "video",
+    "src": "clips/lab-bury.7491e53e.mp4",
+    "bytes": 434607,
+    "poster": "/clips/lab-bury.jpg",
+    "width": 764,
+    "height": 502,
+    "seconds": 13,
+    "caption": "Chopping at the Taverley willows with the inventory open. Every third tick the bot buries a bone (“You dig a hole in the ground… You bury the bones.”) and the axe keeps swinging: 11 bones in 13 seconds, the pack going from 19 to 8 while the willow logs keep coming. The swarm’s own woodcutting step, re-run in the lab on a local server.",
+    "recorded": [
+      "2026-10-27T02:53:51Z",
+      "2026-10-27T02:54:04Z"
+    ],
+    "step": "The willow band, rehearsed",
+    "source": {
+      "label": "lab film",
+      "commit": "4f62822f0fa2a0f320abedba7fc473776c5b408d",
+      "note": "The lab capture of speedrun/skills/woodcutting.ts burying in the knife loop, staged on a fresh account at the willow stand with Woodcutting 73, Prayer 70, the axe, the knife, one normal log and 20 bones, 8.0 s to 21.0 s into the capture; the counter is the server tick its trace records."
+    },
+    "trace": "rune-fast lab/films/takes/bury/trace.jsonl",
+    "ticks": [[0,80],[386,81],[787,82],[1188,83],[1591,84],[1991,85],[2391,86],[2794,87],[3193,88],[3594,89],[3995,90],[4393,91],[4795,92],[5195,93],[5595,94],[5995,95],[6394,96],[6794,97],[7196,98],[7597,99],[7998,100],[8399,101],[8799,102],[9198,103],[9599,104],[10002,105],[10401,106],[10807,107],[11203,108],[11605,109],[12003,110],[12405,111],[12805,112]]
+  },
+  {
+    "id": "lab-bank-pair",
+    "kind": "video",
+    "pair": true,
+    "src": "clips/lab-bank-pair.043ef1c0.mp4",
+    "bytes": 204650,
+    "poster": "/clips/lab-bank-pair.jpg",
+    "width": 880,
+    "height": 596,
+    "seconds": 12,
+    "caption": "The same 24 kinds of item deposited twice into an open bank, shown side by side from the first click. Left, the standard bot library: one deposit a tick, and the pack is empty on tick 24. Right, the swarm’s library: the bot hands over all 24 deposits in the first tick, the server works through them five a tick, and the pack is empty on tick 5. The swarm’s own code, re-run in the lab on a local server.",
+    "recorded": [
+      "2026-10-27T02:58:58Z",
+      "2026-10-27T02:59:37Z"
+    ],
+    "step": "A bank deposit, rehearsed",
+    "source": {
+      "label": "lab film",
+      "commit": "4f62822f0fa2a0f320abedba7fc473776c5b408d",
+      "note": "One lab capture at the Varrock west bank of speedrun/lab/measure-bank.ts’s two deposits, the stock bot.depositItem(/./, -1) and speedrun/lib/bank.ts depositAll, run on the same 24 items by rune-fast lab/films/bank-pair.ts. Each side is the inventory panel, cropped and doubled, from the tick its first deposit went out in: 12.0 s and 38.4 s into the capture. The counter is server ticks since that tick."
+    },
+    "trace": "rune-fast lab/films/takes/bank/trace.jsonl",
+    "ticks": [[0,0],[396,1],[803,2],[1199,3],[1598,4],[1998,5],[2399,6],[2799,7],[3198,8],[3599,9],[3999,10],[4401,11],[4801,12],[5201,13],[5602,14],[6003,15],[6404,16],[6803,17],[7204,18],[7605,19],[8006,20],[8406,21],[8806,22],[9209,23],[9609,24],[10009,25],[10408,26],[10808,27],[11211,28],[11610,29]]
+  },
+  {
     "id": "finish-rekit",
     "kind": "video",
     "src": "clips/finish-rekit.6f9c2b21.mp4",

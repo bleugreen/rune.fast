@@ -76,11 +76,13 @@ describe('the data', () => {
     expect(clips.filter((c, i) => clips.indexOf(c) !== i)).toEqual([]);
   });
 
-  test('the level-up, cannon and trade cards carry their clips', () => {
+  test('the level-up, cannon, trade, bury and bank cards carry their clips', () => {
     const byId = new Map(TRICKS.map((t) => [t.id, t]));
     expect(byId.get('level-up-dismissal')!.clip).toBe('levelup-firemaking');
     expect(byId.get('cannon')!.clip).toBe('finish-cannon');
     expect(byId.get('batched-trade')!.clip).toBe('finish-rekit');
+    expect(byId.get('bury-in-knife-loop')!.clip).toBe('lab-bury');
+    expect(byId.get('batched-bank')!.clip).toBe('lab-bank-pair');
   });
 });
 

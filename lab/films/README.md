@@ -10,6 +10,8 @@ operator's checkout). Each film writes `clip.mp4`, `trace.jsonl`, `feed.jsonl` a
 | `aereck.json` | `speedrun/lab/quests/aereck-burst.ts --lab --client=browser --talks=4` | Father Aereck's default conversation, alternating read page by page (1 tick a page) and in bursts of blind continues |
 | `relog.json` + `relog-bank.ts` | `speedrun/lib/session.ts` `relog`, then `speedrun/helpers/wine-receive.ts` `openBankThroughPages`, as the Cooking step makes them | the same-page relog: logout button, in-page login, back in the world, the bank opening |
 | `tutorial-skip.json` | `speedrun/skills/start.ts` (step module), setup `leaveTutorial: false` | a fresh account skipping Tutorial Island |
+| `bury.json` | `speedrun/skills/woodcutting.ts` (step module), `technique: knife`, `bury: true`, Woodcutting 73 with 20 bones at the Taverley willows | a bone buried every third tick while the chopping goes on, inventory tab open (`lab-bury`) |
+| `bank.json` + `bank-pair.ts` | `speedrun/lab/measure-bank.ts`'s two deposits: stock `bot.depositItem(/./, -1)`, then `speedrun/lib/bank.ts` `depositAll`, on the same 24 items | the two deposits, delivered side by side from their first clicks (`lab-bank-pair`, a `pair` in `data/clips.json`) |
 | `willow-knife.json` | `speedrun/skills/woodcutting.ts` (step module), `technique: knife`, Woodcutting 73 at the Taverley willows | the knife-on-logs reset, inventory tab open. Not placed: in two takes (26 Oct) the fletching menu never draws, frame by frame at 12.5 fps, because the knife and the tree click land in the same tick; only the chop rhythm shows. This lab engine also pays about 25 times the xp a log, so level-up pages come often |
 
 `aereck-burst.ts` attaches to the film tool's tab when given `--client=browser` without `--launch`.
@@ -33,7 +35,12 @@ film/film.sh filmaer2 --clip=$FILMS/aereck.json --out=film/out/aereck
 film/film.sh filmrelog4 --clip=$FILMS/relog.json --script=$FILMS/relog-bank.ts --out=film/out/relog
 film/film.sh filmwillow1 --clip=$FILMS/willow-knife.json --out=film/out/willow-knife
 film/film.sh filmtut2 --clip=$FILMS/tutorial-skip.json --out=film/out/tutorial-skip
+film/film.sh filmbury1 --clip=$FILMS/bury.json --out=film/out/bury1
+film/film.sh filmbank2 --clip=$FILMS/bank.json --script=$FILMS/bank-pair.ts --out=film/out/bank2
 ```
+
+Then, from this repository's root, `bun lab/films/deliver.ts <clip dirs> <mirror> [id,...]` cuts and
+hashes what the site places (naming ids re-delivers only those, leaving the others' content keys alone).
 
 `$FILMS` is this directory, copied somewhere stable. Each bot name must be new to the lab's save
 state: the tutorial film needs an account still on Tutorial Island.

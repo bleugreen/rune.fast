@@ -1,0 +1,265 @@
+{"kind":"start","ms":1793069623336,"clientTick":34,"x":2920,"z":3406,"plane":0,"skills":{"Attack":{"level":70,"xp":133230},"Defence":{"level":70,"xp":133230},"Strength":{"level":70,"xp":133230},"Hitpoints":{"level":70,"xp":133230},"Ranged":{"level":1,"xp":0},"Prayer":{"level":70,"xp":133230},"Magic":{"level":1,"xp":0},"Cooking":{"level":1,"xp":0},"Woodcutting":{"level":73,"xp":164200},"Fletching":{"level":1,"xp":0},"Fishing":{"level":1,"xp":0},"Firemaking":{"level":1,"xp":0},"Crafting":{"level":1,"xp":0},"Smithing":{"level":1,"xp":0},"Mining":{"level":1,"xp":0},"Herblore":{"level":1,"xp":0},"Agility":{"level":1,"xp":0},"Thieving":{"level":1,"xp":0},"Stat18":{"level":1,"xp":0},"Stat19":{"level":1,"xp":0},"Runecraft":{"level":1,"xp":0}},"videoMs":0,"tick":60}
+{"kind":"pos","ms":1793069623738,"clientTick":35,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":372.831787109375,"tick":61}
+{"kind":"pos","ms":1793069624138,"clientTick":36,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":772.831787109375,"tick":62}
+{"kind":"pos","ms":1793069624542,"clientTick":37,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":1176.831787109375,"tick":63}
+{"kind":"pos","ms":1793069624940,"clientTick":38,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":1574.831787109375,"tick":64}
+{"kind":"action","ms":1793069624946,"clientTick":38,"bot":"filmbury1","action":"program","args":{"type":"program","op":"start","name":"knife-cycle","params":{"method":"willow","trees":[[2918,3405],[2919,3407],[2921,3405]],"untilLevel":99,"reanchor":"xp","dismiss":"now","bury":true,"waitRespawn":true,"technique":"knife"},"reason":"speedrun"},"file":"speedrun/skills/woodcutting.ts","line":1492,"col":40,"fn":"<anonymous>","site":"script","stack":[{"fn":"<anonymous>","file":"speedrun/runner/budget.ts","line":104,"col":19},{"fn":"startProgram","file":"speedrun/lib/programs.ts","line":116,"col":21},{"fn":"runGatedProgram","file":"speedrun/lib/gated-program.ts","line":215,"col":31},{"fn":"<anonymous>","file":"speedrun/skills/woodcutting.ts","line":1492,"col":40},{"fn":"deathWatched","file":"speedrun/runner/step.ts","line":171,"col":23},{"fn":"measure","file":"speedrun/lib/ticks.ts","line":128,"col":24},{"fn":"runSteps","file":"speedrun/runner/step.ts","line":357,"col":23}],"videoMs":1580.831787109375,"tick":64}
+{"kind":"pos","ms":1793069625342,"clientTick":39,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":1976.831787109375,"tick":65}
+{"kind":"pos","ms":1793069625745,"clientTick":40,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":2379.831787109375,"tick":66}
+{"kind":"pos","ms":1793069626155,"clientTick":41,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":2789.831787109375,"tick":67}
+{"kind":"chat","ms":1793069626155,"clientTick":41,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":2789.831787109375,"tick":67}
+{"kind":"pos","ms":1793069626545,"clientTick":42,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":3179.831787109375,"tick":68}
+{"kind":"pos","ms":1793069626946,"clientTick":43,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":3580.831787109375,"tick":69}
+{"kind":"pos","ms":1793069627344,"clientTick":44,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":3978.831787109375,"tick":70}
+{"kind":"pos","ms":1793069627745,"clientTick":45,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":4379.831787109375,"tick":71}
+{"kind":"pos","ms":1793069628145,"clientTick":46,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":4779.831787109375,"tick":72}
+{"kind":"pos","ms":1793069628550,"clientTick":47,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":5184.831787109375,"tick":73}
+{"kind":"xp","ms":1793069628550,"clientTick":47,"skill":"Woodcutting","xp":165887,"delta":1687,"level":73,"videoMs":5184.831787109375,"tick":73}
+{"kind":"chat","ms":1793069628550,"clientTick":47,"type":0,"sender":"","text":"You get some willow logs.","videoMs":5184.831787109375,"tick":73}
+{"kind":"pos","ms":1793069628947,"clientTick":48,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":5581.831787109375,"tick":74}
+{"kind":"pos","ms":1793069629348,"clientTick":49,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":5982.831787109375,"tick":75}
+{"kind":"pos","ms":1793069629748,"clientTick":50,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":6382.831787109375,"tick":76}
+{"kind":"pos","ms":1793069630152,"clientTick":51,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":6786.831787109375,"tick":77}
+{"kind":"xp","ms":1793069630152,"clientTick":51,"skill":"Woodcutting","xp":167575,"delta":1688,"level":73,"videoMs":6786.831787109375,"tick":77}
+{"kind":"chat","ms":1793069630152,"clientTick":51,"type":0,"sender":"","text":"You get some willow logs.","videoMs":6786.831787109375,"tick":77}
+{"kind":"pos","ms":1793069630579,"clientTick":52,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":7213.831787109375,"tick":78}
+{"kind":"chat","ms":1793069630579,"clientTick":52,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":7213.831787109375,"tick":78}
+{"kind":"pos","ms":1793069630951,"clientTick":53,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":7585.831787109375,"tick":79}
+{"kind":"xp","ms":1793069630951,"clientTick":53,"skill":"Prayer","xp":133342,"delta":112,"level":70,"videoMs":7585.831787109375,"tick":79}
+{"kind":"chat","ms":1793069630951,"clientTick":53,"type":0,"sender":"","text":"You bury the bones.","videoMs":7585.831787109375,"tick":79}
+{"kind":"pos","ms":1793069631358,"clientTick":54,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":7992.831787109375,"tick":80}
+{"kind":"xp","ms":1793069631358,"clientTick":54,"skill":"Woodcutting","xp":169262,"delta":1687,"level":73,"videoMs":7992.831787109375,"tick":80}
+{"kind":"chat","ms":1793069631358,"clientTick":54,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":7992.831787109375,"tick":80}
+{"kind":"chat","ms":1793069631358,"clientTick":54,"type":0,"sender":"","text":"You get some willow logs.","videoMs":7992.831787109375,"tick":80}
+{"kind":"pos","ms":1793069631774,"clientTick":55,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":8408.831787109375,"tick":81}
+{"kind":"chat","ms":1793069631774,"clientTick":55,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":8408.831787109375,"tick":81}
+{"kind":"pos","ms":1793069632154,"clientTick":56,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":8788.831787109375,"tick":82}
+{"kind":"xp","ms":1793069632154,"clientTick":56,"skill":"Prayer","xp":133455,"delta":113,"level":70,"videoMs":8788.831787109375,"tick":82}
+{"kind":"chat","ms":1793069632154,"clientTick":56,"type":0,"sender":"","text":"You bury the bones.","videoMs":8788.831787109375,"tick":82}
+{"kind":"pos","ms":1793069632560,"clientTick":57,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":9194.831787109375,"tick":83}
+{"kind":"chat","ms":1793069632560,"clientTick":57,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":9194.831787109375,"tick":83}
+{"kind":"pos","ms":1793069632978,"clientTick":58,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":9612.831787109375,"tick":84}
+{"kind":"chat","ms":1793069632978,"clientTick":58,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":9612.831787109375,"tick":84}
+{"kind":"pos","ms":1793069633357,"clientTick":59,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":9991.831787109375,"tick":85}
+{"kind":"xp","ms":1793069633357,"clientTick":59,"skill":"Prayer","xp":133567,"delta":112,"level":70,"videoMs":9991.831787109375,"tick":85}
+{"kind":"chat","ms":1793069633357,"clientTick":59,"type":0,"sender":"","text":"You bury the bones.","videoMs":9991.831787109375,"tick":85}
+{"kind":"pos","ms":1793069633761,"clientTick":60,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":10395.831787109375,"tick":86}
+{"kind":"chat","ms":1793069633761,"clientTick":60,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":10395.831787109375,"tick":86}
+{"kind":"pos","ms":1793069634178,"clientTick":61,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":10812.831787109375,"tick":87}
+{"kind":"chat","ms":1793069634178,"clientTick":61,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":10812.831787109375,"tick":87}
+{"kind":"pos","ms":1793069634560,"clientTick":62,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":11194.831787109375,"tick":88}
+{"kind":"xp","ms":1793069634560,"clientTick":62,"skill":"Prayer","xp":133680,"delta":113,"level":70,"videoMs":11194.831787109375,"tick":88}
+{"kind":"chat","ms":1793069634560,"clientTick":62,"type":0,"sender":"","text":"You bury the bones.","videoMs":11194.831787109375,"tick":88}
+{"kind":"pos","ms":1793069634967,"clientTick":63,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":11601.831787109375,"tick":89}
+{"kind":"xp","ms":1793069634967,"clientTick":63,"skill":"Woodcutting","xp":170950,"delta":1688,"level":73,"videoMs":11601.831787109375,"tick":89}
+{"kind":"chat","ms":1793069634967,"clientTick":63,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":11601.831787109375,"tick":89}
+{"kind":"chat","ms":1793069634967,"clientTick":63,"type":0,"sender":"","text":"You get some willow logs.","videoMs":11601.831787109375,"tick":89}
+{"kind":"pos","ms":1793069635381,"clientTick":64,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":12015.831787109375,"tick":90}
+{"kind":"chat","ms":1793069635381,"clientTick":64,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":12015.831787109375,"tick":90}
+{"kind":"pos","ms":1793069635759,"clientTick":65,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":12393.831787109375,"tick":91}
+{"kind":"xp","ms":1793069635759,"clientTick":65,"skill":"Prayer","xp":133792,"delta":112,"level":70,"videoMs":12393.831787109375,"tick":91}
+{"kind":"chat","ms":1793069635759,"clientTick":65,"type":0,"sender":"","text":"You bury the bones.","videoMs":12393.831787109375,"tick":91}
+{"kind":"pos","ms":1793069636169,"clientTick":66,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":12803.831787109375,"tick":92}
+{"kind":"chat","ms":1793069636169,"clientTick":66,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":12803.831787109375,"tick":92}
+{"kind":"pos","ms":1793069636576,"clientTick":67,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":13210.831787109375,"tick":93}
+{"kind":"chat","ms":1793069636576,"clientTick":67,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":13210.831787109375,"tick":93}
+{"kind":"pos","ms":1793069636960,"clientTick":68,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":13594.831787109375,"tick":94}
+{"kind":"xp","ms":1793069636960,"clientTick":68,"skill":"Prayer","xp":133905,"delta":113,"level":70,"videoMs":13594.831787109375,"tick":94}
+{"kind":"chat","ms":1793069636960,"clientTick":68,"type":0,"sender":"","text":"You bury the bones.","videoMs":13594.831787109375,"tick":94}
+{"kind":"pos","ms":1793069637368,"clientTick":69,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":14002.831787109375,"tick":95}
+{"kind":"xp","ms":1793069637368,"clientTick":69,"skill":"Woodcutting","xp":172637,"delta":1687,"level":73,"videoMs":14002.831787109375,"tick":95}
+{"kind":"chat","ms":1793069637368,"clientTick":69,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":14002.831787109375,"tick":95}
+{"kind":"chat","ms":1793069637368,"clientTick":69,"type":0,"sender":"","text":"You get some willow logs.","videoMs":14002.831787109375,"tick":95}
+{"kind":"pos","ms":1793069637780,"clientTick":70,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":14414.831787109375,"tick":96}
+{"kind":"chat","ms":1793069637780,"clientTick":70,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":14414.831787109375,"tick":96}
+{"kind":"pos","ms":1793069638160,"clientTick":71,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":14794.831787109375,"tick":97}
+{"kind":"xp","ms":1793069638160,"clientTick":71,"skill":"Prayer","xp":134017,"delta":112,"level":70,"videoMs":14794.831787109375,"tick":97}
+{"kind":"chat","ms":1793069638160,"clientTick":71,"type":0,"sender":"","text":"You bury the bones.","videoMs":14794.831787109375,"tick":97}
+{"kind":"pos","ms":1793069638566,"clientTick":72,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":15200.831787109375,"tick":98}
+{"kind":"chat","ms":1793069638566,"clientTick":72,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":15200.831787109375,"tick":98}
+{"kind":"pos","ms":1793069638980,"clientTick":73,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":15614.831787109375,"tick":99}
+{"kind":"chat","ms":1793069638980,"clientTick":73,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":15614.831787109375,"tick":99}
+{"kind":"pos","ms":1793069639365,"clientTick":74,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":15999.831787109375,"tick":100}
+{"kind":"xp","ms":1793069639365,"clientTick":74,"skill":"Prayer","xp":134130,"delta":113,"level":70,"videoMs":15999.831787109375,"tick":100}
+{"kind":"chat","ms":1793069639365,"clientTick":74,"type":0,"sender":"","text":"You bury the bones.","videoMs":15999.831787109375,"tick":100}
+{"kind":"pos","ms":1793069639775,"clientTick":75,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":16409.831787109375,"tick":101}
+{"kind":"chat","ms":1793069639775,"clientTick":75,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":16409.831787109375,"tick":101}
+{"kind":"pos","ms":1793069640190,"clientTick":76,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":16824.831787109375,"tick":102}
+{"kind":"chat","ms":1793069640190,"clientTick":76,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":16824.831787109375,"tick":102}
+{"kind":"pos","ms":1793069640565,"clientTick":77,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":17199.831787109375,"tick":103}
+{"kind":"xp","ms":1793069640565,"clientTick":77,"skill":"Prayer","xp":134242,"delta":112,"level":70,"videoMs":17199.831787109375,"tick":103}
+{"kind":"chat","ms":1793069640565,"clientTick":77,"type":0,"sender":"","text":"You bury the bones.","videoMs":17199.831787109375,"tick":103}
+{"kind":"pos","ms":1793069640974,"clientTick":78,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":17608.831787109375,"tick":104}
+{"kind":"chat","ms":1793069640974,"clientTick":78,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":17608.831787109375,"tick":104}
+{"kind":"pos","ms":1793069641387,"clientTick":79,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":18021.831787109375,"tick":105}
+{"kind":"chat","ms":1793069641387,"clientTick":79,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":18021.831787109375,"tick":105}
+{"kind":"pos","ms":1793069641768,"clientTick":80,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":18402.831787109375,"tick":106}
+{"kind":"xp","ms":1793069641768,"clientTick":80,"skill":"Prayer","xp":134355,"delta":113,"level":70,"videoMs":18402.831787109375,"tick":106}
+{"kind":"chat","ms":1793069641768,"clientTick":80,"type":0,"sender":"","text":"You bury the bones.","videoMs":18402.831787109375,"tick":106}
+{"kind":"pos","ms":1793069642179,"clientTick":81,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":18813.831787109375,"tick":107}
+{"kind":"chat","ms":1793069642179,"clientTick":81,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":18813.831787109375,"tick":107}
+{"kind":"pos","ms":1793069642589,"clientTick":82,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":19223.831787109375,"tick":108}
+{"kind":"chat","ms":1793069642589,"clientTick":82,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":19223.831787109375,"tick":108}
+{"kind":"pos","ms":1793069642972,"clientTick":83,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":19606.831787109375,"tick":109}
+{"kind":"xp","ms":1793069642972,"clientTick":83,"skill":"Prayer","xp":134467,"delta":112,"level":70,"videoMs":19606.831787109375,"tick":109}
+{"kind":"chat","ms":1793069642972,"clientTick":83,"type":0,"sender":"","text":"You bury the bones.","videoMs":19606.831787109375,"tick":109}
+{"kind":"pos","ms":1793069643377,"clientTick":84,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":20011.831787109375,"tick":110}
+{"kind":"xp","ms":1793069643377,"clientTick":84,"skill":"Woodcutting","xp":174325,"delta":1688,"level":73,"videoMs":20011.831787109375,"tick":110}
+{"kind":"chat","ms":1793069643377,"clientTick":84,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":20011.831787109375,"tick":110}
+{"kind":"chat","ms":1793069643377,"clientTick":84,"type":0,"sender":"","text":"You get some willow logs.","videoMs":20011.831787109375,"tick":110}
+{"kind":"pos","ms":1793069643792,"clientTick":85,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":20426.831787109375,"tick":111}
+{"kind":"chat","ms":1793069643792,"clientTick":85,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":20426.831787109375,"tick":111}
+{"kind":"pos","ms":1793069644172,"clientTick":86,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":20806.831787109375,"tick":112}
+{"kind":"xp","ms":1793069644172,"clientTick":86,"skill":"Prayer","xp":134580,"delta":113,"level":70,"videoMs":20806.831787109375,"tick":112}
+{"kind":"chat","ms":1793069644172,"clientTick":86,"type":0,"sender":"","text":"You bury the bones.","videoMs":20806.831787109375,"tick":112}
+{"kind":"pos","ms":1793069644581,"clientTick":87,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":21215.831787109375,"tick":113}
+{"kind":"chat","ms":1793069644581,"clientTick":87,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":21215.831787109375,"tick":113}
+{"kind":"pos","ms":1793069644992,"clientTick":88,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":21626.831787109375,"tick":114}
+{"kind":"chat","ms":1793069644992,"clientTick":88,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":21626.831787109375,"tick":114}
+{"kind":"pos","ms":1793069645381,"clientTick":89,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":22015.831787109375,"tick":115}
+{"kind":"xp","ms":1793069645381,"clientTick":89,"skill":"Prayer","xp":134692,"delta":112,"level":70,"videoMs":22015.831787109375,"tick":115}
+{"kind":"chat","ms":1793069645381,"clientTick":89,"type":0,"sender":"","text":"You bury the bones.","videoMs":22015.831787109375,"tick":115}
+{"kind":"pos","ms":1793069645785,"clientTick":90,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":22419.831787109375,"tick":116}
+{"kind":"xp","ms":1793069645785,"clientTick":90,"skill":"Woodcutting","xp":176012,"delta":1687,"level":73,"videoMs":22419.831787109375,"tick":116}
+{"kind":"chat","ms":1793069645785,"clientTick":90,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":22419.831787109375,"tick":116}
+{"kind":"chat","ms":1793069645785,"clientTick":90,"type":0,"sender":"","text":"You get some willow logs.","videoMs":22419.831787109375,"tick":116}
+{"kind":"pos","ms":1793069646203,"clientTick":91,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":22837.831787109375,"tick":117}
+{"kind":"chat","ms":1793069646203,"clientTick":91,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":22837.831787109375,"tick":117}
+{"kind":"pos","ms":1793069646579,"clientTick":92,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":23213.831787109375,"tick":118}
+{"kind":"xp","ms":1793069646579,"clientTick":92,"skill":"Prayer","xp":134805,"delta":113,"level":70,"videoMs":23213.831787109375,"tick":118}
+{"kind":"chat","ms":1793069646579,"clientTick":92,"type":0,"sender":"","text":"You bury the bones.","videoMs":23213.831787109375,"tick":118}
+{"kind":"pos","ms":1793069646991,"clientTick":93,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":23625.831787109375,"tick":119}
+{"kind":"chat","ms":1793069646991,"clientTick":93,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":23625.831787109375,"tick":119}
+{"kind":"pos","ms":1793069647400,"clientTick":94,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":24034.831787109375,"tick":120}
+{"kind":"chat","ms":1793069647400,"clientTick":94,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":24034.831787109375,"tick":120}
+{"kind":"pos","ms":1793069647784,"clientTick":95,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":24418.831787109375,"tick":121}
+{"kind":"xp","ms":1793069647784,"clientTick":95,"skill":"Prayer","xp":134917,"delta":112,"level":70,"videoMs":24418.831787109375,"tick":121}
+{"kind":"chat","ms":1793069647784,"clientTick":95,"type":0,"sender":"","text":"You bury the bones.","videoMs":24418.831787109375,"tick":121}
+{"kind":"pos","ms":1793069648190,"clientTick":96,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":24824.831787109375,"tick":122}
+{"kind":"chat","ms":1793069648190,"clientTick":96,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":24824.831787109375,"tick":122}
+{"kind":"pos","ms":1793069648604,"clientTick":97,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":25238.831787109375,"tick":123}
+{"kind":"chat","ms":1793069648604,"clientTick":97,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":25238.831787109375,"tick":123}
+{"kind":"pos","ms":1793069648986,"clientTick":98,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":25620.831787109375,"tick":124}
+{"kind":"xp","ms":1793069648986,"clientTick":98,"skill":"Prayer","xp":135030,"delta":113,"level":70,"videoMs":25620.831787109375,"tick":124}
+{"kind":"chat","ms":1793069648986,"clientTick":98,"type":0,"sender":"","text":"You bury the bones.","videoMs":25620.831787109375,"tick":124}
+{"kind":"pos","ms":1793069649392,"clientTick":99,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":26026.831787109375,"tick":125}
+{"kind":"chat","ms":1793069649392,"clientTick":99,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":26026.831787109375,"tick":125}
+{"kind":"pos","ms":1793069649814,"clientTick":100,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":26448.831787109375,"tick":126}
+{"kind":"chat","ms":1793069649814,"clientTick":100,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":26448.831787109375,"tick":126}
+{"kind":"pos","ms":1793069650197,"clientTick":101,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":26831.831787109375,"tick":127}
+{"kind":"xp","ms":1793069650197,"clientTick":101,"skill":"Prayer","xp":135142,"delta":112,"level":70,"videoMs":26831.831787109375,"tick":127}
+{"kind":"chat","ms":1793069650197,"clientTick":101,"type":0,"sender":"","text":"You bury the bones.","videoMs":26831.831787109375,"tick":127}
+{"kind":"pos","ms":1793069650595,"clientTick":102,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":27229.831787109375,"tick":128}
+{"kind":"xp","ms":1793069650595,"clientTick":102,"skill":"Woodcutting","xp":177700,"delta":1688,"level":74,"videoMs":27229.831787109375,"tick":128}
+{"kind":"level","ms":1793069650595,"clientTick":102,"skill":"Woodcutting","from":73,"to":74,"videoMs":27229.831787109375,"tick":128}
+{"kind":"chat","ms":1793069650595,"clientTick":102,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":27229.831787109375,"tick":128}
+{"kind":"chat","ms":1793069650595,"clientTick":102,"type":0,"sender":"","text":"You get some willow logs.","videoMs":27229.831787109375,"tick":128}
+{"kind":"pos","ms":1793069651012,"clientTick":103,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":27646.831787109375,"tick":129}
+{"kind":"chat","ms":1793069651012,"clientTick":103,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":27646.831787109375,"tick":129}
+{"kind":"pos","ms":1793069651401,"clientTick":104,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":28035.831787109375,"tick":130}
+{"kind":"xp","ms":1793069651401,"clientTick":104,"skill":"Prayer","xp":135255,"delta":113,"level":70,"videoMs":28035.831787109375,"tick":130}
+{"kind":"chat","ms":1793069651401,"clientTick":104,"type":0,"sender":"","text":"You bury the bones.","videoMs":28035.831787109375,"tick":130}
+{"kind":"chat","ms":1793069651401,"clientTick":104,"type":0,"sender":"","text":"Congratulations, you just advanced a woodcutting level.","videoMs":28035.831787109375,"tick":130}
+{"kind":"pos","ms":1793069651797,"clientTick":105,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":28431.831787109375,"tick":131}
+{"kind":"chat","ms":1793069651797,"clientTick":105,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":28431.831787109375,"tick":131}
+{"kind":"pos","ms":1793069652205,"clientTick":106,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":28839.831787109375,"tick":132}
+{"kind":"chat","ms":1793069652205,"clientTick":106,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":28839.831787109375,"tick":132}
+{"kind":"pos","ms":1793069652590,"clientTick":107,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":29224.831787109375,"tick":133}
+{"kind":"xp","ms":1793069652590,"clientTick":107,"skill":"Prayer","xp":135367,"delta":112,"level":70,"videoMs":29224.831787109375,"tick":133}
+{"kind":"chat","ms":1793069652590,"clientTick":107,"type":0,"sender":"","text":"You bury the bones.","videoMs":29224.831787109375,"tick":133}
+{"kind":"pos","ms":1793069652999,"clientTick":108,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":29633.831787109375,"tick":134}
+{"kind":"xp","ms":1793069652999,"clientTick":108,"skill":"Woodcutting","xp":179387,"delta":1687,"level":74,"videoMs":29633.831787109375,"tick":134}
+{"kind":"chat","ms":1793069652999,"clientTick":108,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":29633.831787109375,"tick":134}
+{"kind":"chat","ms":1793069652999,"clientTick":108,"type":0,"sender":"","text":"You get some willow logs.","videoMs":29633.831787109375,"tick":134}
+{"kind":"pos","ms":1793069653415,"clientTick":109,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":30049.831787109375,"tick":135}
+{"kind":"chat","ms":1793069653415,"clientTick":109,"type":0,"sender":"","text":"You dig a hole in the ground...","videoMs":30049.831787109375,"tick":135}
+{"kind":"pos","ms":1793069653793,"clientTick":110,"x":2920,"z":3406,"plane":0,"anim":827,"videoMs":30427.831787109375,"tick":136}
+{"kind":"xp","ms":1793069653793,"clientTick":110,"skill":"Prayer","xp":135480,"delta":113,"level":70,"videoMs":30427.831787109375,"tick":136}
+{"kind":"chat","ms":1793069653793,"clientTick":110,"type":0,"sender":"","text":"You bury the bones.","videoMs":30427.831787109375,"tick":136}
+{"kind":"pos","ms":1793069654202,"clientTick":111,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":30836.831787109375,"tick":137}
+{"kind":"chat","ms":1793069654202,"clientTick":111,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":30836.831787109375,"tick":137}
+{"kind":"pos","ms":1793069654619,"clientTick":112,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":31253.831787109375,"tick":138}
+{"kind":"chat","ms":1793069654619,"clientTick":112,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":31253.831787109375,"tick":138}
+{"kind":"pos","ms":1793069654995,"clientTick":113,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":31629.831787109375,"tick":139}
+{"kind":"pos","ms":1793069655400,"clientTick":114,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":32034.831787109375,"tick":140}
+{"kind":"xp","ms":1793069655400,"clientTick":114,"skill":"Woodcutting","xp":181075,"delta":1688,"level":74,"videoMs":32034.831787109375,"tick":140}
+{"kind":"chat","ms":1793069655400,"clientTick":114,"type":0,"sender":"","text":"You get some willow logs.","videoMs":32034.831787109375,"tick":140}
+{"kind":"pos","ms":1793069655816,"clientTick":115,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":32450.831787109375,"tick":141}
+{"kind":"chat","ms":1793069655816,"clientTick":115,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":32450.831787109375,"tick":141}
+{"kind":"pos","ms":1793069656196,"clientTick":116,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":32830.831787109375,"tick":142}
+{"kind":"pos","ms":1793069656599,"clientTick":117,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":33233.831787109375,"tick":143}
+{"kind":"xp","ms":1793069656599,"clientTick":117,"skill":"Woodcutting","xp":182762,"delta":1687,"level":74,"videoMs":33233.831787109375,"tick":143}
+{"kind":"chat","ms":1793069656599,"clientTick":117,"type":0,"sender":"","text":"You get some willow logs.","videoMs":33233.831787109375,"tick":143}
+{"kind":"pos","ms":1793069657017,"clientTick":118,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":33651.831787109375,"tick":144}
+{"kind":"chat","ms":1793069657017,"clientTick":118,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":33651.831787109375,"tick":144}
+{"kind":"pos","ms":1793069657395,"clientTick":119,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":34029.831787109375,"tick":145}
+{"kind":"pos","ms":1793069657798,"clientTick":120,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":34432.831787109375,"tick":146}
+{"kind":"xp","ms":1793069657798,"clientTick":120,"skill":"Woodcutting","xp":184450,"delta":1688,"level":74,"videoMs":34432.831787109375,"tick":146}
+{"kind":"chat","ms":1793069657798,"clientTick":120,"type":0,"sender":"","text":"You get some willow logs.","videoMs":34432.831787109375,"tick":146}
+{"kind":"pos","ms":1793069658213,"clientTick":121,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":34847.831787109375,"tick":147}
+{"kind":"chat","ms":1793069658213,"clientTick":121,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":34847.831787109375,"tick":147}
+{"kind":"pos","ms":1793069658595,"clientTick":122,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":35229.831787109375,"tick":148}
+{"kind":"pos","ms":1793069658999,"clientTick":123,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":35633.831787109375,"tick":149}
+{"kind":"pos","ms":1793069659416,"clientTick":124,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":36050.831787109375,"tick":150}
+{"kind":"chat","ms":1793069659416,"clientTick":124,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":36050.831787109375,"tick":150}
+{"kind":"pos","ms":1793069659801,"clientTick":125,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":36435.831787109375,"tick":151}
+{"kind":"pos","ms":1793069660203,"clientTick":126,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":36837.831787109375,"tick":152}
+{"kind":"xp","ms":1793069660203,"clientTick":126,"skill":"Woodcutting","xp":186137,"delta":1687,"level":74,"videoMs":36837.831787109375,"tick":152}
+{"kind":"chat","ms":1793069660203,"clientTick":126,"type":0,"sender":"","text":"You get some willow logs.","videoMs":36837.831787109375,"tick":152}
+{"kind":"pos","ms":1793069660618,"clientTick":127,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":37252.831787109375,"tick":153}
+{"kind":"chat","ms":1793069660618,"clientTick":127,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":37252.831787109375,"tick":153}
+{"kind":"pos","ms":1793069661000,"clientTick":128,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":37634.831787109375,"tick":154}
+{"kind":"pos","ms":1793069661405,"clientTick":129,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":38039.831787109375,"tick":155}
+{"kind":"pos","ms":1793069661821,"clientTick":130,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":38455.831787109375,"tick":156}
+{"kind":"chat","ms":1793069661821,"clientTick":130,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":38455.831787109375,"tick":156}
+{"kind":"pos","ms":1793069662201,"clientTick":131,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":38835.831787109375,"tick":157}
+{"kind":"pos","ms":1793069662602,"clientTick":132,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":39236.831787109375,"tick":158}
+{"kind":"pos","ms":1793069663020,"clientTick":133,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":39654.831787109375,"tick":159}
+{"kind":"chat","ms":1793069663020,"clientTick":133,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":39654.831787109375,"tick":159}
+{"kind":"pos","ms":1793069663402,"clientTick":134,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":40036.831787109375,"tick":160}
+{"kind":"pos","ms":1793069663801,"clientTick":135,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":40435.831787109375,"tick":161}
+{"kind":"pos","ms":1793069664220,"clientTick":136,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":40854.831787109375,"tick":162}
+{"kind":"chat","ms":1793069664220,"clientTick":136,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":40854.831787109375,"tick":162}
+{"kind":"pos","ms":1793069664602,"clientTick":137,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":41236.831787109375,"tick":163}
+{"kind":"pos","ms":1793069665006,"clientTick":138,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":41640.831787109375,"tick":164}
+{"kind":"xp","ms":1793069665006,"clientTick":138,"skill":"Woodcutting","xp":187825,"delta":1688,"level":74,"videoMs":41640.831787109375,"tick":164}
+{"kind":"chat","ms":1793069665006,"clientTick":138,"type":0,"sender":"","text":"You get some willow logs.","videoMs":41640.831787109375,"tick":164}
+{"kind":"pos","ms":1793069665428,"clientTick":139,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":42062.831787109375,"tick":165}
+{"kind":"chat","ms":1793069665428,"clientTick":139,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":42062.831787109375,"tick":165}
+{"kind":"pos","ms":1793069665802,"clientTick":140,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":42436.831787109375,"tick":166}
+{"kind":"pos","ms":1793069666203,"clientTick":141,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":42837.831787109375,"tick":167}
+{"kind":"pos","ms":1793069666621,"clientTick":142,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":43255.831787109375,"tick":168}
+{"kind":"chat","ms":1793069666621,"clientTick":142,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":43255.831787109375,"tick":168}
+{"kind":"pos","ms":1793069667005,"clientTick":143,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":43639.831787109375,"tick":169}
+{"kind":"pos","ms":1793069667404,"clientTick":144,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":44038.831787109375,"tick":170}
+{"kind":"pos","ms":1793069667821,"clientTick":145,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":44455.831787109375,"tick":171}
+{"kind":"chat","ms":1793069667821,"clientTick":145,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":44455.831787109375,"tick":171}
+{"kind":"pos","ms":1793069668207,"clientTick":146,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":44841.831787109375,"tick":172}
+{"kind":"pos","ms":1793069668605,"clientTick":147,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":45239.831787109375,"tick":173}
+{"kind":"pos","ms":1793069669023,"clientTick":148,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":45657.831787109375,"tick":174}
+{"kind":"chat","ms":1793069669023,"clientTick":148,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":45657.831787109375,"tick":174}
+{"kind":"pos","ms":1793069669406,"clientTick":149,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":46040.831787109375,"tick":175}
+{"kind":"pos","ms":1793069669806,"clientTick":150,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":46440.831787109375,"tick":176}
+{"kind":"pos","ms":1793069670224,"clientTick":151,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":46858.831787109375,"tick":177}
+{"kind":"chat","ms":1793069670224,"clientTick":151,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":46858.831787109375,"tick":177}
+{"kind":"pos","ms":1793069670606,"clientTick":152,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":47240.831787109375,"tick":178}
+{"kind":"pos","ms":1793069671010,"clientTick":153,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":47644.831787109375,"tick":179}
+{"kind":"xp","ms":1793069671010,"clientTick":153,"skill":"Woodcutting","xp":189512,"delta":1687,"level":75,"videoMs":47644.831787109375,"tick":179}
+{"kind":"level","ms":1793069671010,"clientTick":153,"skill":"Woodcutting","from":74,"to":75,"videoMs":47644.831787109375,"tick":179}
+{"kind":"chat","ms":1793069671010,"clientTick":153,"type":0,"sender":"","text":"You get some willow logs.","videoMs":47644.831787109375,"tick":179}
+{"kind":"pos","ms":1793069671431,"clientTick":154,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":48065.831787109375,"tick":180}
+{"kind":"chat","ms":1793069671431,"clientTick":154,"type":0,"sender":"","text":"Congratulations, you just advanced a woodcutting level.","videoMs":48065.831787109375,"tick":180}
+{"kind":"pos","ms":1793069671807,"clientTick":155,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":48441.831787109375,"tick":181}
+{"kind":"pos","ms":1793069672208,"clientTick":156,"x":2920,"z":3406,"plane":0,"anim":-1,"videoMs":48842.831787109375,"tick":182}
+{"kind":"pos","ms":1793069672624,"clientTick":157,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":49258.831787109375,"tick":183}
+{"kind":"chat","ms":1793069672624,"clientTick":157,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":49258.831787109375,"tick":183}
+{"kind":"pos","ms":1793069673007,"clientTick":158,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":49641.831787109375,"tick":184}
+{"kind":"pos","ms":1793069673407,"clientTick":159,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":50041.831787109375,"tick":185}
+{"kind":"pos","ms":1793069673829,"clientTick":160,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":50463.831787109375,"tick":186}
+{"kind":"chat","ms":1793069673829,"clientTick":160,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":50463.831787109375,"tick":186}
+{"kind":"pos","ms":1793069674208,"clientTick":161,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":50842.831787109375,"tick":187}
+{"kind":"pos","ms":1793069674611,"clientTick":162,"x":2920,"z":3406,"plane":0,"anim":1248,"videoMs":51245.831787109375,"tick":188}
+{"kind":"xp","ms":1793069674611,"clientTick":162,"skill":"Woodcutting","xp":191200,"delta":1688,"level":75,"videoMs":51245.831787109375,"tick":188}
+{"kind":"chat","ms":1793069674611,"clientTick":162,"type":0,"sender":"","text":"You get some willow logs.","videoMs":51245.831787109375,"tick":188}
+{"kind":"pos","ms":1793069675030,"clientTick":163,"x":2920,"z":3406,"plane":0,"anim":867,"videoMs":51664.831787109375,"tick":189}
+{"kind":"chat","ms":1793069675030,"clientTick":163,"type":0,"sender":"","text":"You swing your axe at the tree.","videoMs":51664.831787109375,"tick":189}

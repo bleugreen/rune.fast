@@ -39,11 +39,12 @@ describe('the clip registry', () => {
       expect(c.source.label === 'run feed').toBe(c.kind === 'replay');
     });
 
-    test('runs 10 to 15 seconds, over the span its times give', () => {
+    test('runs 10 to 15 seconds, over the span its times give (a pair, at least that span)', () => {
       expect(c.seconds).toBeGreaterThanOrEqual(10);
       expect(c.seconds).toBeLessThanOrEqual(15);
       const [a, b] = c.recorded.map(parseUtc) as [number, number];
-      expect(Math.abs((b - a) / 1000 - c.seconds)).toBeLessThanOrEqual(1);
+      if (c.kind === 'video' && c.pair) expect((b - a) / 1000).toBeGreaterThanOrEqual(c.seconds);
+      else expect(Math.abs((b - a) / 1000 - c.seconds)).toBeLessThanOrEqual(1);
     });
 
     if (c.kind === 'replay') {
