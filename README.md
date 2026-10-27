@@ -67,7 +67,7 @@ https://assets.mage.md/world/replays/<clip>/manifest.json                (max-ag
 https://assets.mage.md/world/replays/<clip>/chunk-NNN.<sha8>.jsonl       (Content-Encoding: br, immutable)
 ```
 
-The bucket is set up in the Cloudflare dashboard: the custom domain; a CORS policy allowing GET and HEAD from `https://rune.fast`, `https://*.rune-fast.pages.dev`, `http://localhost:5173` and `http://localhost:4173`, with AllowedHeaders `Range` and ExposeHeaders `Content-Length`, `Content-Range` and `ETag`; a response-header Transform Rule on the domain setting `Cross-Origin-Resource-Policy: cross-origin` (R2 object metadata cannot carry it, and the site's COEP needs it); and an API token with Object Read & Write on that bucket only, given to `--upload` as `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_BUCKET`. The cache store comes only from rs-sdk-demo.fly.dev, through rs-dash's `sync-cache`; `keys.json` is copied and uploaded as a file and never read.
+The bucket is set up in the Cloudflare dashboard: the custom domain; a CORS policy allowing GET and HEAD from any origin (the objects answer `Access-Control-Allow-Origin: *`), with AllowedHeaders `Range` and ExposeHeaders `Content-Length`, `Content-Range` and `ETag`; a response-header Transform Rule on the domain setting `Cross-Origin-Resource-Policy: cross-origin` (R2 object metadata cannot carry it, and the site's COEP needs it); and an API token with Object Read & Write on that bucket only, given to `--upload` as `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_BUCKET`. The cache store comes only from rs-sdk-demo.fly.dev, through rs-dash's `sync-cache`; `keys.json` is copied and uploaded as a file and never read.
 
 ## Fonts
 
