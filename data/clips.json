@@ -119,5 +119,47 @@
       "label": "run feed",
       "note": "The swarm’s recording of the demo server’s world feed, redacted before publication, drawn by the rs-map-viewer engine from the server’s game cache; times from the feed’s receive stamps."
     }
+  },
+  {
+    "id": "spider-death",
+    "kind": "replay",
+    "recording": "spider-death",
+    "from": 57443,
+    "to": 57479,
+    "poster": "/clips/spider-death.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 14.4,
+    "caption": "The cannon site, three minutes after the script killed its own client. The body stands among the poison spiders with nothing driving it while their hits and their poison take it from 19 hitpoints to none; it falls, and the server puts it back at the Lumbridge respawn.",
+    "recorded": [
+      "2026-10-26T03:40:23Z",
+      "2026-10-26T03:40:38Z"
+    ],
+    "step": "The abandoned body, after the logout the game refused",
+    "source": {
+      "label": "run feed",
+      "note": "The swarm’s recording of the server’s world feed, redacted before publication, drawn by the rs-map-viewer engine from the server’s game cache; times from the feed’s receive stamps."
+    }
+  },
+  {
+    "id": "attempt-4-death",
+    "kind": "replay",
+    "recording": "attempt-4-death",
+    "from": 216710,
+    "to": 216747,
+    "poster": "/clips/attempt-4-death.jpg",
+    "width": 1380,
+    "height": 904,
+    "seconds": 14.8,
+    "caption": "Attempt 4’s account at the Grand Tree door, still poisoned from the spiders while the runner waits on a helper. The poison takes its last 2 hitpoints; it falls, and the server puts it back at the Lumbridge respawn.",
+    "recorded": [
+      "2026-10-24T14:23:18Z",
+      "2026-10-24T14:23:32Z"
+    ],
+    "step": "Attempt 4, waiting at the Grand Tree",
+    "source": {
+      "label": "run feed",
+      "note": "The swarm’s recording of the server’s world feed, redacted before publication, drawn by the rs-map-viewer engine from the server’s game cache; attempt 4’s account is followed but not named; times from the feed’s receive stamps."
+    }
   }
 ]

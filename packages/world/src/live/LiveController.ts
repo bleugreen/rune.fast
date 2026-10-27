@@ -41,6 +41,8 @@ export type LiveOptions = {
     showPlayers: boolean;
     showNpcs: boolean;
     showPlayerNames: boolean;
+    // The followed player's name, which is drawn regardless of showPlayerNames.
+    showFollowedName: boolean;
     showNpcNames: boolean;
     showChat: boolean;
     showCombat: boolean;
@@ -61,6 +63,7 @@ export class LiveController {
         showPlayers: true,
         showNpcs: true,
         showPlayerNames: true,
+        showFollowedName: true,
         showNpcNames: false,
         showChat: true,
         showCombat: true,

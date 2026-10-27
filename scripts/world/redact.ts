@@ -4,6 +4,9 @@
  * account's; players' chat and overhead text are dropped; NPC overhead text that names any
  * player is dropped. Checkpoints are simulated from redacted frames, so they inherit it.
  *
+ * A clip may follow another account than the scored one. That account is redacted like any
+ * other; the redactor only tracks which slot it holds, so the camera can follow the slot alias.
+ *
  * Errors and reports carry counts, slots and positions, never a name or a payload.
  */
 import { canonicalAccountName } from '@rune/world/live/accountName';
@@ -65,10 +68,14 @@ export type RedactionCounts = {
 
 export class Redactor {
   readonly scored: string;
+  /** The account the clip follows: the scored one unless another was given. */
+  readonly followed: string;
   /** Canonical names of every other account seen, in memory only, for the scan. */
   readonly names = new Set<string>();
-  /** Roster ticks at which the scored account was listed, by slot. */
-  readonly scoredSightings = new Map<number, number[]>();
+  /** Roster ticks at which the followed account was listed, by slot. */
+  readonly followSightings = new Map<number, number[]>();
+  /** The slot the followed account held in the latest roster that listed it. */
+  followSlot: number | undefined;
   readonly counts: RedactionCounts = {
     rosterNamesReplaced: 0,
     appearanceNamesReplaced: 0,
@@ -76,11 +83,25 @@ export class Redactor {
     npcTextDropped: 0,
   };
 
-  constructor(scoredAccount: string | undefined) {
+  /**
+   * `followAccount` undefined follows the scored account. Given, it must name another account;
+   * it joins the scan's names at once, so the scan looks for it even if it is never seen.
+   */
+  constructor(scoredAccount: string | undefined, followAccount?: string) {
     if (!scoredAccount || !scoredAccount.trim()) {
       throw new RedactionError('the scored account name is required (RUNE_SCORED_ACCOUNT)');
     }
     this.scored = canonicalAccountName(scoredAccount);
+    if (followAccount === undefined) {
+      this.followed = this.scored;
+      return;
+    }
+    if (!followAccount.trim()) throw new RedactionError('the followed account name is empty (RUNE_FOLLOW_ACCOUNT)');
+    this.followed = canonicalAccountName(followAccount);
+    if (this.followed === this.scored) {
+      throw new RedactionError('the followed account is the scored account; this clip follows another account (RUNE_FOLLOW_ACCOUNT)');
+    }
+    this.names.add(this.followed);
   }
 
   redact(msg: FeedMessage): FeedMessage {
@@ -96,20 +117,21 @@ export class Redactor {
     return msg;
   }
 
-  /** Distinct slots the scored account held in rosters between ticks k0 and k1 inclusive. */
-  scoredSlotsBetween(k0: number, k1: number): number[] {
-    return [...this.scoredSightings].filter(([, ks]) => ks.some((k) => k >= k0 && k <= k1)).map(([slot]) => slot);
+  /** Distinct slots the followed account held in rosters between ticks k0 and k1 inclusive. */
+  followSlotsBetween(k0: number, k1: number): number[] {
+    return [...this.followSightings].filter(([, ks]) => ks.some((k) => k >= k0 && k <= k1)).map(([slot]) => slot);
   }
 
   private rosterEntry(entry: RosterPlayer, k: number): RosterPlayer {
     const [slot, name] = entry;
     const canonical = canonicalAccountName(name);
-    if (canonical === this.scored) {
-      const ks = this.scoredSightings.get(slot) ?? [];
+    if (canonical === this.followed) {
+      const ks = this.followSightings.get(slot) ?? [];
       ks.push(k);
-      this.scoredSightings.set(slot, ks);
-      return entry;
+      this.followSightings.set(slot, ks);
+      this.followSlot = slot;
     }
+    if (canonical === this.scored) return entry;
     this.names.add(canonical);
     this.counts.rosterNamesReplaced++;
     return [slot, slotName(slot), entry[2], entry[3], entry[4], entry[5]];

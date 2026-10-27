@@ -174,15 +174,28 @@ describe('what the page adds to the draft', () => {
     expect(html.match(/<figure/g)?.length).toBe(placed);
   });
 
-  test('the death section sets its timeline after the death beat, the re-kit clip after the overnight paragraph, and the Agility clip last', () => {
+  test('the death section sets the body among the spiders after the roster beat, its timeline after the death beat, the re-kit clip after the overnight paragraph, and the Agility clip last', () => {
     const s = sections.find((x) => x.id === 'the-death')!;
     const placed = [...s.figuresAt].sort(([a], [b]) => a - b).flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
-    expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['timeline', 'finish-rekit', 'finish-agility99']);
-    const [death, rekit] = placed;
+    expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['spider-death', 'timeline', 'finish-rekit', 'finish-agility99']);
+    const [spiders, death, rekit] = placed;
+    // The quotation under the paragraph that narrates the roster's last sightings of the body.
+    expect(quotes(s.blocks[spiders!.at]!, 'Welp there goes the run')).toBe(true);
+    const narrated = s.blocks[spiders!.at - 1]!;
+    expect(narrated.kind === 'p' && narrated.text.includes('at the Lumbridge respawn at 8:40:37 PM')).toBe(true);
     expect(quotes(s.blocks[death!.at]!, 'I WANT A #1')).toBe(true);
     expect(death!.f).toEqual({ kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] });
     const rekitBlock = s.blocks[rekit!.at]!;
     expect(rekitBlock.kind === 'p' && rekitBlock.text.startsWith('Overnight the helpers rebuilt the lost kit')).toBe(true);
+  });
+
+  test('the attempts section sets attempt 4’s death after the quotation its paragraph introduces', () => {
+    const s = sections.find((x) => x.id === 'four-attempts')!;
+    const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
+    const clip = placed.find(({ f }) => f.kind === 'clip' && f.id === 'attempt-4-death')!;
+    expect(quotes(s.blocks[clip.at]!, 'ok fine one more attempt')).toBe(true);
+    const narrated = s.blocks[clip.at - 1]!;
+    expect(narrated.kind === 'p' && narrated.text.includes('the poison finished the account at the tree door')).toBe(true);
   });
 
   test('each clip in the story renders with its caption, time, step and source', () => {

@@ -134,7 +134,8 @@ export class LiveOverlay {
 
             const isPlayer = e instanceof LivePlayer;
             const showName =
-                nameAlpha > 0 && (isFollowed || (isPlayer ? options.showPlayerNames : options.showNpcNames && near));
+                nameAlpha > 0 &&
+                (isFollowed ? options.showFollowedName : isPlayer ? options.showPlayerNames : options.showNpcNames && near);
             // Same windows as the client: health bar for 300 cycles after a hit, hitmarks 70.
             const combat = near && options.showCombat && e.combatCycle > loopCycle + 100 && e.totalHealth > 0;
             const chat = near && options.showChat && e.chatMessage !== null && e.chatTimer > 0;

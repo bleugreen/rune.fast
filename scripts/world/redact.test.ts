@@ -4,14 +4,15 @@ import { formatCheckpointLine, formatFrameLine, type ReplayFrame } from '@rune/w
 import { cutChunks } from '@rune/world/replay/cut';
 import { ArrayFrameSource, Playhead } from '@rune/world/replay/Playhead';
 import { fixtureFrames, stubController } from '../../packages/world/test/stubs';
-import { RedactionError, Redactor, appearanceAccount, scanEmitted } from './redact';
+import { CLIPS } from './clips';
+import { RedactionError, Redactor, appearanceAccount, scanEmitted, slotName } from './redact';
 
 // The fixture's accounts are fictional: Alpha One stands in for the scored account and may be
 // published; Bravo Two stands in for everyone else and must not survive anywhere.
 const SCORED = 'Alpha One';
 
-function publishFixture() {
-  const redactor = new Redactor(SCORED);
+function publishFixture(follow?: string) {
+  const redactor = new Redactor(SCORED, follow);
   let gate = INITIAL_GATE;
   const frames: ReplayFrame[] = [];
   for (const frame of fixtureFrames()) {
@@ -44,7 +45,7 @@ describe('redaction', () => {
     const aps = [...all.matchAll(/"ap":"([A-Za-z0-9+/=]+)"/g)].map((m) => appearanceAccount(m[1]!));
     expect(aps).toContain('alpha_one');
     expect(new Set(aps)).toEqual(new Set(['alpha_one', 'slot_2']));
-    expect(redactor.scoredSlotsBetween(0, Number.MAX_SAFE_INTEGER)).toEqual([1]);
+    expect(redactor.followSlotsBetween(0, Number.MAX_SAFE_INTEGER)).toEqual([1]);
   });
 
   test('counts what it did', () => {
@@ -76,6 +77,77 @@ describe('redaction', () => {
   test('fails closed without the scored account', () => {
     expect(() => new Redactor(undefined)).toThrow(RedactionError);
     expect(() => new Redactor('  ')).toThrow(RedactionError);
+  });
+});
+
+// A clip that follows another account than the record one (attempt 4's death): the fixture's
+// Bravo Two stands in for that account.
+describe('redaction while following another account', () => {
+  const { redactor, chunks } = publishFixture('Bravo Two');
+  const all = chunks.join('');
+
+  test('the followed account is redacted like everyone else, and the scan looks for it', () => {
+    expect(redactor.followed).toBe('bravo_two');
+    expect(redactor.names).toEqual(new Set(['bravo_two']));
+    expect(all).not.toMatch(/bravo/i);
+    expect(redactor.counts.rosterNamesReplaced).toBe(12);
+    expect(redactor.counts.appearanceNamesReplaced).toBe(1);
+    for (const [i, chunk] of chunks.entries()) {
+      expect(scanEmitted(`chunk-${i}`, chunk, redactor.names, redactor.scored)).toEqual([]);
+    }
+  });
+
+  test('its slot is tracked, so the camera can follow the slot alias the frames carry', () => {
+    expect(redactor.followSlotsBetween(0, Number.MAX_SAFE_INTEGER)).toEqual([2]);
+    expect(redactor.followSlot).toBe(2);
+    expect(all).toContain(`"${slotName(2)}"`);
+    const aps = [...all.matchAll(/"ap":"([A-Za-z0-9+/=]+)"/g)].map((m) => appearanceAccount(m[1]!));
+    expect(aps).toContain(slotName(2));
+  });
+
+  test('the scored account is still the only one named', () => {
+    expect(all).toContain('"Alpha One"');
+    const named = new Set([...all.matchAll(/"ap":"([A-Za-z0-9+/=]+)"/g)].map((m) => appearanceAccount(m[1]!)));
+    expect(named).toEqual(new Set(['alpha_one', 'slot_2']));
+  });
+
+  test('an account never seen is scanned for anyway', () => {
+    const unseen = new Redactor(SCORED, 'Charlie Three');
+    expect(unseen.names).toEqual(new Set(['charlie_three']));
+    expect(scanEmitted('x', JSON.stringify({ chat: 'charlie three' }), unseen.names, unseen.scored)).toHaveLength(1);
+  });
+
+  test('fails closed on an empty followed account, or the scored one under another spelling', () => {
+    expect(() => new Redactor(SCORED, '')).toThrow(RedactionError);
+    expect(() => new Redactor(SCORED, '  ')).toThrow(RedactionError);
+    expect(() => new Redactor(SCORED, 'alpha_one')).toThrow(RedactionError);
+    expect(() => new Redactor(SCORED, ' ALPHA  one ')).toThrow(RedactionError);
+  });
+});
+
+describe('the clip table', () => {
+  const seconds = (id: string) => (Date.parse(CLIPS[id]!.window.to) - Date.parse(CLIPS[id]!.window.from)) / 1000;
+
+  test('both death windows are 10 to 15 s, and hold a death and its respawn', () => {
+    for (const id of ['spider-death', 'attempt-4-death']) {
+      expect(seconds(id)).toBeGreaterThanOrEqual(10);
+      expect(seconds(id)).toBeLessThanOrEqual(15);
+      expect(CLIPS[id]!.death).toBeDefined();
+    }
+  });
+
+  test('the spiders follow the record account; the Grand Tree follows attempt 4 by its slot', () => {
+    expect(CLIPS['spider-death']!.follow).toBe('record');
+    expect(CLIPS['attempt-4-death']!.follow).toBe('env');
+  });
+
+  test('every mark falls inside its window', () => {
+    for (const clip of Object.values(CLIPS)) {
+      for (const mark of clip.marks) {
+        expect(Date.parse(mark.at)).toBeGreaterThanOrEqual(Date.parse(clip.window.from));
+        expect(Date.parse(mark.at)).toBeLessThanOrEqual(Date.parse(clip.window.to));
+      }
+    }
   });
 });
 
