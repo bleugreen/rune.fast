@@ -95,10 +95,9 @@ function useCacheNearView(entry: ClipEntry, el: RefObject<HTMLElement | null>) {
  * progress rule in the accent that can be dragged to scrub, and, for a lab clip, the server tick
  * its trace records (`clipTickAt`). Click or Space plays and pauses, the arrows step a second, Home goes back to
  * the start. It never autoplays or loops, and it returns to the poster when it ends. A replay's
- * camera stays on the record account; the reader cannot move it. `zone` names the Pacific zone
- * after the recording time, where this clip's time is the first one on its page.
+ * camera stays on the record account; the reader cannot move it.
  */
-export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: string; zone?: boolean }) {
+export function Clip({ clip, className }: { clip: ClipEntry; className?: string }) {
   const media = useRef<MediaHandle>(null);
   const figure = useRef<HTMLElement>(null);
   const rule = useRef<HTMLDivElement>(null);
@@ -247,7 +246,7 @@ export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: s
       <figcaption className={styles.caption} id={captionId}>
         <span className={styles.what}>{clip.caption}</span>
         <span className={styles.when}>
-          {clipWhen(clip, zone)} · {clip.step} · {clipSource(clip)}
+          {clipWhen(clip)} · {clip.step} · {clipSource(clip)}
         </span>
         {tick !== undefined && (
           <span className={styles.tick} aria-hidden={phase === 'rest'}>

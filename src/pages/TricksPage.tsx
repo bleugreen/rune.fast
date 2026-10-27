@@ -6,8 +6,6 @@ import styles from './TricksPage.module.css';
 
 export function TricksPage() {
   const { halved } = headlineFacts(TRICKS);
-  // The first clip's caption is the first clock time on the open page (source lines wait behind their disclosures), so it names the zone.
-  const firstClip = GROUPS.flatMap((g) => inGroup(TRICKS, g.id)).find((t) => t.clip)?.id;
 
   // A link to /tricks#<id> lands on that card, arriving from another page or by a changed hash.
   useEffect(() => {
@@ -32,7 +30,7 @@ export function TricksPage() {
           <h2 className={styles.groupTitle}>{g.title}</h2>
           <div className={styles.cards}>
             {inGroup(TRICKS, g.id).map((t) => (
-              <TrickCard key={t.id} trick={t} zone={t.id === firstClip} />
+              <TrickCard key={t.id} trick={t} />
             ))}
           </div>
         </section>

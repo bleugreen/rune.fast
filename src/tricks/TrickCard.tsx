@@ -25,10 +25,9 @@ function Sources({ sources }: { sources: readonly string[] }) {
 /**
  * One technique: what the game does and what the run did instead, its chart under the prose, and its clip or
  * frames beside them. A technique with nothing on screen to film has no media cell, and its chart takes that column.
- * `zone` names the Pacific zone on the clip's time, for the card whose clip carries the page's first clock time.
  */
-export function TrickCard({ trick: t, zone }: { trick: Trick; zone?: boolean }) {
-  const media = t.clip ? <Clip clip={clipById(t.clip)} zone={zone} /> : t.stills ? <StillStrip strip={t.stills} zone={zone} /> : null;
+export function TrickCard({ trick: t }: { trick: Trick }) {
+  const media = t.clip ? <Clip clip={clipById(t.clip)} /> : t.stills ? <StillStrip strip={t.stills} /> : null;
   return (
     <article className={[styles.card, !media && styles.unfilmed].filter(Boolean).join(' ')} id={t.id}>
       <div className={styles.text}>

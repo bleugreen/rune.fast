@@ -56,8 +56,6 @@ interface Wall {
   hour: number;
   minute: number;
   second: number;
-  /** Minutes east of UTC: -420 in PDT, -480 in PST. */
-  offset: number;
 }
 
 /** The Pacific wall clock at t. */
@@ -65,7 +63,6 @@ function pacific(t: number): Wall {
   const n: Record<string, number> = {};
   for (const { type, value } of pacNumeric.formatToParts(t)) if (type !== 'literal') n[type] = Number(value);
   const { year, month, day, hour, minute, second } = n as Record<'year' | 'month' | 'day' | 'hour' | 'minute' | 'second', number>;
-  const asUtc = Date.UTC(year, month - 1, day, hour, minute, second);
   return {
     year,
     month,
@@ -74,7 +71,6 @@ function pacific(t: number): Wall {
     hour,
     minute,
     second,
-    offset: Math.round((asUtc - Math.floor(t / SECOND) * SECOND) / MINUTE),
   };
 }
 
@@ -132,7 +128,7 @@ export const fmtPacificDayMonYear = (t: number) => {
 };
 /** The Pacific hour of t, 0-23. */
 export const pacificHour = (t: number) => pacific(t).hour;
-/** '2:37 PM', '12:05 AM', Pacific, with no zone: the page names it once. */
+/** '2:37 PM', '12:05 AM', Pacific. The site never names the zone. */
 export const fmtPacificHm = (t: number) => clock(t, false);
 /** '4:14:43 AM', Pacific, with no zone. */
 export const fmtPacificHms = (t: number) => clock(t, true);
@@ -151,11 +147,6 @@ export function fmtCalendarDate(key: string): string {
   const month = m && MONTHS[Number(m[2]) - 1];
   if (!m || !month) throw new Error(`Not a calendar day: ${key}`);
   return `${Number(m[3])} ${month} ${m[1]}`;
-}
-
-/** Pacific zone abbreviation in force at t: PDT or PST. */
-export function pacificZone(t: number): string {
-  return pacific(t).offset === -7 * 60 ? 'PDT' : 'PST';
 }
 
 /** The Pacific dates a span covers: '26 October 2026', '23–26 October 2026', or both dates in full across months. */

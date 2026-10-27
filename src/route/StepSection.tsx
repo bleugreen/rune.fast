@@ -18,8 +18,6 @@ interface Props {
   storyTitles: ReadonlyMap<string, string>;
   /** Breaks that are planned logouts, by their index in the route. */
   planned: ReadonlySet<number>;
-  /** The clip whose caption names the page's zone, when this step holds it. */
-  zoneClip?: string;
 }
 
 const trickName = (id: string) => TRICKS.find((t) => t.id === id)?.name ?? id;
@@ -102,7 +100,7 @@ export function StepSection({ step, route, words, storyTitles, planned, zoneClip
                 {b.p}
               </p>
             );
-          if ('clip' in b) return <Clip key={i} clip={clipById(b.clip)} className={styles.clip} zone={b.clip === zoneClip} />;
+          if ('clip' in b) return <Clip key={i} clip={clipById(b.clip)} className={styles.clip} />;
           return renderBreak(b.brk);
         })}
         {unplaced.map(renderBreak)}

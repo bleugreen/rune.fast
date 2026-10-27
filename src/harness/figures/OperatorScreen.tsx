@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { figureById, figureSrc, rendition } from '../../figures/registry';
 import { countWord } from '../../lib/numbers';
-import { fmtPacificDayLong, fmtPacificHm, pacificZone } from '../../lib/time';
+import { fmtPacificDayLong, fmtPacificHm } from '../../lib/time';
 import type { HarnessModel } from '../model';
 import styles from './Figures.module.css';
 
@@ -14,8 +14,7 @@ const orWords = (xs: readonly string[]) => (xs.length < 2 ? (xs[0] ?? '') : `${x
 /**
  * The operator's own screen during the run, ahead of every diagram: a reader who pictures one agent
  * in one terminal sees the panes side by side. At column width the panes' text cannot be read, so
- * the image opens the full-size rendition. Its caption is the page's first clock time, so it names
- * the zone.
+ * the image opens the full-size rendition.
  */
 export function OperatorScreen({ m, className, children }: { m: HarnessModel; className?: string; children?: ReactNode }) {
   const f = figureById(SCREEN_FIGURE);
@@ -35,7 +34,7 @@ export function OperatorScreen({ m, className, children }: { m: HarnessModel; cl
       </a>
       <figcaption className={styles.screenCaption}>
         <span>
-          The operator’s screen at {fmtPacificHm(t)} {pacificZone(t)} on {fmtPacificDayLong(t)}:{' '}
+          The operator’s screen at {fmtPacificHm(t)} on {fmtPacificDayLong(t)}:{' '}
           {countWord(panes.length)} of the swarm’s agents side by side. Each pane is one issue’s {orWords(roles)}
           {threads.length === 1 && (
             <>

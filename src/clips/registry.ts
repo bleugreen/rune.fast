@@ -1,5 +1,5 @@
 import raw from '../../data/clips.json';
-import { fmtPacificClockRange, fmtPacificDayMonYear, pacificZone, parseUtc } from '../lib/time';
+import { fmtPacificClockRange, fmtPacificDayMonYear, parseUtc } from '../lib/time';
 import { WORLD_ASSET_BASE } from '../replay/assets';
 
 /** Where footage comes from, as its caption names it. */
@@ -104,11 +104,10 @@ export function clipById(id: string): ClipEntry {
 
 /**
  * When the footage was recorded, Pacific, as its caption prints it: '26 Oct 2026, 3:27:15–3:27:27 AM'.
- * With `zone`, the Pacific zone follows, for the one clip that names its page's zone.
  */
-export function clipWhen(c: Pick<Provenance, 'recorded'>, zone = false): string {
+export function clipWhen(c: Pick<Provenance, 'recorded'>): string {
   const [a, b] = c.recorded.map(parseUtc) as [number, number];
-  return `${fmtPacificDayMonYear(a)}, ${fmtPacificClockRange(a, b, true)}${zone ? ` ${pacificZone(a)}` : ''}`;
+  return `${fmtPacificDayMonYear(a)}, ${fmtPacificClockRange(a, b, true)}`;
 }
 
 /** The caption's source: 'The run host’s screen recording', 'Run feed', or 'Lab film, rs-sdk 3546291'. */
