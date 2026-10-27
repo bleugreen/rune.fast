@@ -5,6 +5,7 @@ import {
   WorldLoadError,
   type DownloadProgress,
   type LiveController,
+  type RenderDataWorkerPool,
   type WebGLMapViewerRenderer,
 } from '@rune/world';
 import { parseChunk, type ChunkData, type ClipChunk, type ClipManifest } from '@rune/world/replay/clip';
@@ -13,7 +14,7 @@ import { fmtInt } from '../lib/numbers';
 import { CodePane } from './CodePane';
 import { FINISH_BASE, type Moment } from './moments';
 import { Timeline } from './Timeline';
-import { loadWorld, type LoadedWorld } from './world';
+import { loadWorld, startWorkers, type LoadedWorld } from './world';
 import styles from './Replay.module.css';
 
 const REVISION = 289;
@@ -75,15 +76,18 @@ export function Replay({ moment }: { moment: Moment }) {
 
   useEffect(() => {
     const abort = new AbortController();
+    let pool: RenderDataWorkerPool | undefined;
     let loaded: LoadedWorld | undefined;
     (async () => {
       // Stage marks (User Timing) for scripts/world/shoot.ts --timings.
       performance.mark('replay:start');
+      // The workers load while the manifest, the fonts and the cache arrive.
+      pool = startWorkers();
       const manifest = await fetchManifest(FINISH_BASE);
       performance.mark('replay:manifest');
       await Promise.all(OVERLAY_FONTS.map((font) => document.fonts.load(font)));
       performance.mark('replay:fonts');
-      loaded = await loadWorld(abort.signal, setProgress);
+      loaded = await loadWorld(pool, abort.signal, setProgress);
       const driver = new ReplayDriver(manifest, (i) => fetchChunk(FINISH_BASE, manifest.chunks[i]!));
       const controller = loaded.viewer.startLive(driver.feed);
       // Only the followed account is named; everyone else stays unlabelled.
@@ -104,6 +108,7 @@ export function Replay({ moment }: { moment: Moment }) {
     return () => {
       abort.abort();
       loaded?.viewer.dispose();
+      void pool?.terminate();
     };
   }, [moment]);
 
