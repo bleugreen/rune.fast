@@ -10,6 +10,7 @@ operator's checkout). Each film writes `clip.mp4`, `trace.jsonl`, `feed.jsonl` a
 | `aereck.json` | `speedrun/lab/quests/aereck-burst.ts --lab --client=browser --talks=4` | Father Aereck's default conversation, alternating read page by page (1 tick a page) and in bursts of blind continues |
 | `relog.json` + `relog-page.ts` | `speedrun/tools/relog-probe.ts --via=page --bank`, through the wrapper | the same-page relog: logout button, in-page login, the new session's first tick |
 | `tutorial-skip.json` | `speedrun/skills/start.ts` (step module), setup `leaveTutorial: false` | a fresh account skipping Tutorial Island |
+| `willow-knife.json` | `speedrun/skills/woodcutting.ts` (step module), `technique: knife`, Woodcutting 73 at the Taverley willows | the knife-on-logs reset: a log knifed and the tree clicked in the same tick, inventory tab open |
 
 `aereck-burst.ts` attaches to the film tool's tab when given `--client=browser` without `--launch`.
 `relog-page.ts` stands in for `speedrun/lab/measure-relog.ts`, which starts a Chrome of its own: it
