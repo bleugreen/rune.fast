@@ -245,6 +245,17 @@ describe('what the page adds to the draft', () => {
     expect(board!.at).toBeGreaterThan(agility!.at);
   });
 
+  test('the death section sets no figure between the operator’s “I WANT A #1” and fable’s reply, and explains dying after them', () => {
+    const s = sections.find((x) => x.id === 'the-death')!;
+    const want = s.blocks.findIndex((b) => quotes(b, 'me: I WANT A #1'));
+    const reply = s.blocks.findIndex((b) => quotes(b, 'fable: What it lost is kit, not time'));
+    expect(want).toBeGreaterThanOrEqual(0);
+    expect(reply).toBeGreaterThanOrEqual(want);
+    expect([...s.figuresAt.keys()].filter((at) => at >= want && at < reply)).toEqual([]);
+    const after = s.blocks[reply + 1]!;
+    expect(after.kind === 'p' && after.text.startsWith('Dying in RuneScape keeps every level.')).toBe(true);
+  });
+
   test('the swarm section closes on the cost link, after host’s answer, not between the usage limits and the quotation they lead into', () => {
     const s = sections.find((x) => x.id === 'the-swarm')!;
     const placed = [...s.figuresAt].flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
