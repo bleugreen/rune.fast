@@ -90,7 +90,7 @@ export default function Tokens() {
               <code>{v}</code>
             </span>
             <p className={styles.sans} style={{ fontSize: `var(${v})` }}>
-              {label}: 11:00 AM PDT · logged out 9 h 08 min
+              {label}: 11:00 AM · logged out 9 h 08 min
             </p>
           </div>
         ))}

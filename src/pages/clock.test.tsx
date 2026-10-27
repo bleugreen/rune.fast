@@ -18,13 +18,14 @@ import { TricksPage } from './TricksPage';
 import { RoutePage } from './RoutePage';
 import { route } from '../route/data';
 import { WORDS } from '../route/prose';
+import { SHARE_IMAGE, siteMeta } from '../meta';
 
 /*
  * Every clock time the site prints is Pacific on the 12-hour clock ('2:37 PM',
- * '4:14:43 AM'), and each page names the zone once, on the first clock time a
- * reader meets. Quoted words are evidence and stay as they were said: blockquotes
- * everywhere, and on the story page the narrator's draft, its quoted spans and its
- * receipts, which are imported verbatim (scripts/import-story.ts).
+ * '4:14:43 AM'), and no page names the zone: not PDT, PST or Pacific, and never
+ * UTC. Quoted words are evidence and stay as they were said: blockquotes and quoted
+ * spans everywhere, and on the story page the operator's draft and its receipts,
+ * which are imported verbatim (scripts/import-story.ts).
  */
 
 /** A clock time as the site writes it, or a span sharing one period: '2:37 PM', '4:14:43 AM', '3:27:15–3:27:27 AM'. */
@@ -34,14 +35,23 @@ const STRAY = /\d{1,2}:\d{2}/g;
 /** A zone, named or implied. */
 const ZONE = /\b(?:P[DS]T|UTC|GMT|Pacific)\b|\d:\d{2}(?::\d{2})?(?:\.\d+)?Z\b/g;
 
+/** A time on the 24-hour clock: an hour past 12, or one written with a leading zero. */
+const TWENTY_FOUR = /\b(?:0\d|1[3-9]|2[0-3]):[0-5]\d\b/g;
+
 const clocks = (s: string) => s.match(CLOCK) ?? [];
 const strays = (s: string) => s.replace(CLOCK, ' ').match(STRAY) ?? [];
 const zones = (s: string) => s.match(ZONE) ?? [];
-/** What follows the first clock time. */
-const afterFirstClock = (s: string) => {
-  const m = new RegExp(CLOCK.source).exec(s);
-  return m ? s.slice(m.index + m[0].length, m.index + m[0].length + 6) : null;
-};
+
+/** Words without what they quote: quoted spans and code are someone's own words and stay as said. */
+const unquoted = (s: string) =>
+  s
+    .replace(/`[^`\n]+`/g, ' ')
+    .replace(/"[^"]*"/g, ' ')
+    .replace(/“[^”]*”/g, ' ');
+
+/** The attributes a reader or a screen reader meets: alt text, titles and labels. */
+const ATTRIBUTES = /\s(?:alt|title|aria-label)="([^"]*)"/g;
+const attributes = (html: string) => [...html.matchAll(ATTRIBUTES)].map((m) => m[1]!).join('\n');
 
 const ENTITIES: Readonly<Record<string, string>> = { '&amp;': '&', '&#x27;': "'", '&quot;': '"', '&lt;': '<', '&gt;': '>' };
 
@@ -83,46 +93,33 @@ function render(Page: ComponentType): string {
   }
 }
 
-/** The pages whose own components print the zone, and the open surface each is checked on. */
-const ZONED: ReadonlyArray<readonly [string, ComponentType]> = [
+const PAGES: ReadonlyArray<readonly [string, ComponentType]> = [
+  ['/', StoryPage],
   ['/route', RoutePage],
   ['/tricks', TricksPage],
   ['/cost', CostPage],
   ['/harness', HarnessPage],
 ];
 
-describe.each(ZONED)('%s', (_, Page) => {
+describe.each(PAGES)('%s', (path, Page) => {
   const html = render(Page);
   // A closed disclosure is not read until opened; its lines are checked as the build ships them, below.
-  const surface = textOf(without(html, QUOTED, DISCLOSED));
+  const open = without(html, QUOTED, DISCLOSED);
 
-  test('prints its clock times on the 12-hour clock, and no other kind', () => {
-    expect(clocks(surface).length).toBeGreaterThan(0);
-    expect(strays(surface)).toEqual([]);
+  test('names no zone, in its text or in its alt text and labels', () => {
+    expect(zones(unquoted(textOf(open)))).toEqual([]);
+    expect(zones(attributes(open))).toEqual([]);
   });
 
-  test('names the zone once, on the first clock time', () => {
-    expect(zones(surface)).toEqual(['PDT']);
-    expect(afterFirstClock(surface)).toMatch(/^ PDT\b/);
+  // The story's draft is the operator's prose, checked on its own below.
+  test('prints its own clock times on the 12-hour clock, and no other kind', () => {
+    const own = textOf(path === '/' ? without(open, ...DRAFT) : open);
+    expect(clocks(own).length).toBeGreaterThan(0);
+    expect(strays(own)).toEqual([]);
   });
 });
 
-describe('/', () => {
-  const html = render(StoryPage);
-
-  test('adds no zone and no 24-hour time of its own: the figures, captions and dates leave the zone to the dateline', () => {
-    const own = textOf(without(html, ...DRAFT, QUOTED, DISCLOSED));
-    expect(clocks(own).length).toBeGreaterThan(0);
-    expect(strays(own)).toEqual([]);
-    expect(zones(own)).toEqual([]);
-  });
-
-  /** The narrator's words, without what they quote: quoted spans and code are the swarm's own and stay as said. */
-  const unquoted = (s: string) =>
-    s
-      .replace(/`[^`\n]+`/g, ' ')
-      .replace(/"[^"]*"/g, ' ')
-      .replace(/“[^”]*”/g, ' ');
+describe('the story’s draft', () => {
   const narrator = [
     story.title,
     story.byline,
@@ -131,12 +128,23 @@ describe('/', () => {
     .map(unquoted)
     .join('\n');
 
-  // Runs once the draft on the 12-hour clock is imported (rune/main converted it; rune/12 imports it).
-  // The draft before it is on the 24-hour clock throughout, and its narrator writes no 12-hour time at all.
-  test.skipIf(clocks(narrator).length === 0)('the narrator names the zone once, on the dateline, and writes the 12-hour clock', () => {
-    expect(zones(narrator)).toEqual(['PDT']);
-    expect(afterFirstClock(narrator)).toMatch(/^ \(PDT\)/);
-    expect(strays(narrator)).toEqual([]);
+  // The operator writes a time whose period the sentence before has given bare ('At 3:40,'), so the
+  // check is that every time reads on the 12-hour clock, not that each carries AM or PM.
+  test('names no zone, and writes the 12-hour clock', () => {
+    expect(clocks(narrator).length).toBeGreaterThan(0);
+    expect(zones(narrator)).toEqual([]);
+    expect(narrator.match(TWENTY_FOUR) ?? []).toEqual([]);
+  });
+
+  // The receipts and dig tables under each section are rune/main's research notes, imported verbatim,
+  // and keep the UTC and 24-hour times it wrote them in; they want Pacific with no zone, like every other source line.
+  test.todo('its Sources disclosures print the 12-hour clock with no zone');
+});
+
+describe('link previews', () => {
+  test('name no zone', () => {
+    const words = [...Object.values(siteMeta()).flatMap((m) => [m.title, m.description]), SHARE_IMAGE.alt].join('\n');
+    expect(zones(words)).toEqual([]);
   });
 });
 
@@ -149,7 +157,7 @@ describe('lines behind the disclosures, as the build ships them', () => {
     ...route.steps.flatMap((s) => WORDS[s.spec.id]!.sources(s, route)),
   ];
 
-  test('print the 12-hour clock with no zone: the page has named it', () => {
+  test('print the 12-hour clock with no zone', () => {
     expect(lines.flatMap(clocks).length).toBeGreaterThan(0);
     expect(lines.filter((l) => strays(l).length || zones(l).length)).toEqual([]);
   });

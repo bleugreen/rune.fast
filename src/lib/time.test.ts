@@ -15,7 +15,6 @@ import {
   pacificDayKey,
   pacificHour,
   pacificMidnights,
-  pacificZone,
   parseUtc,
 } from './time';
 
@@ -34,8 +33,6 @@ const WRITTEN: ReadonlyArray<readonly [string, (t: number) => string, number, st
   ['fmtPacificDayMonYear', fmtPacificDayMonYear, FRI, '23 Oct 2026'],
   ['fmtPacificHm', fmtPacificHm, FRI, '1:25 AM'],
   ['fmtPacificHms', fmtPacificHms, FRI, '1:25:07 AM'],
-  ['pacificZone', pacificZone, FRI, 'PDT'],
-  ['pacificZone in winter', pacificZone, parseUtc('2026-11-01T09:30Z'), 'PST'],
   ['fmtPacificDayShort on a Sunday', fmtPacificDayShort, parseUtc('2026-10-25T19:00Z'), 'Sun 25 Oct'],
 ];
 

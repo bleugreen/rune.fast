@@ -27,22 +27,9 @@ export function openingFacts(t: Timeline): OpeningFacts {
   return { name: a5.name, start: parseUtc(a5.start.utc), last99: parseUtc(last99.utc), quote: QUOTED };
 }
 
-/**
- * The page's first clip, as its step and id. The opening prints no clock time and no break comes
- * before it, so its caption is the first clock time on the open page (source lines wait behind
- * their disclosures), and it names the zone.
- */
-function firstClip(): { step: string; clip: string } | undefined {
-  for (const s of route.steps) {
-    const b = WORDS[s.spec.id]!.body(s, route).find((x) => 'clip' in x);
-    if (b && 'clip' in b) return { step: s.spec.id, clip: b.clip };
-  }
-}
-
 export function RoutePage() {
   const clock = useMemo(() => new ReadingClock(route.finish), []);
   const facts = useMemo(() => openingFacts(timeline), []);
-  const zoned = useMemo(firstClip, []);
   const storyTitles = useMemo(() => new Map(storySections(story).map((s) => [s.id, s.title])), []);
   const finish = finishWords(route);
 
@@ -72,7 +59,6 @@ export function RoutePage() {
                 words={WORDS[s.spec.id]!}
                 storyTitles={storyTitles}
                 planned={PLANNED_BREAKS}
-                zoneClip={zoned?.step === s.spec.id ? zoned.clip : undefined}
               />
             ))}
 

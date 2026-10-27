@@ -5,7 +5,7 @@ import { timeline } from '../data/timeline';
 import { buildCostModel, type DayCost, type StatusSegment } from '../cost/model';
 import { ActivityChart, DayChart, DayLegend, SwarmChart } from '../cost/Charts';
 import { capitalize, countWord, fmtInt, fmtPercent, fmtUsd, fmtUsdCents, listWords } from '../lib/numbers';
-import { fmtPacificDayLong, fmtPacificDayMonth, fmtPacificHm, fmtPacificWeekday, MINUTE, pacificZone } from '../lib/time';
+import { fmtPacificDayLong, fmtPacificDayMonth, fmtPacificHm, fmtPacificWeekday, MINUTE } from '../lib/time';
 import styles from './CostPage.module.css';
 
 const STATUS_LABEL: Readonly<Record<StatusGroup, (n: number) => string>> = {
@@ -74,7 +74,7 @@ export function CostPage() {
           subscriptions
         </h1>
         <p className={styles.dek}>
-          {capitalize(span)} of an agent swarm, from {fmtPacificHm(w.from)} {pacificZone(w.from)} on{' '}
+          {capitalize(span)} of an agent swarm, from {fmtPacificHm(w.from)} on{' '}
           {fmtPacificDayLong(w.from)} to {fmtPacificHm(w.to)} on {fmtPacificDayLong(w.to)}.
         </p>
       </header>

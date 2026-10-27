@@ -120,9 +120,8 @@ describe('the clip registry', () => {
 describe('the caption line', () => {
   test('gives the time in Pacific, 12-hour, and the source in plain words', () => {
     expect(clipWhen(clipById('finish-rekit'))).toBe('26 Oct 2026, 3:27:15–3:27:27 AM');
-    expect(clipWhen(clipById('finish-rekit'), true)).toBe('26 Oct 2026, 3:27:15–3:27:27 AM PDT');
     expect(clipWhen(clipById('levelup-firemaking'))).toBe('23 Oct 2026, 2:50:03–2:50:16 PM');
-    expect(clipWhen(clipById('finish-agility99'), true)).toBe('26 Oct 2026, 4:07:41–4:07:55 AM PDT');
+    expect(clipWhen(clipById('finish-agility99'))).toBe('26 Oct 2026, 4:07:41–4:07:55 AM');
     expect(clipSource(clipById('finish-rekit'))).toBe('The run host’s screen recording');
     expect(clipSource(clipById('wine-relog'))).toBe('The run host’s screen recording');
     expect(clipWhen(clipById('wine-relog'))).toBe('25 Oct 2026, 1:26:01–1:26:16 PM');
