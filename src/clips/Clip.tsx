@@ -11,6 +11,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from 'react';
+import { Contained } from '../components/Contained';
 import { fmtInt } from '../lib/numbers';
 import { clipSource, clipTickAt, clipWhen, type ClipEntry, type ReplayEntry, type VideoEntry } from './registry';
 import styles from './Clip.module.css';
@@ -45,7 +46,10 @@ export interface MediaProps<E extends ClipEntry> {
   onFailed(message: string): void;
 }
 
-/** Stands in for the replay when its module fails to load (a deploy since the page opened, or the network). */
+/**
+ * Stands in for the replay when its module fails to load (a deploy since the page opened, which
+ * reloads the page once through src/lib/deploy.ts, or the network) or it fails to render.
+ */
 const LoadFailed = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function LoadFailed({ onFailed }, _ref) {
   useEffect(() => onFailed('The replay failed to load'), [onFailed]);
   return null;
@@ -199,9 +203,11 @@ export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: s
           (clip.kind === 'video' ? (
             <VideoMedia ref={media} entry={clip} {...mediaProps} />
           ) : (
-            <Suspense fallback={null}>
-              <ReplayMedia ref={media} entry={clip} {...mediaProps} />
-            </Suspense>
+            <Contained fallback={<LoadFailed entry={clip} {...mediaProps} />}>
+              <Suspense fallback={null}>
+                <ReplayMedia ref={media} entry={clip} {...mediaProps} />
+              </Suspense>
+            </Contained>
           ))}
         {(phase === 'rest' || !begun) && (
           <img className={styles.poster} src={clip.poster} alt="" width={clip.width} height={clip.height} loading="lazy" />
