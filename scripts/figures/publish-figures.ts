@@ -49,7 +49,7 @@ const OUTPUTS: ReadonlyArray<{ use: Rendition['use']; type: Rendition['type']; e
   { use: 'full', type: 'image/webp', ext: 'webp', args: ['-define', 'webp:lossless=true', '-define', 'webp:method=6'] },
 ];
 
-export function sizeOf(type: Rendition['type'], buf: Buffer): { width: number; height: number } {
+function sizeOf(type: Rendition['type'], buf: Buffer): { width: number; height: number } {
   return type === 'image/avif' ? avifSize(buf) : type === 'image/webp' ? webpSize(buf) : jpegSize(buf);
 }
 
