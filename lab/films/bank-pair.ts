@@ -2,7 +2,7 @@
 // one deposit a tick, then the swarm's speedrun/lib/bank.ts `depositAll`, every deposit sent at once
 // and the server taking five a tick. These are speedrun/lab/measure-bank.ts's own two calls, staged
 // the same way (its bankFixture and its 24 distinct lab items, one of each), with a pause around each
-// deposit so the two can be cut out and set side by side, aligned on their first click.
+// deposit (6 ticks before, 30 after) so the two can be cut out and set side by side, aligned on their first click.
 //
 //   film/film.sh <bot> --clip=<this repo>/lab/films/bank.json --script=<this repo>/lab/films/bank-pair.ts
 //
@@ -49,7 +49,8 @@ async function film(path: 'stock' | 'ours', fn: () => Promise<unknown>) {
     });
     const row = log.rows[log.rows.length - 1]!;
     console.log(`DEPOSIT ${JSON.stringify({ path, ticks: row.ticks, ok: row.ok, startMs, endMs: Date.now() })}`);
-    await waitTicks(sdk, 6);
+    // Long enough that the fast side's empty pack holds until the slow side's deposit ends.
+    await waitTicks(sdk, 30);
 }
 
 for (let i = 0; i < rounds; i++) {
