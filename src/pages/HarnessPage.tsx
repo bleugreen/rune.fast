@@ -120,7 +120,7 @@ export function HarnessPage() {
           belongs to.
         </p>
         <p className={styles.prose}>
-          Issue rs/{a.issue} is a good one to start with, because its whole life is on the record. It was filed at{' '}
+          This page follows one issue, rs/{a.issue}, from filing to merge. It was filed at{' '}
           {fmtPacificHm(a.filed)} {pacificZone(a.filed)} on {fmtPacificDayLong(a.filed)}, to write down the measured
           run order of the final attempt once that attempt was over. This is the address of the pull request that
           did it.
@@ -130,7 +130,7 @@ export function HarnessPage() {
         </Figure>
         <p className={styles.prose}>
           Every prefix of the address is an address too. <code>{ADDRESSES.issue}</code> is the issue, the unit of
-          work: a title, a description and a thread of comments. <code>{ADDRESSES.execution}</code> is an execution,
+          work, with its description and comments. <code>{ADDRESSES.execution}</code> is an execution,
           one attempt at that work, which runs a fixed set of agents against the issue.{' '}
           <code>{ADDRESSES.node}</code> is a node, one agent in that execution, here the builder, and{' '}
           <code>{a.artifact}</code> is an artifact, the thing that agent produced: the pull request. Reading any of
@@ -219,7 +219,7 @@ export function HarnessPage() {
           request, which closed the issue.
         </p>
         <p className={styles.prose}>
-          That is not the path Cairn’s documentation describes. Its standard recipe is planbuild: a planner writes a
+          Cairn’s documentation describes a different path. Its standard recipe is planbuild: a planner writes a
           plan, a person confirms it, and then a builder, a pull request and a review agent follow. planbuild waits on a
           person at every plan. The run used it for {fmtInt(m.planbuild.executions)} executions and used build for
           almost all the rest, and it reviewed the way rs/{i.reviewerIssue} did, with a coordinator reading the work and
@@ -244,8 +244,8 @@ export function HarnessPage() {
         <p className={styles.prose}>
           Agents act on all of these objects with three verbs. read fetches and searches anything with an address. write changes things: it edits files,
           and it also files issues, sends messages, writes artifacts and subscribes to wakes. run executes commands.
-          Each call carries a batch of items, and each item names its target by address, so one call can reach a file,
-          a terminal and the issue tracker together.
+          Each call carries a batch of items, and each item names its target by address, so one call can reach several
+          kinds of object at once.
         </p>
         <p className={styles.prose}>
           Here is a call main made at {fmtPacificHms(m.write.t)} on the first afternoon. The game client running in its
@@ -276,7 +276,7 @@ export function HarnessPage() {
           main’s own call to the client, not the client.)
         </p>
         <p className={styles.prose}>
-          The verb an agent used most shows what its job was. Builders ran commands, tests and builds above all:{' '}
+          The verb an agent used most shows what its job was. Builders ran commands above all:{' '}
           {fmtInt(verbsBuilders.run)} of their {fmtInt(verbsBuilders.total)} calls were run. Coordinators and threads
           used write more than anything else, because filing issues, sending messages and merging are all writes.
         </p>
@@ -354,8 +354,8 @@ export function HarnessPage() {
           <TenetLedger m={m} label={titles.tenets} />
         </Figure>
         <p className={styles.prose}>
-          This is the last tenet approved, in full. A thread proposed it on the Sunday night the story tells, after the
-          scored account died.
+          Here is the last tenet the operator approved. A thread proposed it on the Sunday night the story tells, after
+          the scored account died.
         </p>
         <Quote
           words={T.quoted.statement ?? ''}
@@ -398,8 +398,8 @@ export function HarnessPage() {
           <GitNotices m={m} label={titles.git} />
         </Figure>
         <p className={styles.prose}>
-          Each ink notice stopped an agent until it had dealt with its branch, {fmtInt(m.git.blocking)} times over the
-          run. Some cost more than a turn. At {at(q.publish!.t)}, rs/{q.publish!.issue}’s builder could not publish its
+          Over the run, {fmtInt(m.git.blocking)} notices needed an agent to act on its branch. Some cost more than a
+          turn. At {at(q.publish!.t)}, rs/{q.publish!.issue}’s builder could not publish its
           branch, and writing its pull request artifact again had not helped:
         </p>
         <Quote words={q.publish!.words} by={`rs/${q.publish!.issue}’s builder, ${at(q.publish!.t)}`} />
