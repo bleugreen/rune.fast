@@ -1,0 +1,14 @@
+Pathfinding initialized in 240ms (136704 zones + 297 mainland fill, 1268350 tiles, 2691 doors masked, 5 one-way doors blocked)
+RESULT deposit 24 distinct (stock) {"ticks":24,"ok":true}
+DEPOSIT {"path":"stock","ticks":24,"ok":true,"startMs":1793069938348,"endMs":1793069948360}
+RESULT deposit 24 distinct (ours) {"ticks":5,"ok":true}
+DEPOSIT {"path":"ours","ticks":5,"ok":true,"startMs":1793069964790,"endMs":1793069967189}
+RESULT deposit 24 distinct (stock) {"ticks":24,"ok":true}
+DEPOSIT {"path":"stock","ticks":24,"ok":true,"startMs":1793069983588,"endMs":1793069993600}
+RESULT deposit 24 distinct (ours) {"ticks":5,"ok":true}
+DEPOSIT {"path":"ours","ticks":5,"ok":true,"startMs":1793070010015,"endMs":1793070012417}
+step                         n  fail  total  mean  min  max
+---------------------------  -  ----  -----  ----  ---  ---
+deposit 24 distinct (stock)  2     0     48    24   24   24
+deposit 24 distinct (ours)   2     0     10     5    5    5
+TOTAL                                    58                
