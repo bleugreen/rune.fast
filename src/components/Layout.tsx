@@ -7,7 +7,6 @@ const LIVE = [
   { to: '/attempts', label: 'Attempts' },
   { to: '/tricks', label: 'Tricks' },
   { to: '/cost', label: 'Cost' },
-  { to: '/replay', label: 'Replays' },
 ] as const;
 
 const SOON = ['Swarm', 'Routes'] as const;
@@ -17,12 +16,9 @@ export function Layout() {
     <div className={styles.shell}>
       <header className={styles.masthead}>
         <div className={styles.mastInner}>
-          <div className={styles.brand}>
-            <Link to="/" className={styles.wordmark}>
-              rune.fast
-            </Link>
-            <p className={styles.subtitle}>How an agent swarm set the fastest-to-99 record</p>
-          </div>
+          <Link to="/" className={styles.wordmark}>
+            rune.fast
+          </Link>
           <nav className={styles.nav} aria-label="Pages">
             {LIVE.map((n) => (
               <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => (isActive ? styles.current : styles.link)}>

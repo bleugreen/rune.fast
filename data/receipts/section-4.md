@@ -89,3 +89,5 @@ Also usable: the operator's "ASAP, every moment we wait is an opportunity for ev
 - Rendered turn numbers in main's chat do not always resolve as `chat/turn/N` URIs (turn/225 to 227 returned "not found" though the rendered headers exist). Line and header citations above are from the rendered chat; turn/75 and turn/76 resolved directly.
 
 **Names withheld:** every scored account (attempt 1's, attempt 2's, attempt 3's, attempt 4's, and the final name the operator chose at 16:43 to 16:44Z) is left out of the draft and this list. They appear verbatim in main chat Turns 228, 1593 to 1596, 1673 to 1674 and 2284 to 2285 if the operator decides to publish the final one.
+
+- Added 26 Oct 2026 by rune/main: attempt 4 'about 900 ticks out of reach on expected rows' and continuing 'for the complete entry and the live measurement of the steps ahead': cairn://p/rs/main/chat Turn 2225 (06:16 PDT 24 Oct) and the turn before it.

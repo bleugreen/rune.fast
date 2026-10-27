@@ -114,7 +114,7 @@ export function fmtDuration(ms: number, withSeconds = false): string {
   if (h) parts.push(`${h} h`);
   parts.push(`${h ? String(m).padStart(2, '0') : m} min`);
   if (withSeconds) parts.push(`${s} s`);
-  return parts.join(' ');
+  return parts.join(' ');
 }
 
 /** The Pacific midnights in [a, b]. Pacific offsets are whole hours, so midnight falls on a UTC hour. */

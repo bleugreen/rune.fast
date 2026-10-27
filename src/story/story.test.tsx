@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
-import { clipById, clipWhen } from '../clips/registry';
+import { clipById, clipSource, clipWhen } from '../clips/registry';
 import { StoryPage } from '../pages/StoryPage';
 import { sourceTable } from './draft';
 import { SECTION_META, quotes, storySections } from './sections';
@@ -73,7 +73,7 @@ describe('the draft, placed verbatim', () => {
 
   test('code spans and emphasis are set, not shown as backticks and asterisks', () => {
     for (const [, code] of draft.slice(0, draft.indexOf('## Receipts')).matchAll(/`([^`\n]+)`/g)) {
-      expect(html).toContain(`<code>${code!.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}</code>`);
+      expect(html).toContain(`<code>${code!.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')}</code>`);
     }
     expect(html).toContain('<em>more</em>');
     expect(surface).not.toContain('`');
@@ -185,13 +185,13 @@ describe('what the page adds to the draft', () => {
     expect(rekitBlock.kind === 'p' && rekitBlock.text.startsWith('Overnight the helpers rebuilt the lost kit')).toBe(true);
   });
 
-  test('each clip in the story renders with its caption, time and step', () => {
+  test('each clip in the story renders with its caption, time, step and source', () => {
     const ids = SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' && f.figure.id ? [f.figure.id] : [])));
     expect(ids.length).toBeGreaterThan(0);
     for (const id of ids) {
       const c = clipById(id);
-      expect(html).toContain(`src="${c.src}"`);
-      for (const s of [c.caption, clipWhen(c), c.step]) expect(surface).toContain(s);
+      if (c.kind === 'video') expect(html).toContain(`src="${c.src}"`);
+      for (const s of [c.caption, clipWhen(c), c.step, clipSource(c)]) expect(surface).toContain(s);
     }
   });
 });

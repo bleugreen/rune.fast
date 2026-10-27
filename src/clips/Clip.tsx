@@ -1,5 +1,18 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import { clipWhen, tickAt, type ClipEntry } from './registry';
+import {
+  forwardRef,
+  lazy,
+  Suspense,
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+  type RefObject,
+} from 'react';
+import { fmtInt } from '../lib/numbers';
+import { clipSource, clipTickAt, clipWhen, type ClipEntry, type ReplayEntry, type VideoEntry } from './registry';
 import styles from './Clip.module.css';
 
 /** rest: the poster; loading: asked to play, no frame yet; then playing or paused. */
@@ -7,70 +20,169 @@ type Phase = 'rest' | 'loading' | 'playing' | 'paused';
 
 const SEEK_SECONDS = 1;
 
+/** How near the screen a replay must come, in viewports, before the game cache starts downloading. */
+const CACHE_MARGIN = '100% 0px';
+
+/** What the frame can ask of the footage inside it beyond playing and pausing. */
+export interface MediaHandle {
+  /** Moves the playhead to this many ms into the window. */
+  seek(ms: number): void;
+}
+
+/** The footage inside a frame: told whether to move, it reports what it is doing. */
+export interface MediaProps<E extends ClipEntry> {
+  entry: E;
+  /** Whether the reader wants it moving. */
+  playing: boolean;
+  /** Frames are moving. */
+  onPlaying(): void;
+  /** It stopped by itself (the browser paused it). */
+  onPaused(): void;
+  /** Back to the poster: the playhead reached the end of the window, or another replay took the page's one 3D stage. */
+  onEnded(): void;
+  /** The playhead, in ms into the window. */
+  onTime(ms: number): void;
+  onFailed(message: string): void;
+}
+
+/** Stands in for the replay when its module fails to load (a deploy since the page opened, or the network). */
+const LoadFailed = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function LoadFailed({ onFailed }, _ref) {
+  useEffect(() => onFailed('The replay failed to load'), [onFailed]);
+  return null;
+});
+
+/* The 3D engine is most of the site's weight; it loads the first time a replay is played. */
+const ReplayMedia = lazy(() =>
+  import('../replay/Replay').catch((e: unknown) => {
+    console.error(e);
+    return { default: LoadFailed };
+  }),
+);
+
 /**
- * A short silent game clip at the full width of its column, with the site's own
- * controls: the poster and one play mark at rest; on play, a hairline progress rule
- * in the accent and, for a lab clip, the server tick. Click or Space plays and pauses,
- * the arrows step a second. It never autoplays or loops, and it returns to the poster
- * when it ends. `zone` names the Pacific zone after the recording time, where this
- * clip's time is the first one on its page.
+ * Starts the shared world's game-cache download, and the engine's code with it, when a replay first
+ * comes within a viewport of the screen. Skipped when the reader's browser asks to save data.
+ */
+function useCacheNearView(entry: ClipEntry, el: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const node = el.current;
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (entry.kind !== 'replay' || !node || saveData || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+        performance.mark('replay:cache-near-view');
+        // A dynamic import, so the page's own chunk stays free of the engine. A failure here is
+        // reported by the replay itself if the reader plays it.
+        import('../replay/world').then((m) => m.prefetch()).catch((e: unknown) => console.warn('Replay prefetch failed', e));
+      },
+      { rootMargin: CACHE_MARGIN },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [entry, el]);
+}
+
+/**
+ * A 10-15 s piece of footage at the full width of its column, in one frame whether it is a video
+ * file or a window of the 3D replay: the poster and one play mark at rest; on play, a hairline
+ * progress rule in the accent that can be dragged to scrub, and the tick on screen where the
+ * footage knows it. Click or Space plays and pauses, the arrows step a second, Home goes back to
+ * the start. It never autoplays or loops, and it returns to the poster when it ends. A replay's
+ * camera stays on the record account; the reader cannot move it. `zone` names the Pacific zone
+ * after the recording time, where this clip's time is the first one on its page.
  */
 export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: string; zone?: boolean }) {
-  const video = useRef<HTMLVideoElement>(null);
+  const media = useRef<MediaHandle>(null);
+  const figure = useRef<HTMLElement>(null);
+  const rule = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState<Phase>('rest');
+  /** Whether the media has shown a frame since it last left the poster. */
+  const [begun, setBegun] = useState(false);
   const [ms, setMs] = useState(0);
+  const [error, setError] = useState<string>();
+  const [scrubbing, setScrubbing] = useState(false);
   const captionId = useId();
+  const total = clip.seconds * 1000;
+  const playing = phase === 'loading' || phase === 'playing';
+  // A video element is cheap and stays; a replay holds a WebGL context and workers, so it exists only off the poster.
+  const mounted = clip.kind === 'video' || phase !== 'rest';
 
-  // Follow the playhead every frame while playing, so the rule and the tick move with the picture.
-  useEffect(() => {
-    if (phase !== 'playing') return;
-    let raf = 0;
-    const follow = () => {
-      if (video.current) setMs(video.current.currentTime * 1000);
-      raf = requestAnimationFrame(follow);
-    };
-    raf = requestAnimationFrame(follow);
-    return () => cancelAnimationFrame(raf);
-  }, [phase]);
+  useCacheNearView(clip, figure);
 
   const toggle = () => {
-    const v = video.current;
-    if (!v) return;
-    if (phase === 'playing' || phase === 'loading') {
-      v.pause();
-      return;
+    if (playing) setPhase('paused');
+    else {
+      setError(undefined);
+      setPhase(phase === 'rest' ? 'loading' : 'playing');
     }
-    if (phase === 'rest') setPhase('loading');
-    v.play().catch(() => setPhase('rest'));
   };
 
-  const seek = (by: number) => {
-    const v = video.current;
-    if (!v || phase === 'rest') return;
-    v.currentTime = Math.min(Math.max(v.currentTime + by, 0), clip.seconds);
-    setMs(v.currentTime * 1000);
+  const seek = (to: number) => {
+    if (phase === 'rest') return;
+    const t = Math.min(Math.max(to, 0), total);
+    media.current?.seek(t);
+    setMs(t);
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === ' ' || e.key === 'Enter') toggle();
-    else if (e.key === 'ArrowLeft') seek(-SEEK_SECONDS);
-    else if (e.key === 'ArrowRight') seek(SEEK_SECONDS);
+    else if (e.key === 'ArrowLeft') seek(ms - SEEK_SECONDS * 1000);
+    else if (e.key === 'ArrowRight') seek(ms + SEEK_SECONDS * 1000);
+    else if (e.key === 'Home') seek(0);
     else return;
     e.preventDefault();
   };
 
   const toRest = () => {
-    const v = video.current;
-    if (v) v.currentTime = 0;
+    media.current?.seek(0);
     setMs(0);
+    setBegun(false);
     setPhase('rest');
   };
 
-  const progress = Math.min(ms / (clip.seconds * 1000), 1);
-  const started = phase !== 'rest';
+  const msAt = (clientX: number) => {
+    const box = rule.current!.getBoundingClientRect();
+    return (Math.min(Math.max((clientX - box.left) / box.width, 0), 1)) * total;
+  };
+  const scrubDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (phase === 'rest') return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setScrubbing(true);
+    seek(msAt(e.clientX));
+  };
+  const scrubMove = (e: PointerEvent<HTMLDivElement>) => scrubbing && seek(msAt(e.clientX));
+  const scrubUp = () => setScrubbing(false);
+
+  const mediaProps = {
+    playing,
+    onPlaying: () => {
+      setBegun(true);
+      setPhase((p) => (p === 'loading' ? 'playing' : p));
+    },
+    onPaused: () => setPhase((p) => (p === 'rest' ? p : 'paused')),
+    onEnded: toRest,
+    onTime: setMs,
+    onFailed: (message: string) => {
+      setError(message);
+      setMs(0);
+      setBegun(false);
+      setPhase('rest');
+    },
+  };
+
+  const progress = Math.min(ms / total, 1);
+  const tick = clipTickAt(clip, ms);
 
   return (
-    <figure className={[styles.clip, className].filter(Boolean).join(' ')} data-phase={phase}>
+    <figure
+      ref={figure}
+      className={[styles.clip, className].filter(Boolean).join(' ')}
+      data-phase={phase}
+      data-embed={clip.id}
+      data-kind={clip.kind}
+    >
       <div
         className={styles.frame}
         style={{ aspectRatio: `${clip.width} / ${clip.height}` }}
@@ -78,44 +190,105 @@ export function Clip({ clip, className, zone }: { clip: ClipEntry; className?: s
         tabIndex={0}
         aria-label={phase === 'playing' ? 'Pause the clip' : 'Play the clip'}
         aria-describedby={captionId}
-        aria-keyshortcuts="Space ArrowLeft ArrowRight"
+        aria-keyshortcuts="Space ArrowLeft ArrowRight Home"
+        aria-busy={phase === 'loading'}
         onClick={toggle}
         onKeyDown={onKeyDown}
       >
-        <video
-          ref={video}
-          src={clip.src}
-          poster={clip.poster}
-          width={clip.width}
-          height={clip.height}
-          preload="none"
-          muted
-          playsInline
-          disablePictureInPicture
-          onPlaying={() => setPhase('playing')}
-          onPause={(e) => !e.currentTarget.ended && setPhase('paused')}
-          onEnded={toRest}
-          onSeeked={(e) => setMs(e.currentTarget.currentTime * 1000)}
-        />
-        {(phase === 'rest' || phase === 'loading') && (
+        {mounted &&
+          (clip.kind === 'video' ? (
+            <VideoMedia ref={media} entry={clip} {...mediaProps} />
+          ) : (
+            <Suspense fallback={null}>
+              <ReplayMedia ref={media} entry={clip} {...mediaProps} />
+            </Suspense>
+          ))}
+        {(phase === 'rest' || !begun) && (
           <img className={styles.poster} src={clip.poster} alt="" width={clip.width} height={clip.height} loading="lazy" />
         )}
         {phase !== 'playing' && <span className={styles.play} aria-hidden="true" />}
+        {error && (
+          <p role="alert" className={styles.message}>
+            {error}
+          </p>
+        )}
       </div>
-      <div className={styles.rule} aria-hidden="true">
-        <div className={styles.fill} style={{ transform: `scaleX(${progress})` }} />
+      <div
+        ref={rule}
+        className={styles.scrub}
+        aria-hidden="true"
+        onPointerDown={scrubDown}
+        onPointerMove={scrubMove}
+        onPointerUp={scrubUp}
+        onPointerCancel={scrubUp}
+      >
+        <div className={styles.rule}>
+          <div className={styles.fill} style={{ transform: `scaleX(${progress})` }} />
+        </div>
       </div>
       <figcaption className={styles.caption} id={captionId}>
         <span className={styles.what}>{clip.caption}</span>
         <span className={styles.when}>
-          {clipWhen(clip, zone)} · {clip.step}
+          {clipWhen(clip, zone)} · {clip.step} · {clipSource(clip)}
         </span>
-        {clip.ticks && (
-          <span className={styles.tick} aria-hidden={!started}>
-            tick <span className={styles.tickNum}>{tickAt(clip.ticks, ms)}</span>
+        {tick !== undefined && (
+          <span className={styles.tick} aria-hidden={phase === 'rest'}>
+            tick <span className={styles.tickNum}>{fmtInt(tick)}</span>
           </span>
         )}
       </figcaption>
     </figure>
   );
 }
+
+/** A video file, with the browser's own controls never shown. */
+const VideoMedia = forwardRef<MediaHandle, MediaProps<VideoEntry>>(function VideoMedia(
+  { entry, playing, onPlaying, onPaused, onEnded, onTime, onFailed },
+  ref,
+) {
+  const video = useRef<HTMLVideoElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    seek: (ms) => {
+      if (video.current) video.current.currentTime = ms / 1000;
+    },
+  }));
+
+  useEffect(() => {
+    const v = video.current;
+    if (!v) return;
+    if (!playing) {
+      v.pause();
+      return;
+    }
+    v.play().catch((e: unknown) => {
+      // A pause before the first frame interrupts play(); that is the reader's doing, not a failure.
+      if (!(e instanceof DOMException && e.name === 'AbortError')) onFailed('The clip failed to play');
+    });
+    // Follow the playhead every frame while playing, so the rule and the tick move with the picture.
+    let raf = requestAnimationFrame(function follow() {
+      onTime(v.currentTime * 1000);
+      raf = requestAnimationFrame(follow);
+    });
+    return () => cancelAnimationFrame(raf);
+    // The callbacks only set the frame's state, so the ones from when play began serve throughout.
+  }, [playing]);
+
+  return (
+    <video
+      ref={video}
+      src={entry.src}
+      poster={entry.poster}
+      width={entry.width}
+      height={entry.height}
+      preload="none"
+      muted
+      playsInline
+      disablePictureInPicture
+      onPlaying={onPlaying}
+      onPause={(e) => !e.currentTarget.ended && onPaused()}
+      onEnded={onEnded}
+      onSeeked={(e) => onTime(e.currentTarget.currentTime * 1000)}
+    />
+  );
+});

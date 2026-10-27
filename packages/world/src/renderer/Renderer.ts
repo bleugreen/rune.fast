@@ -46,6 +46,16 @@ export abstract class Renderer {
         this.animationId = requestAnimationFrame(this.frameCallback);
     }
 
+    // Stops drawing and keeps everything, the GL context included; start() draws again. For one
+    // canvas that moves between hosts, or waits off the page between them.
+    suspend() {
+        this.running = false;
+        if (this.animationId !== undefined) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = undefined;
+        }
+    }
+
     stop() {
         this.running = false;
         if (this.animationId !== undefined) {

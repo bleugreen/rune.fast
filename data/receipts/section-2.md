@@ -79,3 +79,5 @@ Also found, not ranked: the 21:10 builder caveat that shrank interleaving ("the 
 3. **Exact minutes inside turn 8 and for rs/9's numbers.** The 35-to-86 result, the wine.rs2 read and the operator's "its just hanging at fletch menu" all sit in turn 8, which opened at 15:19 and ended before 15:29. The transcript does not stamp the individual events, so "five minutes later" (15:14 to 15:19) is when the turn opened, not the exact read time. For rs/9 I only have the PR merge time (21:46), so the draft says "before midnight" instead of giving a measurement time.
 
 Minor: the rs/51 issue header shows the PR as "#24 (open)" while status is merged; main's turn 61 area says "The blind-continue flag is merged (#24)". The "0.3 seconds" tick is correct for 20 to 21 Oct; the demo moved to 400 ms on 22 Oct 19:56Z (inventory line 3).
+
+- Added 26 Oct 2026 by rune/main: the operator asked for `wwwcairnmd` ('I think it reads website better'), main began claiming it, and the operator stopped it with 'wait www_cairn_md': cairn://p/rs/main/chat Turns 74-75 (21:37 PDT 20 Oct). The Mining puzzle paragraph was cut from the page at the operator's request (26 Oct 18:11 PDT).

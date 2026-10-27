@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react';
 import { timeline } from '../data/timeline';
 import { buildChartModel, chartAnchors, recordFacts } from '../attempts/model';
 import { TimelineChart } from '../attempts/TimelineChart';
+import { Clip } from '../clips/Clip';
+import { clipById } from '../clips/registry';
 import styles from './Tokens.module.css';
+
+/**
+ * Footage shown here in the shared frame: two 3D replay windows no page places yet, which share the
+ * page's one world and take its stage in turn, and a video clip the story places.
+ */
+export const TOKENS_CLIPS = ['agility-lap', 'agility-rocks', 'finish-rekit'] as const;
 
 const COLOURS = ['--paper', '--paper-shade', '--ink', '--ink-muted', '--ink-faint', '--accent', '--hairline', '--rule'] as const;
 
@@ -103,6 +111,15 @@ export default function Tokens() {
             </g>
           ))}
         </svg>
+      </section>
+
+      <section className={`${styles.block} ${styles.full}`}>
+        <h2 className={styles.h2}>Footage: two 3D replays and a video clip, in the one frame</h2>
+        {TOKENS_CLIPS.map((id) => (
+          <div key={id} className={styles.footage}>
+            <Clip clip={clipById(id)} />
+          </div>
+        ))}
       </section>
 
       <section className={styles.block}>
