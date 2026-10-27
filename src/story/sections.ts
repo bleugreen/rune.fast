@@ -98,8 +98,9 @@ export const SECTION_META: readonly SectionMeta[] = [
       // The body among the spiders as it dies. The replay starts three minutes after the script killed its client,
       // after the ruling and the logout order, so it follows the sentence that says the account died.
       { figure: { kind: 'clip', id: 'spider-death' }, after: 'Under a minute later the account was dead' },
-      // The death gap and the recovery, after the quotation the death beat ends on (its paragraph ends in a colon).
-      { figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] }, after: 'I WANT A #1' },
+      // The death gap and the recovery, ahead of the paragraph that narrates the recovery. Earlier it would part
+      // the operator's "I WANT A #1" from main's reply under it.
+      { figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] }, after: 'we’re not done until #1' },
       // The recovery paragraph carries the rebuilt kit, Agility 99 and the #1, so its three figures follow it in that order.
       { figure: { kind: 'clip', id: 'finish-rekit' }, after: 'Overnight the helpers rebuilt everything the death had cost' },
       { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'Agility 99 landed at 4:07 AM' },

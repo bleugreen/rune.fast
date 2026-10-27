@@ -193,7 +193,7 @@ describe('what the page adds to the draft', () => {
     expect(hero.match(/<figure/g)?.length).toBe(1);
   });
 
-  test('the death section sets the body among the spiders after the death, its timeline after the death beat, then the re-kit, the Agility clip and the hiscore board after the recovery paragraph', () => {
+  test('the death section sets the body among the spiders after the death, its timeline before the recovery paragraph, then the re-kit, the Agility clip and the hiscore board after it', () => {
     const s = sections.find((x) => x.id === 'the-death')!;
     const placed = [...s.figuresAt].sort(([a], [b]) => a - b).flatMap(([at, fs]) => fs.map((f) => ({ at, f })));
     expect(placed.map(({ f }) => (f.kind === 'clip' ? f.id : f.kind))).toEqual(['spider-death', 'timeline', 'finish-rekit', 'finish-agility99', 'image']);
@@ -203,7 +203,13 @@ describe('what the page adds to the draft', () => {
     const died = s.blocks[spiders!.at]!;
     expect(died.kind === 'p' && died.text.includes('Under a minute later the account was dead')).toBe(true);
     expect(quotes(s.blocks[spiders!.at + 1]!, 'Welp there goes the run')).toBe(true);
-    expect(quotes(s.blocks[death!.at]!, 'I WANT A #1')).toBe(true);
+    // Not between the operator's "I WANT A #1" and main's reply to it.
+    const wanted = s.blocks.findIndex((b) => quotes(b, 'I WANT A #1'));
+    const reply = s.blocks[wanted + 1]!;
+    expect(reply.kind === 'p' && reply.text.startsWith('`main`: "What it lost is kit, not time."')).toBe(true);
+    expect(s.figuresAt.has(wanted)).toBe(false);
+    expect(quotes(s.blocks[death!.at]!, 'we’re not done until #1')).toBe(true);
+    expect(death!.at + 1).toBe(rekit!.at);
     expect(death!.f).toEqual({ kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] });
     expect(new Set([rekit!.at, agility!.at, board!.at]).size).toBe(1);
     const recovery = s.blocks[rekit!.at]!;
