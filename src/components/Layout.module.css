@@ -98,6 +98,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+.credits {
+  flex-basis: 100%;
+  font-size: var(--label-sm);
+  color: var(--ink-faint);
+}
+.credits a {
+  color: inherit;
+}
+
 @media (max-width: 40rem) {
   .brand {
     flex-direction: column;

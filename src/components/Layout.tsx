@@ -7,9 +7,10 @@ const LIVE = [
   { to: '/attempts', label: 'Attempts' },
   { to: '/tricks', label: 'Tricks' },
   { to: '/cost', label: 'Cost' },
+  { to: '/replay', label: 'Replays' },
 ] as const;
 
-const SOON = ['Swarm', 'Routes', 'Replays'] as const;
+const SOON = ['Swarm', 'Routes'] as const;
 
 export function Layout() {
   return (
@@ -24,7 +25,7 @@ export function Layout() {
           </div>
           <nav className={styles.nav} aria-label="Pages">
             {LIVE.map((n) => (
-              <NavLink key={n.to} to={n.to} end className={({ isActive }) => (isActive ? styles.current : styles.link)}>
+              <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => (isActive ? styles.current : styles.link)}>
                 {n.label}
               </NavLink>
             ))}
@@ -44,6 +45,12 @@ export function Layout() {
         <div className={styles.footInner}>
           <span>Every number on this site traces to a source</span>
           <span>Generated {fmtUtcDate(parseUtc(`${__BUILD_DATE__}T00:00Z`))}</span>
+          <p className={styles.credits}>
+            3D replays use rs-map-viewer (BSD-2-Clause) via RS World and rs-dash · Credits: rs-sdk and LostCity (MIT),
+            Jagex, RuneLite, OpenRS2 Archive, RuneScape Archive, OSRS Wiki, 2004scape, 2009scape, RuneStar, Blurite,
+            RuneApps Model Viewer · <a href="/licenses/LICENSE.txt">Licence</a> ·{' '}
+            <a href="/licenses/UPSTREAM.md">Provenance</a>
+          </p>
         </div>
       </footer>
       <ScrollRestoration />

@@ -2,3 +2,8 @@ node_modules/
 dist/
 .DS_Store
 .wrangler/
+# Local game cache copy and clip output (scripts/world); never committed, never in public/.
+.world/
+# Declarations emitted by tsc -b for the site's project reference.
+packages/world/types/
+*.tsbuildinfo

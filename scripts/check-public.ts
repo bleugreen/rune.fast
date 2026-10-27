@@ -1,27 +1,17 @@
 /**
- * Scans the built site for identifiers that must never be published.
- * Run after `vite build`; exits non-zero on any hit.
+ * Scans the built site for identifiers that must never be published (the patterns, cairn
+ * addresses among them, live in forbidden.ts, shared with the replay clip scan), and checks that the licences the 3D replay
+ * ships under are in it. Run after `vite build`; exits non-zero on any hit.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-
-const FORBIDDEN: ReadonlyArray<readonly [string, RegExp]> = [
-  ['fleet helper or test account', /\bcairn_[a-z][a-z0-9]*/],
-  ['lab account', /\bdr\d{4}[a-z]\b/],
-  // The run host's name, not the town: the story says where it sat (Ashburn, Virginia).
-  ['machine hostname', /\bbgsrv|\brs-ashburn|\.ts\.net\b|\.local\b/i],
-  ['game-process token', /\bmv[a-z0-9]{6}\b/],
-  ['home directory path', /\/Users\/|\/home\//],
-  ['message id field', /msg_id/],
-  ['cairn address', /cairn:\/\//],
-  ['IPv4 address', /\b(?:\d{1,3}\.){3}\d{1,3}\b/],
-];
+import { FORBIDDEN } from './forbidden';
 
 function* files(dir: string): Generator<string> {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) yield* files(p);
-    else if (/\.(html|js|css|json|txt|map)$/.test(name)) yield p;
+    else if (/\.(html|js|css|json|txt|map|md)$/.test(name)) yield p;
   }
 }
 
@@ -36,8 +26,21 @@ for (const f of files('dist')) {
     }
   }
 }
+
+const REQUIRED = ['dist/licenses/LICENSE.txt', 'dist/licenses/UPSTREAM.md'];
+for (const f of REQUIRED) {
+  if (!existsSync(f)) {
+    hits++;
+    console.error(`check-public: ${f} is missing (the replay engine's licence and provenance)`);
+  }
+}
+if (!readdirSync('dist/assets').some((f) => /^wasm_gzip_bg-.*\.wasm$/.test(f))) {
+  hits++;
+  console.error('check-public: no wasm-gzip module in dist/assets; the replay would fall back to pako');
+}
+
 if (hits) {
-  console.error(`check-public: ${hits} forbidden identifier(s) in dist/`);
+  console.error(`check-public: ${hits} problem(s) in dist/`);
   process.exit(1);
 }
-console.log('check-public: dist/ carries no forbidden identifiers');
+console.log('check-public: dist/ carries no forbidden identifiers, and the replay licences and wasm are present');

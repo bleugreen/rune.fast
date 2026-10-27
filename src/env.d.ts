@@ -8,3 +8,8 @@ declare module '*/data/story.md' {
   const story: unknown;
   export default story;
 }
+
+interface ImportMetaEnv {
+  /** Base URL of the replay's cache store and clips, ending in a slash (.env, .env.production). */
+  readonly VITE_WORLD_ASSET_BASE: string;
+}
