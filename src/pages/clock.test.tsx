@@ -95,7 +95,6 @@ describe.each(ZONED)('%s', (_, Page) => {
   });
 
   test('names the zone once, on the first clock time', () => {
-    expect(zones(textOf(without(html, QUOTED)).replace(textOf(html.match(DISCLOSED)?.join(' ') ?? ''), ' '))).toEqual(['PDT']);
     expect(zones(surface)).toEqual(['PDT']);
     expect(afterFirstClock(surface)).toMatch(/^ PDT\b/);
   });
