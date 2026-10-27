@@ -92,8 +92,8 @@ function useCacheNearView(entry: ClipEntry, el: RefObject<HTMLElement | null>) {
 /**
  * A 10-15 s piece of footage at the full width of its column, in one frame whether it is a video
  * file or a window of the 3D replay: the poster and one play mark at rest; on play, a hairline
- * progress rule in the accent that can be dragged to scrub, and the tick on screen where the
- * footage knows it. Click or Space plays and pauses, the arrows step a second, Home goes back to
+ * progress rule in the accent that can be dragged to scrub, and, for a lab clip, the server tick
+ * its trace records (`clipTickAt`). Click or Space plays and pauses, the arrows step a second, Home goes back to
  * the start. It never autoplays or loops, and it returns to the poster when it ends. A replay's
  * camera stays on the record account; the reader cannot move it. `zone` names the Pacific zone
  * after the recording time, where this clip's time is the first one on its page.

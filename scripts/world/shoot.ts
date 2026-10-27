@@ -40,6 +40,8 @@ const browser = await chromium.launch({
   headless: !args.headed,
   args: ['--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=metal', '--enable-unsafe-swiftshader'],
 });
+/** Each page's reload watch (`watchReload`), which the shot loop below reads, so declared before it. */
+const reloaded = new WeakMap<Page, Promise<never>>();
 let failed = 0;
 try {
   for (const spec of args.shot) {
@@ -99,8 +101,6 @@ async function ready(page: Page, id: string): Promise<void> {
   await page.waitForTimeout(300);
   await Promise.race([page.locator(`[data-embed="${id}"] [data-replay-ready]`).waitFor({ timeout }), reloaded.get(page)]);
 }
-
-const reloaded = new WeakMap<Page, Promise<never>>();
 
 /**
  * Fails the shot at once if the page reloads after its first load. Under `bun run dev`, Vite reloads
