@@ -5,7 +5,7 @@ import { SavingChart } from './SavingChart';
 import { StillStrip } from './StillStrip';
 import styles from './TrickCard.module.css';
 
-export function Sources({ sources }: { sources: readonly string[] }) {
+function Sources({ sources }: { sources: readonly string[] }) {
   return (
     <details className={styles.sources}>
       <summary>sources</summary>

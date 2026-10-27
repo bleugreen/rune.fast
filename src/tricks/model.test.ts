@@ -76,10 +76,11 @@ describe('the data', () => {
     expect(clips.filter((c, i) => clips.indexOf(c) !== i)).toEqual([]);
   });
 
-  test('the level-up and cannon cards carry their clips', () => {
+  test('the level-up, cannon and trade cards carry their clips', () => {
     const byId = new Map(TRICKS.map((t) => [t.id, t]));
     expect(byId.get('level-up-dismissal')!.clip).toBe('levelup-firemaking');
     expect(byId.get('cannon')!.clip).toBe('finish-cannon');
+    expect(byId.get('batched-trade')!.clip).toBe('finish-rekit');
   });
 });
 
@@ -119,14 +120,25 @@ describe('order and headline', () => {
   });
 
   test('the page claim', () => {
-    expect(headlineFacts(TRICKS)).toEqual({ used: 19, halved: 9 });
+    expect(headlineFacts(TRICKS)).toEqual({ halved: 9 });
+  });
+
+  test('the page shows a card for each of the eighteen techniques the run used, and nothing it left out', () => {
+    const html = renderToStaticMarkup(createElement(TricksPage));
+    const cards = [...html.matchAll(/<article[^>]* id="([^"]+)"/g)].map((m) => m[1]);
+    expect(cards).toEqual(GROUPS.flatMap((g) => inGroup(TRICKS, g.id)).map((t) => t.id));
+    expect(cards.length).toBe(18);
+    for (const t of rejected(TRICKS)) {
+      expect(html).not.toContain(`id="${t.id}"`);
+      expect(html).not.toContain(t.name);
+    }
   });
 
   test('the headline is the title and the subtitle, with nothing between them and the first group', () => {
     const html = renderToStaticMarkup(createElement(TricksPage));
     const header = html.match(/<header[^>]*>([\s\S]*?)<\/header>/)![1]!;
     const text = (s: string) => s.replace(/<[^>]+>/g, '\n').split('\n').map((x) => x.trim()).filter(Boolean);
-    expect(text(header)).toEqual(['Nineteen techniques that made the run', 'Nine of them cut a cost in half or more']);
+    expect(text(header)).toEqual(['Techniques that made the run', 'Nine of them cut a cost in half or more']);
     const between = html.slice(html.indexOf('</header>') + '</header>'.length, html.indexOf('<h2'));
     expect(text(between)).toEqual([]);
   });
