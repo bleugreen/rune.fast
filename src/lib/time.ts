@@ -22,7 +22,9 @@ export function parseUtc(s: string): number {
 
 const PACIFIC = 'America/Los_Angeles';
 
-const pacHm = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+const pacHour = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, hour: '2-digit', hourCycle: 'h23' });
+const pacHm = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, hour: 'numeric', minute: '2-digit', hour12: true });
+const pacHms = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
 const pacZone = new Intl.DateTimeFormat('en-US', { timeZone: PACIFIC, timeZoneName: 'short' });
 
 const pacDayMonth = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'long' });
@@ -33,6 +35,19 @@ const pacDayLong = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday
 const pacWeekday = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'long' });
 const pacDayShort = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, weekday: 'short', day: 'numeric', month: 'short' });
 const pacDayMonthYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'long', year: 'numeric' });
+const pacDayMonYear = new Intl.DateTimeFormat('en-GB', { timeZone: PACIFIC, day: 'numeric', month: 'short', year: 'numeric' });
+
+/**
+ * The 12-hour clock as the site writes it, 'h:mm AM' or 'h:mm:ss AM', assembled from the
+ * parts: ICU versions differ on the space before the period (U+202F or a plain space)
+ * and on the hour's padding, and the page must not.
+ */
+function clock(f: Intl.DateTimeFormat, t: number): string {
+  const p: Record<string, string> = {};
+  for (const { type, value } of f.formatToParts(t)) p[type] = value;
+  const seconds = p.second ? `:${p.second}` : '';
+  return `${Number(p.hour)}:${p.minute}${seconds} ${p.dayPeriod!.toUpperCase()}`;
+}
 
 /** '22 October', Pacific */
 export const fmtPacificDayMonth = (t: number) => pacDayMonth.format(t);
@@ -50,9 +65,20 @@ export const fmtPacificWeekday = (t: number) => pacWeekday.format(t);
 export const fmtPacificDayShort = (t: number) => pacDayShort.format(t);
 /** '22 October 2026', Pacific */
 export const fmtPacificDate = (t: number) => pacDayMonthYear.format(t);
+/** '22 Oct 2026', Pacific */
+export const fmtPacificDayMonYear = (t: number) => pacDayMonYear.format(t);
 /** The Pacific hour of t, 0-23. */
-export const pacificHour = (t: number) => Number(pacHm.format(t).slice(0, 2));
-export const fmtPacificHm = (t: number) => pacHm.format(t);
+export const pacificHour = (t: number) => Number(pacHour.formatToParts(t).find((p) => p.type === 'hour')!.value);
+/** '2:37 PM', '12:05 AM', Pacific, with no zone: the page names it once. */
+export const fmtPacificHm = (t: number) => clock(pacHm, t);
+/** '4:14:43 AM', Pacific, with no zone. */
+export const fmtPacificHms = (t: number) => clock(pacHms, t);
+
+/** A span of the clock, the period written once where both ends share it: '3:27:15–3:27:27 AM', '11:58 PM–12:03 AM'. */
+export function fmtPacificClockRange(a: number, b: number, withSeconds = false): string {
+  const [from, to] = [a, b].map(withSeconds ? fmtPacificHms : fmtPacificHm) as [string, string];
+  return from.slice(-2) === to.slice(-2) ? `${from.slice(0, -3)}–${to}` : `${from}–${to}`;
+}
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const DAY_KEY = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -94,6 +120,6 @@ export function fmtDuration(ms: number, withSeconds = false): string {
 /** The Pacific midnights in [a, b]. Pacific offsets are whole hours, so midnight falls on a UTC hour. */
 export function pacificMidnights(a: number, b: number): number[] {
   const out: number[] = [];
-  for (let t = Math.ceil(a / HOUR) * HOUR; t <= b; t += HOUR) if (pacHm.format(t) === '00:00') out.push(t);
+  for (let t = Math.ceil(a / HOUR) * HOUR; t <= b; t += HOUR) if (pacificHour(t) === 0) out.push(t);
   return out;
 }

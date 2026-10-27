@@ -1,5 +1,48 @@
 import { afterEach, describe, expect, setSystemTime, test } from 'bun:test';
-import { fmtCalendarDate, pacificDayKey } from './time';
+import {
+  fmtCalendarDate,
+  fmtPacificClockRange,
+  fmtPacificHm,
+  fmtPacificHms,
+  pacificDayKey,
+  pacificHour,
+  pacificMidnights,
+  parseUtc,
+} from './time';
+
+describe('the clock', () => {
+  test('is Pacific on the 12-hour clock, unpadded, with a plain space before an uppercase period', () => {
+    expect(fmtPacificHm(parseUtc('2026-10-20T21:37:42Z'))).toBe('2:37 PM');
+    expect(fmtPacificHm(parseUtc('2026-10-24T06:07Z'))).toBe('11:07 PM');
+    expect(fmtPacificHms(parseUtc('2026-10-26T11:14:43.680Z'))).toBe('4:14:43 AM');
+  });
+
+  test('writes midnight and noon as 12', () => {
+    expect(fmtPacificHm(parseUtc('2026-10-25T07:05Z'))).toBe('12:05 AM');
+    expect(fmtPacificHm(parseUtc('2026-10-25T19:30Z'))).toBe('12:30 PM');
+  });
+
+  test('follows the zone across the change from PDT to PST', () => {
+    // 1 November 2026: 01:30 PDT is 08:30Z; an hour later the clock reads 01:30 again, PST.
+    expect(fmtPacificHm(parseUtc('2026-11-01T08:30Z'))).toBe('1:30 AM');
+    expect(fmtPacificHm(parseUtc('2026-11-01T09:30Z'))).toBe('1:30 AM');
+  });
+
+  test('keeps the hour 0-23 for axis arithmetic', () => {
+    expect(pacificHour(parseUtc('2026-10-25T07:00Z'))).toBe(0);
+    expect(pacificHour(parseUtc('2026-10-25T19:00Z'))).toBe(12);
+    expect(pacificHour(parseUtc('2026-10-26T06:00Z'))).toBe(23);
+    expect(pacificMidnights(parseUtc('2026-10-24T00:00Z'), parseUtc('2026-10-26T00:00Z'))).toEqual([
+      parseUtc('2026-10-24T07:00Z'),
+      parseUtc('2026-10-25T07:00Z'),
+    ]);
+  });
+
+  test('writes a span’s period once where both ends share it', () => {
+    expect(fmtPacificClockRange(parseUtc('2026-10-26T10:27:15Z'), parseUtc('2026-10-26T10:27:27Z'), true)).toBe('3:27:15–3:27:27 AM');
+    expect(fmtPacificClockRange(parseUtc('2026-10-25T06:58Z'), parseUtc('2026-10-25T07:03Z'))).toBe('11:58 PM–12:03 AM');
+  });
+});
 
 describe('the build date', () => {
   afterEach(() => setSystemTime());

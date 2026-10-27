@@ -133,9 +133,11 @@ interface Props {
    * no pulled-quote ticks, whose numerals key to the quote strip.
    */
   interaction?: ChartInteraction;
+  /** Names the Pacific zone on the first tick, where the axis carries the page's first clock time. */
+  zone?: boolean;
 }
 
-export function TimelineChart({ model, anchors, finishTicks, crop, interaction }: Props) {
+export function TimelineChart({ model, anchors, finishTicks, crop, interaction, zone }: Props) {
   const [measureRef, measured] = useWidth<HTMLDivElement>();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -314,10 +316,9 @@ export function TimelineChart({ model, anchors, finishTicks, crop, interaction }
           {ticks.map((t, i) => (
             <g key={t}>
               <line className={styles.axis} x1={x(t)} x2={x(t)} y1={axisY} y2={axisY + 4} />
-              {/* The site's one clock is Pacific; the zone is named once, on the first tick. */}
               <text className={styles.tick} x={x(t)} y={axisY + 16} textAnchor="middle">
                 {fmtPacificHm(t)}
-                {i === 0 && ` ${pacificZone(t)}`}
+                {zone && i === 0 && ` ${pacificZone(t)}`}
               </text>
             </g>
           ))}

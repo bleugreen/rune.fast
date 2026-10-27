@@ -3,7 +3,8 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { SECTION_META } from '../story/sections';
 import { TRICKS } from '../tricks/model';
-import { CLIPS, tickAt } from './registry';
+import { parseUtc } from '../lib/time';
+import { CLIPS, clipWhen, tickAt } from './registry';
 
 /** The ceiling on one clip's file, so a page of clips stays light. */
 const MAX_BYTES = 3_000_000;
@@ -66,9 +67,14 @@ describe('the clip registry', () => {
       expect(statSync(file(c.src)).size).toBeLessThan(MAX_BYTES);
     });
 
-    test('has a caption, a time, a step and a source in plain words', () => {
-      for (const s of [c.caption, c.time, c.step, c.source]) expect(s.trim().length).toBeGreaterThan(0);
+    test('has a caption, a step and a source in plain words', () => {
+      for (const s of [c.caption, c.step, c.source]) expect(s.trim().length).toBeGreaterThan(0);
       expect(JSON.stringify(c)).not.toMatch(/cairn:\/\/|\/Users\/|\/home\//);
+    });
+
+    test('was recorded over the clip’s own length, to the second', () => {
+      const [a, b] = c.recorded.map(parseUtc) as [number, number];
+      expect(Math.abs((b - a) / 1000 - c.seconds)).toBeLessThan(1);
     });
 
     test('runs 10 to 15 seconds', () => {
@@ -101,6 +107,19 @@ describe('the clip registry', () => {
       ...SECTION_META.flatMap((s) => s.figures.flatMap((f) => (f.figure.kind === 'clip' && f.figure.id ? [f.figure.id] : []))),
     ];
     expect(new Set(placed)).toEqual(new Set(CLIPS.map((c) => c.id)));
+  });
+});
+
+describe('clipWhen', () => {
+  const byId = new Map(CLIPS.map((c) => [c.id, c]));
+
+  test('prints the recording on the Pacific 12-hour clock, the period once, and no UTC', () => {
+    expect(clipWhen(byId.get('finish-rekit')!)).toBe('26 Oct 2026, 3:27:15–3:27:27 AM');
+    expect(clipWhen(byId.get('levelup-firemaking')!)).toBe('Lab, 23 Oct 2026, 2:50:03–2:50:16 PM');
+  });
+
+  test('names the zone only when asked', () => {
+    expect(clipWhen(byId.get('finish-agility99')!, true)).toBe('26 Oct 2026, 4:07:41–4:07:55 AM PDT');
   });
 });
 
