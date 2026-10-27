@@ -1,6 +1,9 @@
 import { plugin } from 'bun';
 import { storyModule } from './story-module';
 
+// .env's value: Vite reads it in dev and the build, bun test does not.
+process.env.VITE_WORLD_ASSET_BASE ??= '/world-assets/';
+
 /**
  * The loaders Vite provides in the site build, for bun test: the parsed story, and
  * CSS modules as identity maps so components render with their class names.

@@ -224,7 +224,7 @@ describe('what the page adds to the draft', () => {
     expect(ids.length).toBeGreaterThan(0);
     for (const id of ids) {
       const c = clipById(id);
-      if (c.kind === 'video') expect(html).toContain(`src="${c.src}"`);
+      if (c.kind === 'video') expect(html).toContain(`src="${clipSrc(c)}"`);
       for (const s of [c.caption, clipWhen(c), c.step, clipSource(c)]) expect(surface).toContain(s);
     }
   });
