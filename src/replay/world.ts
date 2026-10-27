@@ -22,6 +22,8 @@ import { loadCache } from './cache';
  */
 
 const REVISION = 289;
+/** How redaction names an account other than the record one: its roster slot. */
+const SLOT_ALIAS = /^slot_\d+$/;
 /** Drivers kept for embeds off the stage, so going back to one reuses its fetched chunks and checkpoints. */
 const DRIVERS_KEPT = 4;
 
@@ -134,7 +136,7 @@ function driverFor(entry: ReplayEntry, manifest: ClipManifest): ReplayDriver {
 /**
  * Asks for the stage for `entry`, drawn into `host` with its overlay in `overlay`. Whoever holds it
  * is evicted at once. `ready` resolves with the world opened at the window's first tick, following
- * the record account, paused; it rejects with Superseded if another embed asks first.
+ * the recording's account (the record account, or another by its slot alias), paused; it rejects with Superseded if another embed asks first.
  */
 export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElement, evict: () => void): Ticket {
   const previous = tenant;
@@ -150,8 +152,10 @@ export function acquire(entry: ReplayEntry, host: HTMLElement, overlay: HTMLElem
       const driver = driverFor(entry, manifest);
       // A fresh controller around the same viewer: the map squares, textures and models stay.
       const controller = viewer.startLive(driver.feed);
-      // Only the followed account is named; everyone else stays unlabelled.
+      // Only the record account is ever named. Another account is followed by its slot alias
+      // ("slot_994"), which names no one, so it stays unlabelled like everyone else.
       controller.options.showPlayerNames = false;
+      controller.options.showFollowedName = !SLOT_ALIAS.test(manifest.follow.name);
       driver.bind(controller);
       host.appendChild(renderer.canvas);
       overlay.appendChild(renderer.liveOverlay.canvas);

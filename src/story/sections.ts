@@ -56,6 +56,8 @@ export const SECTION_META: readonly SectionMeta[] = [
     dates: '23–24 Oct',
     figures: [
       { figure: { kind: 'timeline', crop: ['2026-10-23T17:00Z', '2026-10-24T17:00Z'] }, after: 'ok fine one more attempt' },
+      // Attempt 4's death at the tree door, which the paragraph before the quotation narrates.
+      { figure: { kind: 'clip', id: 'attempt-4-death' }, after: 'ok fine one more attempt' },
     ],
     pulled: ['ok fine one more attempt'],
     links: [],
@@ -72,6 +74,8 @@ export const SECTION_META: readonly SectionMeta[] = [
     dates: '25–26 Oct',
     figures: [
       { figure: { kind: 'clip', id: 'finish-agility99' }, after: 'incredible work couldn’t have done it without you' },
+      // The body among the spiders and the respawn the roster saw, after the quotation that paragraph introduces.
+      { figure: { kind: 'clip', id: 'spider-death' }, after: 'Welp there goes the run' },
       // The death gap and the recovery, after the quotation the death beat ends on (its paragraph ends in a colon).
       { figure: { kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] }, after: 'I WANT A #1' },
       // The kit the paragraph says was rebuilt overnight, arriving in the trade after the recovery login.

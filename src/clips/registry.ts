@@ -45,12 +45,18 @@ export interface VideoEntry extends Footage {
   ticks?: readonly (readonly [number, number])[];
 }
 
-/** A tick window of a published world-feed recording, drawn in 3D following the record account. */
+/**
+ * A tick window of a published world-feed recording, drawn in 3D following the account its manifest
+ * names: the record account, or another run account by its slot alias, unnamed.
+ */
 export interface ReplayEntry extends Footage {
   kind: 'replay';
   /** The recording's folder under replays/ in the world assets, where its manifest and chunks are. */
   recording: string;
-  /** Ticks of the recording, inclusive, counted from its manifest's anchor (for the finish, the scored session's own count). */
+  /**
+   * Ticks of the recording, inclusive, counted from its manifest's anchor: for the finish, the
+   * scored session's own count; for the death recordings (anchor 0), the feed's ticks.
+   */
   from: number;
   to: number;
 }

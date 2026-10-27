@@ -11,10 +11,11 @@ const SHOW_AFTER_MS = 3000;
 /**
  * A window of a published world-feed recording, as the footage inside a clip frame. It borrows the
  * page's one shared world (src/replay/world.ts) for as long as it is off its poster: the canvas
- * moves into this frame, the world opens at the window's first tick following the record account,
- * and plays to its last. Another replay played meanwhile takes the stage, and this one goes back to
- * its poster. The reader cannot move the camera: the layer takes no input, so the frame's own
- * controls are the only ones. Only the record account is named in the scene.
+ * moves into this frame, the world opens at the window's first tick following the recording's
+ * account, and plays to its last. Another replay played meanwhile takes the stage, and this one goes
+ * back to its poster. The reader cannot move the camera: the layer takes no input, so the frame's
+ * own controls are the only ones. Only the record account is ever named in the scene; a recording
+ * that follows another account follows it unlabelled.
  */
 const Replay = forwardRef<MediaHandle, MediaProps<ReplayEntry>>(function Replay(props, ref) {
   const { entry } = props;
