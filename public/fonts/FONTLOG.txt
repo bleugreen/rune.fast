@@ -8,6 +8,9 @@ Rune Serif (RuneSerif-Roman.var.woff2, RuneSerif-Italic.var.woff2)
   sups, case, liga, zero). Renamed from Source Serif 4 to Rune Serif because the
   original reserves the font name 'Source'. Licence: SIL Open Font License 1.1,
   see SourceSerif4-LICENSE.md. Thanks to Adobe and the Source Serif contributors.
+  27 Oct 2026: the files served keep every character and both axes but only the layout
+  features the site turns on (the defaults, with onum, lnum, tnum and pnum); the
+  subset with every feature is kept as their source.
 
 IBM Plex Sans (IBMPlexSans-{Regular,Medium,SemiBold}-Latin1.woff2)
   The unmodified Latin1 split files from IBM Plex Sans 1.1.0 as published by IBM,

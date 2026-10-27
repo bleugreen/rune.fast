@@ -1,0 +1,3 @@
+{
+  "features": ["ccmp", "locl", "mark", "mkmk", "kern", "liga", "calt", "clig", "rlig", "rclt", "rvrn", "curs", "onum", "pnum", "lnum", "tnum"]
+}

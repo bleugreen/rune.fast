@@ -38,11 +38,11 @@ const ENTRY_BUDGET = 150 * 1024;
 const FIRST_SCREEN: readonly RegExp[] = [
   /^\/$/,
   /^\/assets\/[^/]+\.(js|css)$/,
-  /^\/fonts\/RuneSerif-Roman\.var\.woff2$/,
-  /^\/fonts\/IBMPlexSans-[A-Za-z]+-Latin1\.woff2$/,
+  /^\/assets\/RuneSerif-Roman\.var-[\w-]+\.woff2$/,
+  /^\/assets\/IBMPlexSans-[A-Za-z]+-Latin1-[\w-]+\.woff2$/,
   /^\/favicon[^/]*$/,
 ];
-const ITALIC = '/fonts/RuneSerif-Italic.var.woff2';
+const ITALIC = /^\/assets\/RuneSerif-Italic\.var-[\w-]+\.woff2$/;
 
 const VIEWPORTS: Record<string, BrowserContextOptions> = {
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 },
@@ -147,7 +147,7 @@ function problems(m: Load): string[] {
   for (const r of beacon) if (r.start < m.load) out.push(`the analytics beacon started at ${s(r.start)}, before load at ${s(m.load)}`);
   for (const r of m.requests) {
     if (r.path.startsWith(BEACON_SRC) || FIRST_SCREEN.some((re) => re.test(r.path))) continue;
-    if (r.path === ITALIC) {
+    if (ITALIC.test(r.path)) {
       if (m.drawn === null || r.start < m.drawn) out.push(`the italic started at ${s(r.start)}, before the tree was drawn`);
       if (r.start < m.load) out.push(`the italic started at ${s(r.start)}, before load at ${s(m.load)}`);
       continue;

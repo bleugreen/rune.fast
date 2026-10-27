@@ -1,4 +1,4 @@
-const ITALIC = '/fonts/RuneSerif-Italic.var.woff2';
+import ITALIC from '../fonts/RuneSerif-Italic.var.woff2';
 
 let registered = false;
 
