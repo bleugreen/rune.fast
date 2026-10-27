@@ -39,10 +39,11 @@
 /*
  * The opening: the tree, and the title under it. From 64rem the title and byline stand to the
  * tree's left, and the tree takes its natural tall shape at about one screen's height: the screen
- * less the masthead and the caption, between 30rem and 60rem, and 0.85 times as wide as it is tall
- * while the title keeps 28rem, four lines (on a large screen the tree narrows rather than the title). The figure's frame and caption take the grid's two rows (a subgrid),
- * so the title sets its foot level with the tree's, the #1, rather than with the caption.
- * RunTree.tsx moves the day labels to the tree's right at the same width.
+ * less the masthead and the caption, between 30rem and 60rem, and 0.85 times as wide as it is tall.
+ * The title keeps at least 28rem, four lines; on a large screen the tree narrows instead.
+ * The figure's frame and caption take the grid's two rows (a subgrid), so the title sets its foot
+ * level with the tree's, the #1, rather than with the caption. RunTree.tsx moves the day labels to
+ * the tree's right at the same width.
  */
 @media (min-width: 64rem) {
   .opening {
