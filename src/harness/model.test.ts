@@ -7,6 +7,8 @@ import events from '../../data/swarm-events.json';
 import summary from '../../data/summary.json';
 import { findForbidden, withoutAddresses } from '../../scripts/forbidden';
 import { projectHarness } from '../../scripts/public-harness';
+import { figureById, figureSrc, rendition } from '../figures/registry';
+import { SCREEN_FIGURE } from './figures/OperatorScreen';
 import { fmtInt, fmtPercent } from '../lib/numbers';
 import { HOUR, MINUTE, SECOND, fmtPacificHm, fmtPacificHms } from '../lib/time';
 import { HarnessPage } from '../pages/HarnessPage';
@@ -315,6 +317,53 @@ const text = decode(
 );
 /** Numbers as a reader picks them out: '83,193', '1:25 AM', '6:37:04 PM', the 843 of 'rs/843'; not the 43 of '43d' or the 1 of 'v1'. */
 const NUMBER = /(?<![\w.])(?:\d{1,2}:\d{2}(?::\d{2})?(?: [AP]M)?|\d[\d,]*(?:\.\d+)?)(?![\w])/g;
+
+describe('the operator’s screen opens the page', () => {
+  const f = figureById(SCREEN_FIGURE);
+  const page = decode(html.replace(/<!-- -->/g, ''));
+
+  test('is dated from the export: Wednesday 21 October, 1:00:56 PM Pacific', () => {
+    expect(m.screen.t).toBe(Date.UTC(2026, 9, 21, 20, 0, 56));
+    expect(fmtPacificHms(m.screen.t)).toBe('1:00:56 PM');
+  });
+
+  test('shows eighteen agents: two planners, twelve builders, three coordinators and the main thread', () => {
+    const count = (role: string) => m.screen.panes.filter((p) => p.role === role).length;
+    expect(m.screen.panes).toHaveLength(18);
+    expect(new Set(m.screen.panes.map((p) => p.pane)).size).toBe(18);
+    expect(['planner', 'builder', 'coordinator', 'thread'].map(count)).toEqual([2, 12, 3, 1]);
+  });
+
+  test('is the first figure: after the header, before the first section and its address figure', () => {
+    const first = page.indexOf('<figure');
+    expect(first).toBeGreaterThan(page.indexOf('</header>'));
+    expect(first).toBeLessThan(page.indexOf('<section'));
+    expect(page.slice(first, page.indexOf('>', first))).toContain('screen');
+  });
+
+  test('draws the column image, AVIF with a JPEG fallback, with its alt text, and opens the full size', () => {
+    const [avif, jpeg, full] = [rendition(f, 'column', 'image/avif'), rendition(f, 'column', 'image/jpeg'), rendition(f, 'full')];
+    expect(page).toContain(`<source type="image/avif" srcSet="${figureSrc(avif)}"/>`);
+    expect(page).toContain(`<img src="${figureSrc(jpeg)}" width="${jpeg.width}" height="${jpeg.height}" alt="${f.alt}"`);
+    expect(page).toContain(`<a class="screenLink" href="${figureSrc(full)}" target="_blank" rel="noopener"><picture>`);
+    expect(f.alt).toStartWith('A dark screen divided into eighteen panes');
+  });
+
+  test('is captioned in plain words, with when, what and who', () => {
+    expect(text).toContain(
+      'The operator’s screen at 1:00 PM PDT on Wednesday 21 October: eighteen of the swarm’s agents side by side. Each pane is one issue’s planner, builder or coordinator, and one is the main thread.',
+    );
+    expect(text).toContain('main thread. Open the screen full size to read the panes.');
+    expect(text).not.toContain('blocked out');
+  });
+
+  test('its sources say how the moment was read, in plain words', () => {
+    const lines = m.sources.screen!;
+    expect(lines[0]).toBe('rs/140 builder, its 31-minute wait, begun Wed 21 Oct, 12:32:58 PM: the screen shows it 27 min 58 s in, at 1:00:56 PM');
+    expect(lines.some((l) => l.includes('half-typed on the screen, sent Wed 21 Oct, 1:03:25 PM'))).toBe(true);
+    for (const l of lines) expect(l).not.toContain('cairn:');
+  });
+});
 
 describe('every number on the page comes from the data', () => {
   const tokens = (text.match(NUMBER) ?? []).map((tk) => tk.replace(/[,.]+$/, ''));

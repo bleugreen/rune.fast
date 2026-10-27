@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, type ReactNode } from 'react';
 import { Threaded } from '../components/Coded';
 import { capitalize, countWord, fmtInt, fmtPercent, listWords } from '../lib/numbers';
-import { fmtDuration, fmtPacificDayLong, fmtPacificHm, fmtPacificHms, fmtPacificWeekday, pacificZone } from '../lib/time';
+import { fmtDuration, fmtPacificDayLong, fmtPacificHm, fmtPacificHms, fmtPacificWeekday } from '../lib/time';
 import { ADDRESSES } from '../harness/addresses';
 import { harnessData } from '../harness/data';
 import { buildHarnessModel, type HarnessModel } from '../harness/model';
@@ -9,6 +9,7 @@ import { Address } from '../harness/figures/Address';
 import { GitNotices } from '../harness/figures/GitNotices';
 import { IssueLife } from '../harness/figures/IssueLife';
 import { Lifelines } from '../harness/figures/Lifelines';
+import { OperatorScreen } from '../harness/figures/OperatorScreen';
 import { OperatorShare } from '../harness/figures/OperatorShare';
 import { Recipes } from '../harness/figures/Recipes';
 import { Routing } from '../harness/figures/Routing';
@@ -122,6 +123,10 @@ export function HarnessPage() {
         </dl>
       </header>
 
+      <OperatorScreen m={m} className={styles.screen}>
+        <Sources lines={s.screen!} />
+      </OperatorScreen>
+
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Everything has an address</h2>
         <p className={styles.prose}>
@@ -132,7 +137,7 @@ export function HarnessPage() {
         </p>
         <p className={styles.prose}>
           This page follows one issue, rs/{a.issue}, from filing to merge. It was filed at{' '}
-          {fmtPacificHm(a.filed)} {pacificZone(a.filed)} on {fmtPacificDayLong(a.filed)}, to write down the measured
+          {fmtPacificHm(a.filed)} on {fmtPacificDayLong(a.filed)}, to write down the measured
           run order of the final attempt once that attempt was over. This is the address of the pull request that
           did it.
         </p>

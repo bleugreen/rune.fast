@@ -35,6 +35,9 @@ const CONTENT_TYPES: Record<string, string> = {
   '.json': 'application/json',
   '.jsonl': 'application/x-ndjson',
   '.mp4': 'video/mp4',
+  '.avif': 'image/avif',
+  '.jpg': 'image/jpeg',
+  '.webp': 'image/webp',
 };
 
 /**

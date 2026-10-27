@@ -163,6 +163,11 @@ export interface HarnessData<S = Source> {
   git: { days: { day: string; t: number; auto: number; blocking: number }[] };
   quotes: { key: string; t: number; from: string; words: string }[];
   rs302: { seq: number; recipe: string; lifecycle: string; t: number }[];
+  /**
+   * The operator's screenshot of Cairn, which the page opens with: the moment it shows, read off its
+   * panes and checked against the export, and the agent in each pane, left to right and top to bottom.
+   */
+  screen: { t: number; panes: { pane: string; role: 'planner' | 'builder' | 'coordinator' | 'thread' }[] };
   sources: Record<string, S[]>;
 }
 

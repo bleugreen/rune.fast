@@ -165,6 +165,31 @@ RS3_STEPS = [
     ("confirm", "messages", "b64efb79-519a-4dca-8472-3488ea96248b"),
 ]
 
+# The operator's screenshot of Cairn during the run, which the page opens with. The image carries no
+# date, so the moment is read off it: a call's elapsed time as the screen shows it, then checked
+# against the calls the screen shows and the next ones it does not yet show.
+SCREEN_CLOCK = ("32fd5ca9-1147-4cdc-9770-263727b9501c", "rs/140 builder", "its 31-minute wait", 27 * 60 + 58)
+# Another call's elapsed time, shown to the minute ('4h 49m').
+SCREEN_ELAPSED = [("96596226-ac0a-4275-8742-aa4c5dcabd5a", "rs/119 builder", "its 15-minute wait", 4 * 3600 + 49 * 60, 60)]
+# The last call in a pane, and the next call that pane does not show yet.
+SCREEN_SHOWN = [
+    ("09b03f8c-0b9e-4bb4-b6fc-201bad93543a", "main"),
+    ("aa77fa69-08f7-4fe3-8b49-c9c25f10f1dc", "rs/158 coordinator"),
+    ("d606064e-4ee9-4203-9048-aed56dacb556", "rs/153 planner"),
+]
+SCREEN_NOT_YET = [
+    ("e70f6ffb-ab80-4e3f-af1e-a96a8918578e", "main"),
+    ("e840861c-3c4d-4e10-beb6-975e339ec556", "rs/158 coordinator"),
+]
+# The operator's message to main, half-typed in main's pane; sending it made this event.
+SCREEN_TYPED = "f60bfcf5-c86d-4ba9-afcc-e13560ce9209"
+# The panes, left to right and top to bottom: each issue's agent by its role, and the main thread.
+SCREEN_PANES = [
+    (153, "Planner"), (99, "Builder"), (152, "Builder"), (87, "Builder"), (140, "Builder"), (158, "Coordinator"),
+    (147, "Coordinator"), (150, "Builder"), (151, "Planner"), ("main", "thread"), (112, "Builder"), (141, "Builder"),
+    (41, "Coordinator"), (149, "Builder"), (123, "Builder"), (130, "Builder"), (119, "Builder"), (102, "Builder"),
+]
+
 GIT_TAGS = ("[Base branch update]", "[Branch update]", "[Divergent history]")
 
 # Messages from the app itself that arrive as user events; the operator did not type them.
@@ -650,6 +675,8 @@ def extract(x: Export) -> dict:
     ]
     src("issue843", "issues", 302, "issue rs/302, its three executions")
 
+    screen = screen_moment(x, src)
+
     return {
         "totals": totals,
         "address": address,
@@ -664,8 +691,73 @@ def extract(x: Export) -> dict:
         "git": git,
         "quotes": quotes,
         "rs302": rs302,
+        "screen": screen,
         "sources": dict(sources),
     }
+
+
+def screen_moment(x: Export, src) -> dict:
+    """
+    When the operator's screenshot was taken, from what its panes show, and the agent in each pane.
+    Refuses if any anchor disagrees with the moment, or a pane's agent was not at work then.
+    """
+
+    def call(eid: str, who: str) -> int:
+        t, job = x.one("select timestamp, job_id from ev where id=?", eid)
+        if recipient(x, job) != who:
+            sys.exit(f"extract: screen anchor {eid} is {recipient(x, job)}'s, not {who}'s")
+        return t
+
+    eid, who, what, shown = SCREEN_CLOCK
+    began = call(eid, who)
+    t = began + shown
+    src("screen", "ev", eid, f"{who}, {what}, begun {when(began, True)}: the screen shows it {shown // 60} min {shown % 60} s in, at {clock(t, True)}")
+    for eid, who, what, shown, unit in SCREEN_ELAPSED:
+        began = call(eid, who)
+        if not began + shown <= t < began + shown + unit:
+            sys.exit(f"extract: {who}'s {what} does not show {shown} s at {when(t, True)}")
+        src("screen", "ev", eid, f"{who}, {what}, begun {when(began, True)}: the screen shows it {shown // 3600} h {shown % 3600 // 60} min in")
+    for eid, who in SCREEN_SHOWN:
+        at = call(eid, who)
+        if at > t:
+            sys.exit(f"extract: {who}'s call {eid} is on the screen but comes after {when(t, True)}")
+        src("screen", "ev", eid, f"{who}, the last call its pane shows, {when(at, True)}")
+    for eid, who in SCREEN_NOT_YET:
+        at = call(eid, who)
+        if at <= t:
+            sys.exit(f"extract: {who}'s call {eid} is not on the screen but comes before {when(t, True)}")
+        src("screen", "ev", eid, f"{who}, its next call, not yet on the screen, {when(at, True)}")
+    sent = call(SCREEN_TYPED, "main")
+    if sent <= t:
+        sys.exit("extract: the operator's half-typed message was sent before the screen was taken")
+    src("screen", "ev", SCREEN_TYPED, f"the operator's message to main, half-typed on the screen, sent {when(sent, True)}")
+
+    panes = []
+    for issue, role in SCREEN_PANES:
+        if issue == "main":
+            if x.val("select created_at from threads where name='main'") > t:
+                sys.exit("extract: the main thread is on the screen before it was created")
+            panes.append({"pane": "main", "role": "thread"})
+            continue
+        # A pane shows a top-level job of its role, at work at the moment, or one that had ended at its
+        # pull request while the pull request was still open.
+        live = x.val(
+            "select count(*) from jobs j join issues i on i.id=j.issue_id where i.number=? and j.node_name=? "
+            "and j.parent_job_id is null and j.created_at<=? and (j.completed_at is null or j.completed_at>=?)",
+            issue, role, t, t,
+        )
+        open_pr = x.val(
+            "select count(*) from merge_requests m join issues i on i.id=m.issue_id where i.number=? "
+            "and m.opened_at<=? and coalesce(m.merged_at, m.closed_at, ?)>?",
+            issue, t, t + 1, t,
+        )
+        if not (live or (role == "Builder" and open_pr)):
+            sys.exit(f"extract: rs/{issue}'s {role.lower()} was not at work at {when(t, True)}, and no pull request of it was open")
+        panes.append({"pane": f"rs/{issue}", "role": role.lower()})
+    src("screen", "export", "jobs", f"the jobs of the {len(panes) - 1} issues on the screen: each pane's agent at work at {clock(t, True)}, or its pull request open")
+    src("screen", "external", "operator screenshot",
+        "the operator's screenshot of their Cairn screen, given to this site's documenting thread, Mon 26 Oct, 10:58 PM")
+    return {"t": t, "panes": panes}
 
 
 def totals_answers(x: Export) -> int:

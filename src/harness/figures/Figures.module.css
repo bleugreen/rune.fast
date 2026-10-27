@@ -442,3 +442,32 @@
   line-height: var(--leading-snug);
   color: var(--ink-muted);
 }
+
+/* The operator's screen: a plate in a hairline frame, no shadow, read full size through its link. */
+.screen {
+  margin: 0;
+}
+.screenLink {
+  display: block;
+  border: var(--stroke-hair) solid var(--rule);
+  cursor: zoom-in;
+}
+.screenLink img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.screenCaption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: 46rem;
+  margin: var(--space-3) 0;
+  font-family: var(--font-sans);
+  font-size: var(--label);
+  line-height: var(--leading-snug);
+  text-wrap: pretty;
+}
+.screenNote {
+  color: var(--ink-muted);
+}
