@@ -151,8 +151,10 @@ async function beforeScript(browser: Browser, base: string): Promise<void> {
 async function hydrates(browser: Browser): Promise<void> {
   const out = resolve('node_modules/.cache/rune-prerender');
   const [client, server] = [join(out, 'client'), join(out, 'server')];
-  const before = process.env.NODE_ENV;
+  const before = { NODE_ENV: process.env.NODE_ENV, VITE_WORLD_ASSET_BASE: process.env.VITE_WORLD_ASSET_BASE };
   process.env.NODE_ENV = 'development';
+  // scripts/test-preload.ts sets the dev asset base for the renders above; the build takes .env.production's.
+  delete process.env.VITE_WORLD_ASSET_BASE;
   try {
     const { createBuilder } = await import('vite');
     // The production mode, and with it .env.production's asset host, with React's development build.
@@ -164,7 +166,7 @@ async function hydrates(browser: Browser): Promise<void> {
     });
     await builder.buildApp();
   } finally {
-    process.env.NODE_ENV = before;
+    Object.assign(process.env, before);
   }
   await writePages(client, server);
   const entry = readFileSync(join(client, 'index.html'), 'utf8').match(/src="(\/assets\/[^"]+\.js)"/)![1]!;
