@@ -181,7 +181,8 @@ describe('what the page adds to the draft', () => {
     const [spiders, death, rekit] = placed;
     // The quotation under the paragraph that narrates the roster's last sightings of the body.
     expect(quotes(s.blocks[spiders!.at]!, 'Welp there goes the run')).toBe(true);
-    expect(s.blocks[spiders!.at - 2]!.kind === 'p' && (s.blocks[spiders!.at - 2] as { text: string }).text.includes('at the Lumbridge respawn at 8:40:37 PM')).toBe(true);
+    const narrated = s.blocks[spiders!.at - 1]!;
+    expect(narrated.kind === 'p' && narrated.text.includes('at the Lumbridge respawn at 8:40:37 PM')).toBe(true);
     expect(quotes(s.blocks[death!.at]!, 'I WANT A #1')).toBe(true);
     expect(death!.f).toEqual({ kind: 'timeline', crop: ['2026-10-26T03:00Z', '2026-10-26T11:30Z'] });
     const rekitBlock = s.blocks[rekit!.at]!;
