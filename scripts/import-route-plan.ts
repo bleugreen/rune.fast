@@ -8,7 +8,8 @@
  * before 23:56:33 PDT on 24 October, and fails unless that revision's priced rows are exactly the
  * run commit's: the revisions after the run commit restated the headline for it and added notes
  * beside the rows (the knights' top-ups among them), without moving a row's figure. Nothing is
- * written to the fork. Any row it cannot parse fails the import.
+ * written to the fork. Any row it cannot parse fails the import. Only the figures are kept: the
+ * rows' prose names the swarm's machines and accounts, and the page writes its own.
  */
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
@@ -73,8 +74,6 @@ function table(rev: string, scenarioChecked: boolean): { rows: PlanRow[]; text: 
     rows.push({
       id,
       kind: c[2]!,
-      step: c[4]!.replace(/\*\*/g, ''),
-      levels: c[5]!.replace(/\*\*/g, '').split(' (')[0]!,
       expected: num(e[1]!),
       tags: e[2] ?? '',
       best: b ? num(b[1]!) : null,

@@ -93,9 +93,6 @@ export interface PlanRow {
   id: string;
   /** The table's kind column: M measured, I inferred, M/I both; empty for a block row. */
   kind: string;
-  /** What the step does, and the levels it trains, as the row says. */
-  step: string;
-  levels: string;
   /** The Expected column's leading figure, and its m/i/e/r tags. */
   expected: number;
   tags: string;
