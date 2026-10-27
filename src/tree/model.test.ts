@@ -1,10 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import raw from '../../data/tree.json';
-import rawTitles from '../../data/tree-titles.json';
-import { findForbidden } from '../../scripts/forbidden';
-import { projectTree, projectTreeTitles } from '../../scripts/public-tree';
+import { projectTree } from '../../scripts/public-tree';
 import { EDGE_WINDOW, buildTree, layout, type Layout } from './model';
-import type { RawTreeData, TreeTitles } from './types';
+import type { RawTreeData } from './types';
 
 const archival = raw as unknown as RawTreeData;
 const data = projectTree(archival);
@@ -15,7 +13,7 @@ const threads = units.filter((u) => u.kind === 'thread');
 const named = (name: string) => units.find((u) => u.kind === 'thread' && u.name === name)!;
 const sum = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0);
 
-const desk = layout(tree, { width: 1220, height: 1035, compact: false });
+const desk = layout(tree, { width: 1220, height: 495, compact: false });
 const phone = layout(tree, { width: 350, height: 506, compact: true });
 const LAYOUTS: ReadonlyArray<readonly [string, Layout]> = [
   ['desktop', desk],
@@ -217,13 +215,6 @@ describe.each(LAYOUTS)('layout, %s', (_, L) => {
     expect(again.limbs).toEqual(L.limbs);
     expect(again.labels).toEqual(L.labels);
   });
-
-  test('the hit index finds a branch at its own midpoint', () => {
-    const u = issues.find((x) => x.number === 843)!;
-    const t = (u.s + u.e) / 2;
-    expect(L.nearest(L.xAt(u.index, t), L.y(t), 2)).toBe(u.index);
-    expect(L.nearest(-100, -100, 9)).toBe(-1);
-  });
 });
 
 describe('the projection', () => {
@@ -233,15 +224,5 @@ describe('the projection', () => {
     expect(shipped).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/);
     expect(data.threads.every((t) => !('w' in t))).toBe(true);
     expect(data.problems.every((p) => p.length === 2)).toBe(true);
-  });
-
-  test('the titles carry no forbidden identifier once projected, and one for every issue drawn', () => {
-    const archivalTitles = rawTitles as TreeTitles;
-    expect(Object.values(archivalTitles).filter((t) => findForbidden(t)).length).toBe(51);
-    const titles = projectTreeTitles(archivalTitles);
-    expect(Object.keys(titles).map(Number).sort((a, b) => a - b)).toEqual(issues.map((u) => u.number!).sort((a, b) => a - b));
-    expect(Object.values(titles).filter((t) => findForbidden(t))).toEqual([]);
-    expect(titles['164']).toContain('[helper] as the gate default');
-    expect(titles['149']).toContain('provision [Ashburn machine] (a twin of the run host');
   });
 });
