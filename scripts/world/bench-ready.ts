@@ -92,6 +92,11 @@ async function once(embed: string, run: number): Promise<Result> {
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });
     }
     await page.goto(args.base + args.page);
+    // Under the dev server a watched file changing reloads the page; that is the harness, not a stall.
+    const reloaded = new Promise<never>((_, reject) =>
+      page.on('framenavigated', (f) => f === page.mainFrame() && reject(new Error('the page reloaded (a watched file changed?)'))),
+    );
+    reloaded.catch(() => {});
     const figure = page.locator(`[data-embed="${embed}"]`);
     await figure.scrollIntoViewIfNeeded();
     const frame = figure.locator('[role="button"]');
@@ -101,7 +106,7 @@ async function once(embed: string, run: number): Promise<Result> {
     for (let s = 0; s <= Number(args.steps); s++) {
       if (s > 0) for (let i = 0; i < Number(args.step); i++) await page.keyboard.press('ArrowRight');
       const from = s === 0 ? started : Date.now();
-      const ms = await ready(page, embed, from);
+      const ms = await Promise.race([ready(page, embed, from), reloaded]);
       result.readyMs.push(ms);
       const label = s === 0 ? 'cold load' : `step ${s}`;
       if (ms === null) {
