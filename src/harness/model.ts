@@ -37,7 +37,7 @@ export interface LifelineRow {
   name: string;
   /** The operator's messages to the thread, per bin (none for the coordinators' row). */
   operator: number[] | null;
-  /** Issues filed under the thread (or, for the coordinators' row, by a coordinator), per bin. */
+  /** Issues the thread filed (or, for the coordinators' row, coordinators filed), per bin. */
   filed: number[];
   operatorTotal: number;
   filedTotal: number;
@@ -190,18 +190,20 @@ export function buildHarnessModel(d: HarnessData) {
   const a = d.address;
   const address = { ...a, filed: ms(a.filed), start: ms(a.start), end: ms(a.end), merged: ms(a.merged) };
 
-  /* Fig 2 ---------------------------------------------------------------- */
+  /* Fig 2: up to the #1 --------------------------------------------------- */
+  const L = d.lifelines;
+  const cut = ms(L.cut);
   const from = binFloor(start);
-  const to = binCeil(end);
-  const bins = Math.round((to - from) / BIN);
-  const rows: LifelineRow[] = d.lifelines.threads.map((th) => {
+  // The axis stops at the #1, part-way through its last bin.
+  const to = cut;
+  const bins = Math.ceil((to - from) / BIN);
+  const rows: LifelineRow[] = L.threads.map((th) => {
     const op = th.operator.map(ms);
     const filed = th.filed.map(ms);
     return { name: th.name, operator: binned(op, from, bins), filed: binned(filed, from, bins), operatorTotal: op.length, filedTotal: filed.length };
   });
-  const coordinators = d.lifelines.coordinators.map(ms);
+  const coordinators = L.coordinators.map(ms);
   rows.push({ name: 'coordinators', operator: null, filed: binned(coordinators, from, bins), operatorTotal: 0, filedTotal: coordinators.length });
-  const main = rows.find((r) => r.name === 'main')!;
   const threadRows = rows.filter((r) => r.operator !== null);
   const lifelines = {
     from,
@@ -209,8 +211,21 @@ export function buildHarnessModel(d: HarnessData) {
     bins,
     midnights: pacificMidnights(from, to),
     rows,
-    marks: { rs3: ms(d.lifelines.marks.rs3), rs843: ms(d.lifelines.marks.rs843) },
+    marks: (['rs3', 'rs843'] as const).map((key) => ({ key, t: ms(L.marks[key].t), row: rows.findIndex((r) => r.name === L.marks[key].row) })),
     peak: Math.max(...rows.flatMap((r) => [...r.filed, ...(r.operator ?? [])])),
+  };
+  /** Who filed the issues up to the #1, by author; the groups sum to `issues`. */
+  const filing = {
+    cut,
+    issues: L.issues,
+    threads: sum(threadRows.map((r) => r.filedTotal)),
+    main: rows.find((r) => r.name === 'main')!.filedTotal,
+    coordinators: coordinators.length,
+    builders: L.builders.length,
+    harness: L.harness.length,
+    operatorTyped: L.operatorTyped,
+    operatorToThreads: sum(threadRows.map((r) => r.operatorTotal)),
+    crossed: { issue: L.crossed.issue, filer: issueOf(L.crossed.filer), filerRole: L.crossed.filer.split(' ')[1]!, parent: L.crossed.parent },
   };
 
   /* Fig 3 ---------------------------------------------------------------- */
@@ -415,7 +430,6 @@ export function buildHarnessModel(d: HarnessData) {
   const operatorInputs = t.operatorMessages + t.operatorAnswers + t.tenetVerdicts;
   const operator = {
     messages: t.operatorMessages,
-    toThreads: t.operatorToThreads,
     answers: t.operatorAnswers,
     verdicts: t.tenetVerdicts,
     inputs: operatorInputs,
@@ -441,9 +455,8 @@ export function buildHarnessModel(d: HarnessData) {
     facts,
     address,
     lifelines,
-    mainFiled: main.filedTotal,
-    threadFiled: sum(threadRows.map((r) => r.filedTotal)),
-    otherThreads: threadRows.filter((r) => r !== main).map((r) => r.name),
+    filing,
+    otherThreads: threadRows.filter((r) => r.name !== 'main').map((r) => r.name),
     quotedSeconds: Math.round((quoted.answered! - quoted.created) / SECOND),
     oneOffMinutes: Math.round((ms(d.quotes.find((q) => q.key === 'oneOff')!.t) - ms(d.quotes.find((q) => q.key === 'publish')!.t)) / MINUTE),
     issue,

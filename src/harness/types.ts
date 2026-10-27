@@ -69,9 +69,6 @@ export interface HarnessData<S = Source> {
   totals: {
     threads: number;
     issues: number;
-    topLevelIssues: number;
-    childIssues: number;
-    coordinatorFiled: number;
     jobs: number;
     executions: number;
     reviewJobs: number;
@@ -83,7 +80,6 @@ export interface HarnessData<S = Source> {
     verbs: Record<Verb, number>;
     operators: number;
     operatorMessages: number;
-    operatorToThreads: number;
     appUserEvents: number;
     carets: number;
     caretsToThreads: number;
@@ -113,10 +109,25 @@ export interface HarnessData<S = Source> {
     pr: number;
     merged: number;
   };
+  /**
+   * Fig 2, up to the #1 (`cut`, the cut in data/summary.json) where the totals above run to the end
+   * of the export. An issue counts as filed by its author, the agent that filed it
+   * (scripts/issue_filer.py), not by its parent, which is where it reports.
+   */
   lifelines: {
+    cut: number;
+    /** Issues filed up to the cut, counted on their own: the filings below sum to it. */
+    issues: number;
+    /** The operator's typed messages up to the cut, to a thread or not. */
+    operatorTyped: number;
     threads: { name: string; created: number; operator: number[]; filed: number[] }[];
     coordinators: number[];
-    marks: { rs3: number; rs843: number };
+    builders: number[];
+    harness: number[];
+    /** Each marked issue's filing, on its filer's row: a thread's name, or 'coordinators'. */
+    marks: Record<'rs3' | 'rs843', { t: number; row: string }>;
+    /** An issue one agent filed under another's parent: rs/843, filed by a coordinator, reporting to a thread. */
+    crossed: { issue: number; filer: string; parent: string };
   };
   issue843: {
     filed: number;
