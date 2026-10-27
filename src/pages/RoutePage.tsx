@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { timeline } from '../data/timeline';
-import { fmtPacificDayLong, pacificZone, parseUtc } from '../lib/time';
+import { parseUtc } from '../lib/time';
 import { route } from '../route/data';
 import { MAX_LEVEL } from '../route/log';
 import { finishWords, opening, WORDS, type OpeningFacts } from '../route/prose';
@@ -27,15 +27,22 @@ export function openingFacts(t: Timeline): OpeningFacts {
   return { name: a5.name, start: parseUtc(a5.start.utc), last99: parseUtc(last99.utc), quote: QUOTED };
 }
 
-/** 'Saturday 24 October', 'Monday': the second date drops what the first already said. */
-function days(f: OpeningFacts): { start: string; end: string } {
-  const start = fmtPacificDayLong(f.start);
-  return { start, end: fmtPacificDayLong(f.last99).split(' ')[0]! };
+/**
+ * The page's first clip, as its step and id. The opening prints no clock time and no break comes
+ * before it, so its caption is the first clock time on the open page (source lines wait behind
+ * their disclosures), and it names the zone.
+ */
+function firstClip(): { step: string; clip: string } | undefined {
+  for (const s of route.steps) {
+    const b = WORDS[s.spec.id]!.body(s, route).find((x) => 'clip' in x);
+    if (b && 'clip' in b) return { step: s.spec.id, clip: b.clip };
+  }
 }
 
 export function RoutePage() {
   const clock = useMemo(() => new ReadingClock(route.finish), []);
   const facts = useMemo(() => openingFacts(timeline), []);
+  const zoned = useMemo(firstClip, []);
   const storyTitles = useMemo(() => new Map(storySections(story).map((s) => [s.id, s.title])), []);
   const finish = finishWords(route);
 
@@ -50,7 +57,7 @@ export function RoutePage() {
             <header className={styles.head}>
               <h1 className={styles.title}>The route</h1>
               <p className={styles.dek}>{facts.name} step by step, on the clock the hiscore keeps.</p>
-              {opening(route, facts, days(facts), pacificZone(facts.start)).map((text, i) => (
+              {opening(route, facts).map((text, i) => (
                 <p key={i} className={styles.prose}>
                   {text}
                 </p>
@@ -58,7 +65,15 @@ export function RoutePage() {
             </header>
 
             {route.steps.map((s) => (
-              <StepSection key={s.spec.id} step={s} route={route} words={WORDS[s.spec.id]!} storyTitles={storyTitles} planned={PLANNED_BREAKS} />
+              <StepSection
+                key={s.spec.id}
+                step={s}
+                route={route}
+                words={WORDS[s.spec.id]!}
+                storyTitles={storyTitles}
+                planned={PLANNED_BREAKS}
+                zoneClip={zoned?.step === s.spec.id ? zoned.clip : undefined}
+              />
             ))}
 
             <section className={styles.finish} aria-labelledby="finish-title">
