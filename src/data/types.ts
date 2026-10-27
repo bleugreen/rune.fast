@@ -37,11 +37,20 @@ export interface Bound<S = Source> {
   sources: S[];
 }
 
+/** The swarm's own counts beside the official one, where an attempt's record keeps them. */
+export interface OtherFigures {
+  observed_client_ledger: number;
+  runner_aggregate: number;
+  final_99_milestone_observed: number;
+  residual_official_minus_observed: number;
+}
+
 export interface FinalTicks {
   value: number | string | null;
   basis?: string;
   uncertain: boolean;
   why?: string;
+  other_figures?: OtherFigures;
 }
 
 export interface Attempt<S = Source> {

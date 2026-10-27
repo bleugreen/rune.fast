@@ -1,4 +1,4 @@
-import type { ArchivalSource, ArchivalTimeline, Attempt, Bound, Timeline, TimelineEvent } from '../src/data/types';
+import type { ArchivalSource, ArchivalTimeline, Attempt, Bound, OtherFigures, Timeline, TimelineEvent } from '../src/data/types';
 import { plainArchivalSource } from './plain-source';
 
 /**
@@ -27,8 +27,15 @@ function event(e: TimelineEvent<ArchivalSource>): TimelineEvent {
   return out;
 }
 
+/** The swarm's counts beside the official one: the figures only, without the note that cites them. */
+function otherFigures(o: OtherFigures | undefined): { other_figures?: OtherFigures } {
+  if (!o) return {};
+  const { observed_client_ledger, runner_aggregate, final_99_milestone_observed, residual_official_minus_observed } = o;
+  return { other_figures: { observed_client_ledger, runner_aggregate, final_99_milestone_observed, residual_official_minus_observed } };
+}
+
 function attempt(a: Attempt<ArchivalSource>): Attempt {
-  const { value, basis, uncertain, why } = a.final_ticks;
+  const { value, basis, uncertain, why, other_figures } = a.final_ticks;
   return {
     id: a.id,
     name: a.name,
@@ -36,7 +43,7 @@ function attempt(a: Attempt<ArchivalSource>): Attempt {
     start: bound(a.start),
     end: bound(a.end),
     outcome: a.outcome,
-    final_ticks: { value, uncertain, ...(basis ? { basis } : {}), ...(why ? { why } : {}) },
+    final_ticks: { value, uncertain, ...(basis ? { basis } : {}), ...(why ? { why } : {}), ...otherFigures(other_figures) },
     events: a.events.map(event),
   };
 }
