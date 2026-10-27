@@ -91,8 +91,8 @@ const CUTS: readonly Cut[] = [
     from: '2026-10-26T10:40:32.000Z',
     to: '2026-10-26T10:40:47.000Z',
     poster: '2026-10-26T10:40:34.000Z',
-    // The icon and two zeros, at two and a half times.
-    posterDetail: 'crop=552:362:194:99,scale=1380:904:flags=lanczos',
+    // The icon and two zeros, at two and a half times, up and left of the frame's centred play mark.
+    posterDetail: 'crop=552:362:277:145,scale=1380:904:flags=lanczos',
   },
 ];
 
