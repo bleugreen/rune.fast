@@ -1,9 +1,10 @@
 /**
  * The Pages Function behind the build-output directories (assets/, fonts/, licenses/, clips/).
  * dist/_routes.json, written by scripts/pages-routes.ts, sends a request here only when its path
- * is under one of them and is not a file of this deploy. Pages' own answer for such a path is the
- * app shell, index.html with status 200, which a tab loaded before the deploy would then try to run
- * as the chunk it asked for. Here a missing file is a plain-text 404.
+ * is under one of them and is not a file of this deploy. Pages' own answer for such a path is an
+ * HTML page (404.html, the Nothing here page; index.html with status 200 for a deploy without
+ * one), which a tab loaded before the deploy would then try to run as the chunk it asked for. Here
+ * a missing file is a plain-text 404 that no cache keeps.
  *
  * Pages applies public/_headers to static responses only, never to a Function's, so the
  * cross-origin isolation headers are set here too.
@@ -29,7 +30,7 @@ export async function onRequest({ request, env }: Context): Promise<Response> {
 }
 
 /**
- * A path ending in a file name. Page routes never do, so they keep the app shell even if Pages
+ * A path ending in a file name. Page routes never do, so they keep Pages' own answer even if Pages
  * ever routes every request here, which it does when a deploy has no _routes.json.
  */
 function namesFile(path: string): boolean {
