@@ -2,7 +2,13 @@
 export const ANALYTICS_HOSTS: readonly string[] = ['rune.fast', 'www.rune.fast'];
 
 export const BEACON_SRC = 'https://static.cloudflareinsights.com/beacon.min.js';
+/**
+ * The token is the rune.fast zone's own Web Analytics site (its automatic setup), which takes
+ * reports only at the zone's same-origin endpoint: cloudflareinsights.com/cdn-cgi/rum, where a
+ * manual install reports, answers 404 for it. The beacon sends to `send.to` when its config has one.
+ */
 const TOKEN = '361721d1f0454779b39c00a62bf112a9';
+export const RUM_ENDPOINT = '/cdn-cgi/rum';
 
 type AnalyticsWindow = Pick<Window, 'addEventListener' | 'setTimeout'> & {
   location: Pick<Location, 'hostname'>;
@@ -22,7 +28,7 @@ export function startAnalytics(win: AnalyticsWindow = window): void {
     const s = win.document.createElement('script');
     s.defer = true;
     s.src = BEACON_SRC;
-    s.dataset.cfBeacon = JSON.stringify({ token: TOKEN, spa: true });
+    s.dataset.cfBeacon = JSON.stringify({ token: TOKEN, spa: true, send: { to: RUM_ENDPOINT } });
     win.document.head.append(s);
   };
   const whenIdle = () => (win.requestIdleCallback ? win.requestIdleCallback(add, { timeout: 5000 }) : win.setTimeout(add, 1));

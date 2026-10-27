@@ -7,7 +7,8 @@
  * a missing file is a plain-text 404 that no cache keeps.
  *
  * Pages applies public/_headers to static responses only, never to a Function's, so the
- * cross-origin isolation headers are set here too.
+ * cross-origin isolation headers are set here too, and HTML gets the no-transform that _headers
+ * gives every page (it keeps the zone from injecting its own analytics beacon).
  */
 
 /** public/_headers' site-wide rule; scripts/pages.test.ts holds the two together. */
@@ -26,7 +27,14 @@ export async function onRequest({ request, env }: Context): Promise<Response> {
   if (isShell && namesFile(new URL(request.url).pathname)) return notFound(request.method);
   const served = new Response(response.body, response);
   for (const [name, value] of Object.entries(ISOLATION_HEADERS)) served.headers.set(name, value);
+  if (isShell) served.headers.set('Cache-Control', withNoTransform(response.headers.get('Cache-Control')));
   return served;
+}
+
+/** Pages' caching for a response, unchanged, with no-transform added. */
+export function withNoTransform(cacheControl: string | null): string {
+  if (!cacheControl) return 'no-transform';
+  return /(^|,)\s*no-transform\s*(,|$)/i.test(cacheControl) ? cacheControl : `${cacheControl}, no-transform`;
 }
 
 /**
