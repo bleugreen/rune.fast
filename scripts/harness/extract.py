@@ -539,7 +539,7 @@ def extract(x: Export) -> dict:
         row = {"n": n, "status": status, "verdict": verdict, "origin": origin, "created": created,
                "answered": answered, "supersedes": supersedes}
         if n in quoted:
-            row["statement"] = statement
+            row["statement"] = before_address(statement)
         if status == "declined" and comment:
             row["comment"] = comment
         tenets.append(row)
@@ -621,6 +621,15 @@ def extract(x: Export) -> dict:
         "rs302": rs302,
         "sources": dict(sources),
     }
+
+
+def before_address(text: str) -> str:
+    """The quote's sentences up to the first one that names a cairn:// address, which the page cannot print."""
+    at = text.find("cairn://")
+    if at < 0:
+        return text
+    cut = max(text.rfind(". ", 0, at), text.rfind(".\n", 0, at))
+    return text[: cut + 1].rstrip() + " …"
 
 
 def recipient(x: Export, job_id) -> str:
