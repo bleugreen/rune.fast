@@ -283,7 +283,7 @@
     "kind": "client and packet technique",
     "group": "client",
     "what_normally": "The standard bot library deposits one item a tick, so 24 kinds of item take 24 ticks.",
-    "what_instead": "The swarm’s library sends five bank clicks in each tick and withdraws a whole stack with the fill button.",
+    "what_instead": "The swarm’s library sends every bank click at once and the server takes them five a tick; it withdraws a whole stack with the fill button.",
     "why_allowed": "Five actions a tick is the server’s own limit.",
     "saving": {
       "label": "Ticks to deposit 24 kinds of item",

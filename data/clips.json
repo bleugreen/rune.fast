@@ -124,7 +124,7 @@
     "width": 880,
     "height": 596,
     "seconds": 12,
-    "caption": "The same 24 kinds of item deposited twice into an open bank, shown side by side from the first click. Left, the standard bot library: one deposit a tick, and the pack is empty on tick 24. Right, the swarm’s library: all 24 deposits sent in the first tick, the server taking five a tick, and the pack is empty on tick 5. The swarm’s own code, re-run in the lab on a local server.",
+    "caption": "The same 24 kinds of item deposited twice into an open bank, shown side by side from the first click. Left, the standard bot library: one deposit a tick, and the pack is empty on tick 24. Right, the swarm’s library: the bot hands over all 24 deposits in the first tick, the server works through them five a tick, and the pack is empty on tick 5. The swarm’s own code, re-run in the lab on a local server.",
     "recorded": [
       "2026-10-27T02:58:58Z",
       "2026-10-27T02:59:37Z"
