@@ -20,7 +20,10 @@ export function DriftChart({ route }: { route: Route }) {
   const y = scaleLinear().domain([0, max]).range([H - M.bottom, M.top]);
   const path = route.drift.map((p, i) => `${i ? 'L' : 'M'}${x(p.tick).toFixed(1)},${y(p.drift).toFixed(1)}`).join('');
   const levels = [...new Set(route.stampDrift.map((s) => s.drift))];
-  const labelled = levels.map((d) => route.stampDrift.find((s) => s.drift === d)!);
+  /** The first 99 at each new distance: where the two clocks move apart. */
+  const labelled = levels.slice(1).map((d) => route.stampDrift.find((s) => s.drift === d)!);
+  /** The y axis names the floor and the top; the steps between are labelled at their dots. */
+  const axis = [0, levels.at(-1)!];
   const xTicks = [0, 10_000, 20_000, 30_000];
   return (
     <figure className={styles.drift}>
@@ -30,19 +33,14 @@ export function DriftChart({ route }: { route: Route }) {
           width={w}
           height={H}
           role="img"
-          aria-label={`A step chart: level until ${labelled[1]?.skill ?? ''} 99, then ${labelled
-            .slice(1)
-            .map((s) => `${fmtInt(s.drift)} ahead by ${s.skill} 99`)
-            .join(', then ')}, to the finish.`}
+          aria-label={`A step chart: level at first, then ${labelled.map((s) => `${fmtInt(s.drift)} ahead by ${s.skill} 99`).join(', then ')}, to the finish.`}
         >
-          {levels.map((d) => (
+          {axis.map((d) => (
             <g key={d}>
               <line x1={M.left} x2={w - M.right} y1={y(d)} y2={y(d)} className={styles.driftGrid} />
-              {d !== levels[1] && (
-                <text x={M.left - 6} y={y(d)} dy="0.32em" textAnchor="end" className={styles.driftAxis}>
-                  {fmtInt(d)}
-                </text>
-              )}
+              <text x={M.left - 6} y={y(d)} dy="0.32em" textAnchor="end" className={styles.driftAxis}>
+                {fmtInt(d)}
+              </text>
             </g>
           ))}
           {xTicks.map((t) => (
@@ -54,9 +52,15 @@ export function DriftChart({ route }: { route: Route }) {
           {route.stampDrift.map((s) => (
             <circle key={s.skill} cx={x(s.tick)} cy={y(s.drift)} r={2.5} className={styles.driftDot} />
           ))}
-          {labelled.map((s) => (
-            <text key={s.skill} x={x(s.tick)} y={y(s.drift) - 7} textAnchor={s.tick > route.finish * 0.8 ? 'end' : 'middle'} className={styles.driftLabel}>
-              {s.skill} 99, {fmtInt(s.drift)}
+          {labelled.map((s, i) => (
+            <text
+              key={s.skill}
+              x={x(s.tick) - 6}
+              y={y(s.drift) - 8 - (i < labelled.length - 1 ? 12 * (labelled.length - 2 - i) : 0)}
+              textAnchor="end"
+              className={styles.driftLabel}
+            >
+              {s.skill} 99: {fmtInt(s.drift)} ahead
             </text>
           ))}
         </svg>
