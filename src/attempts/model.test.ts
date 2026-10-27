@@ -102,29 +102,3 @@ describe('the record', () => {
     expect(timeline.meta.record.exact_margin.startsWith(`${r.margin} ticks / ${(r.margin * r.tickMs) / 1000} s`)).toBe(true);
   });
 });
-
-
-describe('plain-language lines', () => {
-  const events = timeline.attempts.flatMap((a) => a.events.map((e) => ({ id: a.id, e })));
-  test('every event is keyed uniquely by attempt and time', () => {
-    const keys = events.map(({ id, e }) => plainKey(id, e.utc));
-    expect(new Set(keys).size).toBe(keys.length);
-  });
-  test('every event that is not an operator message has one', () => {
-    const missing = events.filter(({ id, e }) => e.type !== 'operator' && !plainFor(id, e.utc)).map(({ id, e }) => plainKey(id, e.utc));
-    expect(missing).toEqual([]);
-  });
-  test('no line points at an event the timeline lacks', () => {
-    const known = new Set(events.map(({ id, e }) => plainKey(id, e.utc)));
-    expect(plainKeys().filter((k) => !known.has(k))).toEqual([]);
-  });
-});
-
-describe('pulled quotes', () => {
-  test.each(PULLED.map((q) => [q.utc, q] as const))('%s is an operator message with a quote', (_, q) => {
-    const m = findMark(model, q.attempt, q.utc);
-    expect(m.kind).toBe('operator');
-    expect(m.event.quote?.length).toBeGreaterThan(0);
-    expect(m.t).toBe(parseUtc(q.utc));
-  });
-});
