@@ -131,7 +131,7 @@ def plain_id(uri: str | None) -> str:
 def first_words(text: str, limit: int = 110) -> str:
     """The message's opening, to its first sentence end or line break, at most `limit` characters."""
     s = text.strip().split("\n")[0].strip()
-    m = re.match(r"(.+?[.:!?])(?:\s|$)", s)
+    m = re.match(r"(.+?[.!?])(?:\s|$)", s)
     s = m[1] if m and len(m[1]) <= limit else s
     if len(s) > limit:
         s = s[:limit].rsplit(" ", 1)[0] + "…"
@@ -485,9 +485,11 @@ def extract(x: Export) -> dict:
             )
             kids = [(r, recipient(x, r[3])) for r in rows]
             kids = [(r, to) for r, to in kids if re.fullmatch(r"rs/\d+ builder", to)]
+            kids.sort(key=lambda k: (k[0][1], int(re.search(r"\d+", k[1])[0])))
             lead = next(r for r, _ in kids if r[2].startswith("Coordinator (rs/3): two decisions"))
             steps.append(
-                {"kind": kind, "t": kids[0][0][1], "from": "rs/3 coordinator", "to": [to for _, to in kids],
+                {"kind": kind, "t": kids[0][0][1], "from": "rs/3 coordinator",
+                 "to": sorted((to for _, to in kids), key=lambda s: int(re.search(r"\d+", s)[0])),
                  "words": first_words(lead[2]), "id": lead[0]}
             )
         else:
@@ -646,25 +648,30 @@ def recipient(x: Export, job_id) -> str:
 
 
 def recipe_nodes(snapshot: dict) -> list[dict]:
-    """The recipe's nodes in control order, each with its name, type and whether it waits for a person."""
+    """
+    The recipe's nodes in flow order (every edge, control or context, points forward), ties broken
+    by where the recipe draws them; each with its name, type and whether it waits for a person.
+    """
     r = snapshot["recipe"]
     nodes = {n["id"]: n for n in r["nodes"]}
-    nxt = collections.defaultdict(list)
+    drawn = lambda i: ((nodes[i].get("position") or {}).get("y", 0), (nodes[i].get("position") or {}).get("x", 0))
+    nxt = collections.defaultdict(set)
     indeg = collections.Counter()
     for e in r["edges"]:
-        if e["edgeType"] == "control" and e["sourceNodeId"] in nodes and e["targetNodeId"] in nodes:
-            nxt[e["sourceNodeId"]].append(e["targetNodeId"])
-            indeg[e["targetNodeId"]] += 1
-    order, queue = [], [i for i in nodes if indeg[i] == 0 and nodes[i]["nodeType"] == "trigger"]
-    seen = set()
-    while queue:
-        i = queue.pop(0)
-        if i in seen:
-            continue
-        seen.add(i)
+        a, b = e["sourceNodeId"], e["targetNodeId"]
+        if a in nodes and b in nodes and a != b and b not in nxt[a]:
+            nxt[a].add(b)
+            indeg[b] += 1
+    order, ready = [], sorted((i for i in nodes if indeg[i] == 0), key=drawn)
+    while ready:
+        i = ready.pop(0)
         order.append(i)
-        queue.extend(nxt[i])
-    order += [i for i in nodes if i not in seen]
+        for j in nxt[i]:
+            indeg[j] -= 1
+            if indeg[j] == 0:
+                ready.append(j)
+        ready.sort(key=drawn)
+    order += sorted((i for i in nodes if i not in order), key=drawn)
 
     def waits(n: dict) -> bool:
         cfg = n.get("artifactConfig") or n.get("actionConfig") or {}
