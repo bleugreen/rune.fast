@@ -6,15 +6,15 @@
  *   the build's server entry), and the story's HTML holds its title and its first section's
  *   opening paragraph as data/story.md has them.
  * - Opened in Chrome with JavaScript off, every page shows its heading; Nothing here too.
- * - In a build of the same site with React's development build, which reports every difference
- *   between the server's HTML and the client's first render, opening each page and an unknown
- *   path logs no error or warning, the app keeps the server's DOM rather than drawing its own, and
- *   from the story each nav link routes client-side.
+ * - The app hydrates every page and an unknown path in place, opened at 1440 and 390 px wide in
+ *   Perth's zone (the build's is UTC): the console logs no error or warning, the app keeps the
+ *   server's DOM rather than drawing its own, and from the story each nav link routes client-side.
+ *   First in a build of the same site with React's development build, which names every
+ *   difference between the server's HTML and the client's first render, served the documents as
+ *   Pages serves them (each page from its own file, any other path from 404.html with status
+ *   404); then dist/ itself, as it ships, in `wrangler pages dev` (from the PATH, or bunx).
  *
- * Chrome is served the documents as Pages serves them: each page from its own file, any other
- * path from 404.html with status 404.
- *
- *   bun run build && bun run check:prerender [--shots <dir> [--base http://127.0.0.1:8791]]
+ *   TZ=UTC bun run build && bun run check:prerender [--shots <dir> [--base http://127.0.0.1:8791]]
  *
  * `--shots` also saves each page with JavaScript off, and with `--base` (the built site served by
  * `wrangler pages dev dist`), the story page on a 300 ms, 1.6 Mbps link at the moment its HTML,
@@ -161,8 +161,10 @@ const READER_ZONE = 'Australia/Perth';
 async function developmentBuild(): Promise<string> {
   const out = resolve('node_modules/.cache/rune-prerender');
   const [client, server] = [join(out, 'client'), join(out, 'server')];
-  const before = { NODE_ENV: process.env.NODE_ENV, VITE_WORLD_ASSET_BASE: process.env.VITE_WORLD_ASSET_BASE };
+  const before = { NODE_ENV: process.env.NODE_ENV, VITE_WORLD_ASSET_BASE: process.env.VITE_WORLD_ASSET_BASE, TZ: process.env.TZ };
   process.env.NODE_ENV = 'development';
+  // In UTC, as package.json `check` builds dist/ and as Pages builds the site.
+  process.env.TZ = 'UTC';
   // scripts/test-preload.ts sets the dev asset base for the renders above; the build takes .env.production's.
   delete process.env.VITE_WORLD_ASSET_BASE;
   try {
@@ -220,48 +222,47 @@ async function hydrates(browser: Browser, what: string, base: string, serve?: (p
     for (const p of PATHS) {
       const where = `${p} at ${width} px, ${what}`;
       const page = await context.newPage();
-    const said: string[] = [];
-    // A failed request is reported by its address below; the console's own line for it names none.
-    page.on('console', (m) => {
-      if ((m.type() === 'error' || m.type() === 'warning') && !m.text().startsWith('Failed to load resource')) said.push(`${m.type()}: ${m.text().slice(0, 300)}`);
-    });
-    page.on('pageerror', (e) => said.push(`pageerror: ${e.message}`));
-    page.on('response', (r) => {
-      const unknownPage = r.request().resourceType() === 'document' && p === '/nothing-here';
-      if (r.status() >= 400 && !unknownPage) said.push(`${r.status()}: ${r.url()}`);
-    });
-    // The server's nodes, held before any script runs, to compare with what the app ends on.
-    await page.addInitScript(() => {
-      document.addEventListener('readystatechange', () => {
-        if (document.readyState !== 'interactive') return;
-        const w = window as unknown as Record<string, unknown>;
-        w.__served = [document.querySelector('#root > *'), document.querySelector('main h1'), document.querySelector('footer')];
+      const said: string[] = [];
+      // A failed request is reported by its address below; the console's own line for it names none.
+      page.on('console', (m) => {
+        if ((m.type() === 'error' || m.type() === 'warning') && !m.text().startsWith('Failed to load resource')) said.push(`${m.type()}: ${m.text().slice(0, 300)}`);
       });
-    });
-    if (serve) await serve(page);
-    await page.goto(base + p, { waitUntil: 'networkidle' });
-    await page.waitForFunction(() => Object.keys(document.getElementById('root')!).some((k) => k.startsWith('__reactContainer')));
-    await page.waitForTimeout(500);
-    const kept = await page.evaluate(() => {
-      const served = (window as unknown as Record<string, Element[]>).__served!;
-      const now = [document.querySelector('#root > *'), document.querySelector('main h1'), document.querySelector('footer')];
-      return served.every((el, i) => el !== null && el === now[i]);
-    });
-    check(said.length === 0, `${where}: the console said\n    ${said.join('\n    ')}`);
-    check(kept, `${where}: the app replaced the server's HTML instead of hydrating it`);
+      page.on('pageerror', (e) => said.push(`pageerror: ${e.message}`));
+      page.on('response', (r) => {
+        const unknownPage = r.request().resourceType() === 'document' && p === '/nothing-here';
+        if (r.status() >= 400 && !unknownPage) said.push(`${r.status()}: ${r.url()}`);
+      });
+      // The server's nodes, held before any script runs, to compare with what the app ends on.
+      await page.addInitScript(() => {
+        document.addEventListener('readystatechange', () => {
+          if (document.readyState !== 'interactive') return;
+          const w = window as unknown as Record<string, unknown>;
+          w.__served = [document.querySelector('#root > *'), document.querySelector('main h1'), document.querySelector('footer')];
+        });
+      });
+      if (serve) await serve(page);
+      await page.goto(base + p, { waitUntil: 'networkidle' });
+      await page.waitForFunction(() => Object.keys(document.getElementById('root')!).some((k) => k.startsWith('__reactContainer')));
+      await page.waitForTimeout(500);
+      const kept = await page.evaluate(() => {
+        const served = (window as unknown as Record<string, Element[]>).__served!;
+        const now = [document.querySelector('#root > *'), document.querySelector('main h1'), document.querySelector('footer')];
+        return served.every((el, i) => el !== null && el === now[i]);
+      });
+      check(said.length === 0, `${where}: the console said\n    ${said.join('\n    ')}`);
+      check(kept, `${where}: the app replaced the server's HTML instead of hydrating it`);
 
-    if (p === '/') {
-      await page.evaluate(() => ((window as unknown as Record<string, unknown>).__sameTab = true));
-      for (const n of NAV.slice(1)) {
-        // The phone's nav may sit behind a menu or scroll sideways; following the link is what counts.
-        await page.locator(`nav[aria-label="Pages"] a[href="${n.to}"]`).dispatchEvent('click');
-        await page.waitForURL(base + n.to);
-        await page.locator('main h1').first().waitFor();
+      if (p === '/') {
+        await page.evaluate(() => ((window as unknown as Record<string, unknown>).__sameTab = true));
+        for (const n of NAV.slice(1)) {
+          await page.locator(`nav[aria-label="Pages"] a[href="${n.to}"]`).click();
+          await page.waitForURL(base + n.to);
+          await page.locator('main h1').first().waitFor();
+        }
+        const same = await page.evaluate(() => (window as unknown as Record<string, unknown>).__sameTab === true);
+        check(same, `${where}: a nav link reloaded the page instead of routing client-side`);
+        check(said.length === 0, `${where} → the nav: the console said\n    ${said.join('\n    ')}`);
       }
-      const same = await page.evaluate(() => (window as unknown as Record<string, unknown>).__sameTab === true);
-      check(same, `${where}: a nav link reloaded the page instead of routing client-side`);
-      check(said.length === 0, `${where} → the nav: the console said\n    ${said.join('\n    ')}`);
-    }
       await page.close();
     }
     await context.close();
