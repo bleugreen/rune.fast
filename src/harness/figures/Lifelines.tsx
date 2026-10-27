@@ -40,9 +40,9 @@ export function Lifelines({ m, label }: { m: HarnessModel; label: string }) {
         {L.midnights.map((t) => (
           <line key={t} className={styles.hair} x1={x(t)} x2={x(t)} y1={TOP - 8} y2={height} />
         ))}
-        {/* The first day's name only where it has room before the first midnight. */}
+        {/* A day's name only where it has room: the first before the first midnight, the last before the record. */}
         {[L.from, ...L.midnights]
-          .filter((t, j) => j !== 0 || x(L.midnights[0]!) - x(t) > DAY_LABEL)
+          .filter((t, j) => (j !== 0 || x(L.midnights[0]!) - x(t) > DAY_LABEL) && x(L.to) - x(t) > DAY_LABEL)
           .map((t) => (
             <text key={t} className={styles.tick} x={x(t) + 3} y={TOP - 12}>
               {fmtPacificWeekdayDay(t)}
@@ -80,7 +80,8 @@ export function Lifelines({ m, label }: { m: HarnessModel; label: string }) {
           <g key={mk.key}>
             <circle className={styles.accent} cx={x(mk.t)} cy={yOf(mk.row)} r={3} />
             <line className={styles.accentLine} x1={x(mk.t)} x2={x(mk.t)} y1={yOf(mk.row) + 3} y2={yOf(mk.row) + BAR + 2} />
-            <text className={styles.note} x={x(mk.t) + 3} y={yOf(mk.row) + BAR + 12}>
+            {/* On a phone the next row's name sits close below, so the label goes beside the stem. */}
+            <text className={styles.note} x={x(mk.t) + (narrow ? 5 : 3)} y={yOf(mk.row) + BAR + (narrow ? 2 : 12)}>
               {`rs/${mk.key.slice(2)}`}
             </text>
           </g>
