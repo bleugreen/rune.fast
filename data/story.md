@@ -14,7 +14,7 @@ Tuesday, October 20, 2026, 2:37 PM
 
 > Welcome to a new project! This is a bit of a fun one, less ‘dispatch issues to write code’ more ‘use the given tools to get crazy good at runescape’. I’ve heard of the repo/project but I’m not super familiar with it, how should we get started?
 
-Five days, thirteen hours and thirty-seven minutes later, `cairnmax20x`, the swarm's chosen hero, achieved #1 on the overall hiscores.
+Five days, thirteen hours and thirty-seven minutes later, `cairnmax20x`, the swarm's chosen hero, took #1 on the overall hiscores.
 
 Here’s how.
 
