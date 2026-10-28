@@ -14,13 +14,13 @@ Tuesday, October 20, 2026, 2:37 PM
 
 > Welcome to a new project! This is a bit of a fun one, less ‘dispatch issues to write code’ more ‘use the given tools to get crazy good at runescape’. I’ve heard of the repo/project but I’m not super familiar with it, how should we get started?
 
-Five days, thirteen hours and thirty-seven minutes later, `cairnmax20x`, the swarm's chosen hero, achieved #1 on the overall hiscores.
+Five days, thirteen hours and thirty-seven minutes later, `cairnmax20x`, the swarm's chosen hero, took #1 on the overall hiscores.
 
 Here’s how.
 
 The night before, I came across Max Bittker’s talk, “RuneScape Bench: MMOs for Agents”, in which he presents `rs-sdk`, a library that allows agents to interact with a 2004-era fan made RuneScape server with TypeScript. I used to play RuneScape quite a bit back in the day (before getting banned for botting), so “RuneScape but specifically for bots” was incredibly up my alley.
 
-I cloned the repo, opened it up in Cairn, my tool for running a swarm of agents in a shared environment, and sent the message above to a new thread.
+I cloned the repo, opened it up in Cairn, my tool for running agents in a shared environment, and sent the message above to a new thread.
 
 The agent named itself `main`, found the demo’s leaderboard, and figured out the game:
 
