@@ -134,7 +134,7 @@ In hindsight, it was not. Had I stopped to see what was going on first, `main`â€
 
 Dying in RuneScape keeps every level. You lose what you were carrying and wake up in Lumbridge.
 
-Given how tight of a ship Codex had been running earlier, I decided to switch back:
+In the moment, nursing an (unearned) grievance against Claude and none against Codex, I decided to switch back:
 
 > me: Welcome back astra, sorry but fable fumbled the run and killed the guy 40min from the finish line, lets pick up the pieces and get this record
 
