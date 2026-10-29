@@ -134,7 +134,7 @@ In hindsight, it was not. Had I stopped to see what was going on first, `main`�
 
 Dying in RuneScape keeps every level. You lose what you were carrying and wake up in Lumbridge.
 
-In the moment, nursing an (unearned) grievance against Claude and none against Codex, I decided to switch back:
+In the moment, nursing an unearned grievance against Claude and none against Codex, I decided to switch back:
 
 > me: Welcome back astra, sorry but fable fumbled the run and killed the guy 40min from the finish line, lets pick up the pieces and get this record
 
@@ -144,7 +144,7 @@ After taking stock of the situation, `main` projected our run would finish 379 t
 
 Overnight the helpers rebuilt the lost kit, and the recovery began at 3:27 AM the next morning, still projected about 100 ticks slow.
 
-At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and doing so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility goes according to plan. `cairnmax20x` ran to the course, completed 56 laps around it, faster than planned, and reached Agility 99, the final skill, at 4:07 AM, 129 ticks (51.6 seconds) under the record. At 4:15, `host` to `main`:
+At 3:40, the account finished Defence, Ranged, and Hitpoints by demolishing the poison spiders with a cannon (an act of revenge), and did so 171 ticks faster than estimated. This turned the projection, now 72 ticks under if Agility went well. `cairnmax20x` ran to the course, completed 56 laps around it, faster than planned, and reached Agility 99, the final skill, at 4:07 AM, 129 ticks (51.6 seconds) under the record. At 4:15, `host` to `main`:
 
 > OFFICIAL #1 VERIFIED on BOTH playerpage… and overallboard…
 
